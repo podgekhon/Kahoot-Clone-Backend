@@ -8,7 +8,8 @@
 
 ## Change Log
 
-* 18/09 Changed weighting of iterations 1, 2 and 3.
+* 17/09: Specify 12 merge requests rather than 11 for iteration 0, since there are 12 function stubs.
+* 18/09: Changed weighting of iterations 1, 2 and 3.
 
 ## 🫡 0. Aims:
 
@@ -83,7 +84,7 @@ function adminAuthLogin(email, password) {
     * Create a group contract by completing `contract.md` - you may add/edit this template as you see fit.
     * You are expected to have **at least 1 meeting** with your group, and document the meeting(s) in meeting minutes which should be stored at a timestamped location in your repo (e.g. uploading a word doc/pdf or writing in the GitLab repo Wiki after each meeting). We have provided you with a `minutes-template.md` which you may use if you choose.
     * For this iteration each team member will need to make a minimum of **1 merge request per person** in your group into the `master` branch.
-    * **1 merge request per function** must be made (11 in total).
+    * **1 merge request per function** must be made (12 in total).
     * Check out the lab on Git from week 1 to get familiar with using Git.
 
 ### 🐭 2.2. Functions to stub
