@@ -8,6 +8,8 @@
 
 ## Change Log
 
+* 18/09 Changed weighting of iterations 1, 2 and 3.
+
 ## 🫡 0. Aims:
 
 1. Demonstrate effective use of software development tools to build full-stack end-user applications.
@@ -380,9 +382,9 @@ Coming soon!
 | Iteration | Due date                             | Demonstration to tutor(s)     | Assessment weighting (%) |
 | --------- | ------------------------------------ | ----------------------------- | ------------------------ |
 | 0         | 8pm Friday 20th Sept (**week 2**)    | No demonstration              | 5% of project mark       |
-| 1         | 8pm Friday 4th Oct (**week 4**)    | In YOUR **week 5** laboratory | 30% of project mark      |
-| 2         | 8pm Friday 25th Oct (**week 7**)    | In YOUR **week 8** laboratory | 35% of project mark      |
-| 3         | 8pm Friday 15th Nov (**week 10**)    | Final demonstration week 11   | 30% of project mark      |
+| 1         | 8pm Friday 4th Oct (**week 4**)    | In YOUR **week 5** laboratory | 20% of project mark      |
+| 2         | 8pm Friday 25th Oct (**week 7**)    | In YOUR **week 8** laboratory | 40% of project mark      |
+| 3         | 8pm Friday 15th Nov (**week 10**)    | Final demonstration week 11   | 35% of project mark      |
 
 For more information about demonstrations see section `6.2`.
 
