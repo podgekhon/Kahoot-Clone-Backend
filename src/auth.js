@@ -10,8 +10,6 @@ const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
     }
 }
 
-
-
 /**
   * @param {Integers} authUserId - authUserId
   * @param {String} email - email
@@ -37,3 +35,25 @@ const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
 }
 
+/**
+  * <Brief description of what the function does>
+  * 
+  * @param {Integers} authUserId - authUserId
+  * 
+  * @return {quizzes : [
+  *     {
+  *     quizId : Integers 
+  *     name : String
+  *     }
+  * ]}
+  * 
+*/
+const adminQuizList = ( authUserId  ) => {
+    return { quizzes: [
+        {
+          quizId: 1,
+          name: 'My Quiz',
+        }
+      ]
+    }
+}
