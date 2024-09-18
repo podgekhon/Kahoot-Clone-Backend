@@ -3,7 +3,7 @@
 | z5549057 | Tang Patrick Truong |
 | z5592942 | Patrick Chen|
 | z5538765 | Xiaoyuan Ma |
-| | |
+| z5557617 | Guanlin Kong |
 | | |
 
 1. When and where will we schedule meetings (e.g. 11am Wednesdays and 2pm Fridays: in-person at X location, on Teams video call, on Discord)?
