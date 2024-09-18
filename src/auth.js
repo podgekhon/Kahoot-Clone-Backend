@@ -1,14 +1,15 @@
-//Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
-const adminUserDetailsUpdate = (authUserId) => {
-    return { user:
-        {
-          userId: 1,
-          name: 'Hayden Smith',
-          email: 'hayden.smith@unsw.edu.au',
-          numSuccessfulLogins: 3,
-          numFailedPasswordsSinceLastLogin: 1,
-        }
-    }
+/**
+  * <Brief description of what the function does>
+  * 
+  * @param {Integers} authUserId - description of paramter
+  * @param {String} email - description of paramter
+  * @param {String} nameFirst - description of paramter
+  * @param {String} nameLast - description of paramter
+  * ...
+  * no return;
+*/
+const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
+    return { }
 }
 
 // Register a user with an email, password, and names, then returns their authUserId value.
