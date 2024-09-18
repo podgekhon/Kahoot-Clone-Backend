@@ -25,6 +25,29 @@ const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
 }
 
+/**
+  * <Brief description of what the function does>
+  * 
+  * @param {Integers} authUserId - authUserId
+  * 
+  * @return {quizzes : [
+  *     {
+  *     quizId : Integers 
+  *     name : String
+  *     }
+  * ]}
+  * 
+*/
+const adminQuizList = ( authUserId  ) => {
+    return { quizzes: [
+        {
+          quizId: 1,
+          name: 'My Quiz',
+        }
+      ]
+    }
+}
+
 // Register a user with an email, password, and names, then returns their authUserId value.
 const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
     return {
