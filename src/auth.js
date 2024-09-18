@@ -1,13 +1,29 @@
-/*
+/**
 * @param {string} email 
 * @param {string} password
 * 
-* @returns {object} - userId
+* @returns {Integers} authUserId
 */
 const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
     return {
         authUserId: 1
     }
+}
+
+/**
+  * <Brief description of what the function does>
+  * 
+  * @param {string} email - description of paramter
+  * @param {string} password - description of parameter
+  * ...
+  * 
+  * @returns {Integers} - UserId
+*/
+
+const adminAuthLogin = ( email, password ) => {
+  return {
+    authUserId: 1
+  }
 }
 
 /**
