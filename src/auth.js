@@ -1,6 +1,16 @@
+/*
+* @param {string} email 
+* @param {string} password
+* 
+* @returns {object} - userId
+*/
+const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
+    return {
+        authUserId: 1
+    }
+}
+
 /**
-  * <Brief description of what the function does>
-  * 
   * @param {Integers} authUserId - authUserId
   * @param {String} email - email
   * @param {String} nameFirst - First name
@@ -45,12 +55,5 @@ const adminQuizList = ( authUserId  ) => {
           name: 'My Quiz',
         }
       ]
-    }
-}
-
-// Register a user with an email, password, and names, then returns their authUserId value.
-const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
-    return {
-        authUserId: 1
     }
 }
