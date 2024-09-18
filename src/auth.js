@@ -81,26 +81,3 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
 const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
 }
-
-/**
-  * <Brief description of what the function does>
-  * 
-  * @param {Integers} authUserId - authUserId
-  * 
-  * @return {quizzes : [
-  *     {
-  *     quizId : Integers 
-  *     name : String
-  *     }
-  * ]}
-  * 
-*/
-const adminQuizList = ( authUserId  ) => {
-    return { quizzes: [
-        {
-          quizId: 1,
-          name: 'My Quiz',
-        }
-      ]
-    }
-}
