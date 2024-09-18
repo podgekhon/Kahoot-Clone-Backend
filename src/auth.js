@@ -3,8 +3,6 @@
   * 
   * @param {string} email 
   * @param {string} password
-  * @param {string} nameFirst
-  * @param {string} nameLast
   * 
   * @returns {object} - userId
 */
@@ -13,3 +11,4 @@ const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
         authUserId: 1
     }
 }
+
