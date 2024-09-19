@@ -1,18 +1,43 @@
 /**
+  * Provide a list of all quizzes that are owned by 
+  * the currently logged in user.
+  * 
+  * @param {integer} authUserId - authUserId
+  * 
+  * @return {quizzes : [
+  *     {
+  *       quizId : integer 
+  *       name : string
+  *     }
+  * ]}
+  * 
+*/
+const adminQuizList = ( authUserId  ) => {
+  return { quizzes: [
+      {
+        quizId: 1,
+        name: 'My Quiz',
+      }
+    ]
+  }
+}
+  
+
+/**
   * Given basic details about a new quiz, create one for the logged in user.
   * 
   * @param {integer} authUserId - id of authUser
-  * @param {integer} name - name of new quiz
+  * @param {string} name - name of new quiz
   * @param {string} description - description of new quiz for logged in user
   * 
   * @returns {integer} - id of quiz
 */
-
 const adminQuizCreate = (authUserId, name, description) => {
     return {
         quizId: 2
     }
 }
+
 
 /**
   * Given a particular quiz, permanently remove the quiz.
@@ -20,13 +45,14 @@ const adminQuizCreate = (authUserId, name, description) => {
   * @param {integer} authUserId - id of authUser
   * @param {integer} quizId - id of quiz
   * 
-  * @returns {}
+  * @returns {} - empty object
 */
 const adminQuizRemove = (authUserId, quizId) => {
   return {
     
   }
 }
+
 
 /**
   * Get all of the relevant information about the current quiz.
@@ -46,38 +72,15 @@ const adminQuizInfo = (authUserId, quizId) => {
     }
 }
 
-/**
-  * Provide a list of all quizzes that are owned by 
-  * the currently logged in user.
-  * 
-  * @param {integer} authUserId - authUserId
-  * 
-  * @return {quizzes : [
-*     {
-*       quizId : integer 
-*       name : string
-*     }
-* ]}
-* 
-*/
-const adminQuizList = ( authUserId  ) => {
-  return { quizzes: [
-      {
-        quizId: 1,
-        name: 'My Quiz',
-      }
-    ]
-  }
-}
 
 /**
   * Update the name of the relevant quiz
   * 
   * @param {integer} authUserId - id of authUser
   * @param {integer} quizId - id of quiz
-  * @param {string} description - description of quiz for logged in user
+  * @param {string} name - quiz name
   * 
-  * @returns {}
+  * @returns {} - empty object
 */
 const adminQuizNameUpdate = (authUserId, quizId, name) => {
   return {
@@ -85,23 +88,18 @@ const adminQuizNameUpdate = (authUserId, quizId, name) => {
   }
 }
 
+
 /**
   * Update the description of the relevant quiz
   * 
   * @param {integer} authUserId - id of authUser
   * @param {integer} quizId - id of quiz
-  * @param {string} description - description of quiz for logged in user
+  * @param {string} name - quiz name
   * 
-  * @returns {}
+  * @returns {} - empty object
 */
 const adminQuizDescriptionUpdate = (authUserId, quizId, name) => {
   return {
     
   }
 }
-
-
-
-
-
-
