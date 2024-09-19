@@ -58,23 +58,25 @@ const adminUserDetails = ( authUserId ) => {
 
 
 /**
-  * @param {Integers} authUserId - authUserId
-  * @param {String} email - email
-  * @param {String} nameFirst - First name
-  * @param {String} nameLast - Last name
-  * ...
-  * @return {} no return;
+ * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
+ * 
+ * @param {Integer} authUserId - authUserId
+ * @param {string} email - email
+ * @param {string} nameFirst - First name
+ * @param {string} nameLast - Last name
+ * ...
+ * @return {} no return;
 */
 const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
     return { }
 }
 
 /**
-  * <Brief description of what the function does>
+  * Given details relating to a password change, update the password of a logged in user.
   * 
-  * @param {Integers} authUserId - description of paramter
-  * @param {String} oldPassword - oldPassword
-  * @param {String} newPassword - newPassword
+  * @param {Integer} authUserId - description of paramter
+  * @param {string} oldPassword - oldPassword
+  * @param {string} newPassword - newPassword
   * ...
   * @return {} no return;
 */
