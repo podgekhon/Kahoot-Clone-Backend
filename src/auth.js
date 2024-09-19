@@ -1,8 +1,8 @@
 /**
  * Register a user with an email, password, and names, then returns their authUserId value.
  * 
- * @param {string} email 
- * @param {string} password
+ * @param {string} email - user's email to register
+ * @param {string} password - users' password to register
  * 
  * @returns {integer} authUserId
 */
@@ -15,8 +15,8 @@ const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
 /**
   * Given a registered user's email and password returns their authUserId value.
   * 
-  * @param {string} email - description of paramter
-  * @param {string} password - description of parameter
+  * @param {string} email - email to login
+  * @param {string} password - password to login
   * 
   * 
   * @returns {integer} - UserId
@@ -31,7 +31,7 @@ const adminAuthLogin = ( email, password ) => {
   * Given an admin user's authUserId, return details about the user.
     "name" is the first and last name concatenated with a single space between them.
   * 
-  * @param {integer} authUserId - description of paramter
+  * @param {integer} authUserId - userId to find the user
   *
   * @returns { user:
   *    {
