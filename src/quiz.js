@@ -3,7 +3,7 @@
   * 
   * @param {integer} authUserId - id of authUser
   * @param {integer} name - name of new quiz
-  * @param {strings} description - description of new quiz for logged in user
+  * @param {string} description - description of new quiz for logged in user
   * 
   * @returns {integer} - id of quiz
 */
@@ -47,14 +47,15 @@ const adminQuizInfo = (authUserId, quizId) => {
 }
 
 /**
-  * <Brief description of what the function does>
+  * Provide a list of all quizzes that are owned by 
+  * the currently logged in user.
   * 
-  * @param {Integers} authUserId - authUserId
+  * @param {integer} authUserId - authUserId
   * 
   * @return {quizzes : [
 *     {
-*     quizId : Integers 
-*     name : String
+*       quizId : integer 
+*       name : string
 *     }
 * ]}
 * 
@@ -68,3 +69,20 @@ const adminQuizList = ( authUserId  ) => {
     ]
   }
 }
+
+/**
+  * Update the name of the relevant quiz
+  * 
+  * @param {integer} authUserId - id of authUser
+  * @param {integer} quizId - id of quiz
+  * @param {string} description - description of new quiz for logged in user
+  * @param {}
+  * 
+  * @returns {}
+*/
+const adminQuizNameUpdate = (authUserId, quizId, name) => {
+  return {
+    
+  }
+}
+
