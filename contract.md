@@ -7,7 +7,7 @@
 | | |
 
 1. When and where will we schedule meetings (e.g. 11am Wednesdays and 2pm Fridays: in-person at X location, on Teams video call, on Discord)?
-   Meetings will be during labs,
+   Meetings will be during labs, and monday mornings from 10am on teams.
 
 2. Where will we record our meeting minutes (e.g. Teams documents, Gitlab Wiki, Gitlab markdown file)?
    Our meeting minutes will be published on Teams.
