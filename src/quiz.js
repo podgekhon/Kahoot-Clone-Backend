@@ -75,8 +75,7 @@ const adminQuizList = ( authUserId  ) => {
   * 
   * @param {integer} authUserId - id of authUser
   * @param {integer} quizId - id of quiz
-  * @param {string} description - description of new quiz for logged in user
-  * @param {}
+  * @param {string} description - description of quiz for logged in user
   * 
   * @returns {}
 */
@@ -85,4 +84,24 @@ const adminQuizNameUpdate = (authUserId, quizId, name) => {
     
   }
 }
+
+/**
+  * Update the description of the relevant quiz
+  * 
+  * @param {integer} authUserId - id of authUser
+  * @param {integer} quizId - id of quiz
+  * @param {string} description - description of quiz for logged in user
+  * 
+  * @returns {}
+*/
+const adminQuizDescriptionUpdate = (authUserId, quizId, name) => {
+  return {
+    
+  }
+}
+
+
+
+
+
 
