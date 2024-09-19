@@ -4,7 +4,7 @@
  * @param {string} email 
  * @param {string} password
  * 
- * @returns {Integers} authUserId
+ * @returns {integer} authUserId
 */
 const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
     return {
@@ -19,9 +19,8 @@ const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
   * @param {string} password - description of parameter
   * 
   * 
-  * @returns {Integers} - UserId
+  * @returns {integer} - UserId
 */
-
 const adminAuthLogin = ( email, password ) => {
   return {
     authUserId: 1
@@ -32,7 +31,7 @@ const adminAuthLogin = ( email, password ) => {
   * Given an admin user's authUserId, return details about the user.
     "name" is the first and last name concatenated with a single space between them.
   * 
-  * @param {Integers} authUserId - description of paramter
+  * @param {integer} authUserId - description of paramter
   *
   * @returns { user:
   *    {
@@ -60,7 +59,7 @@ const adminUserDetails = ( authUserId ) => {
 /**
  * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
  * 
- * @param {Integer} authUserId - authUserId
+ * @param {integer} authUserId - authUserId
  * @param {string} email - email
  * @param {string} nameFirst - First name
  * @param {string} nameLast - Last name
@@ -74,7 +73,7 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
 /**
   * Given details relating to a password change, update the password of a logged in user.
   * 
-  * @param {Integer} authUserId - description of paramter
+  * @param {integer} authUserId - description of paramter
   * @param {string} oldPassword - oldPassword
   * @param {string} newPassword - newPassword
   * ...
