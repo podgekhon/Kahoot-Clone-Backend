@@ -3,6 +3,8 @@
  * 
  * @param {string} email - user's email to register
  * @param {string} password - users' password to register
+ * @param {string} nameFirst - user's first name
+ * @param {string} nameLast - user's last name
  * 
  * @returns {integer} authUserId
 */
@@ -41,7 +43,7 @@ const adminAuthLogin = ( email, password ) => {
   *     numSuccessfulLogins: Integers,
   *     numFailedPasswordsSinceLastLogin: Integers,
   *  }
-  *}
+  *} - user's details
 */
 const adminUserDetails = ( authUserId ) => {
   return { user:
@@ -64,7 +66,7 @@ const adminUserDetails = ( authUserId ) => {
  * @param {string} nameFirst - First name
  * @param {string} nameLast - Last name
  * ...
- * @return {} no return;
+ * @return {} empty object;
 */
 const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
     return { }
@@ -77,7 +79,7 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   * @param {string} oldPassword - oldPassword
   * @param {string} newPassword - newPassword
   * ...
-  * @return {} no return;
+  * @return {} empty object;
 */
 const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
