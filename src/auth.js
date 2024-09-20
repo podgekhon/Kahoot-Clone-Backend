@@ -9,9 +9,9 @@
   * @returns {integer} authUserId
 */
 const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
-    return {
-        authUserId: 1
-    }
+  return {
+    authUserId: 1
+  }
 }
 
 /**
@@ -68,7 +68,7 @@ const adminUserDetails = ( authUserId ) => {
   * @return {} empty object;
 */
 const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
-    return { }
+  return { }
 }
 
 /**
@@ -81,5 +81,5 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   * @return {} empty object;
 */
 const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
-    return { }
+  return { }
 }
