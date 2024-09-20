@@ -10,7 +10,6 @@
   *       name : string
   *     }
   * ]}
-  * 
 */
 const adminQuizList = ( authUserId  ) => {
   return { quizzes: [
@@ -48,9 +47,7 @@ const adminQuizCreate = (authUserId, name, description) => {
   * @returns {} - empty object
 */
 const adminQuizRemove = (authUserId, quizId) => {
-  return {
-    
-  }
+  return { }
 }
 
 
@@ -83,9 +80,7 @@ const adminQuizInfo = (authUserId, quizId) => {
   * @returns {} - empty object
 */
 const adminQuizNameUpdate = (authUserId, quizId, name) => {
-  return {
-    
-  }
+  return { }
 }
 
 
@@ -99,7 +94,5 @@ const adminQuizNameUpdate = (authUserId, quizId, name) => {
   * @returns {} - empty object
 */
 const adminQuizDescriptionUpdate = (authUserId, quizId, name) => {
-  return {
-    
-  }
+  return { }
 }
