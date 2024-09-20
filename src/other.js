@@ -6,6 +6,6 @@
   * @returns {} - empty object
 */
 const clear = () => {
-    return { }
-  }
+  return { }
+}
   
