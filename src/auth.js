@@ -1,12 +1,12 @@
 /**
- * Register a user with an email, password, and names, then returns their authUserId value.
- * 
- * @param {string} email - user's email to register
- * @param {string} password - users' password to register
- * @param {string} nameFirst - user's first name
- * @param {string} nameLast - user's last name
- * 
- * @returns {integer} authUserId
+  * Register a user with an email, password, and names, then returns their authUserId value.
+  * 
+  * @param {string} email - user's email to register
+  * @param {string} password - users' password to register
+  * @param {string} nameFirst - user's first name
+  * @param {string} nameLast - user's last name
+  * 
+  * @returns {integer} authUserId
 */
 const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
     return {
@@ -19,7 +19,6 @@ const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
   * 
   * @param {string} email - email to login
   * @param {string} password - password to login
-  * 
   * 
   * @returns {integer} - UserId
 */
@@ -59,14 +58,14 @@ const adminUserDetails = ( authUserId ) => {
 
 
 /**
- * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
- * 
- * @param {integer} authUserId - authUserId
- * @param {string} email - email
- * @param {string} nameFirst - First name
- * @param {string} nameLast - Last name
- * ...
- * @return {} empty object;
+  * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
+  * 
+  * @param {integer} authUserId - authUserId
+  * @param {string} email - email
+  * @param {string} nameFirst - First name
+  * @param {string} nameLast - Last name
+  * 
+  * @return {} empty object;
 */
 const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
     return { }
@@ -78,7 +77,7 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   * @param {integer} authUserId - description of paramter
   * @param {string} oldPassword - oldPassword
   * @param {string} newPassword - newPassword
-  * ...
+  * 
   * @return {} empty object;
 */
 const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
