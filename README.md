@@ -10,6 +10,7 @@
 
 * 17/09: Specify 12 merge requests rather than 11 for iteration 0, since there are 12 function stubs.
 * 18/09: Changed weighting of iterations 1, 2 and 3.
+* 24/09: Minor wording change, section 3.1.
 
 ## 🫡 0. Aims:
 
@@ -51,10 +52,10 @@ We highly recommend **creating and playing** a Kahoot game to better understand 
 This iteration is designed as a warm-up to help you setup your project, learn Git and project management practises (see Marking Criteria), and understand how your team works together.
 
 In this iteration, you are expected to:
-1. Write stub code for the basic functionality of Toohak. The basic functionality is defined as the `adminAuth*`, `adminQuiz*` capabilities/functions, as per the interface section below (2.2).
+1. Write stub code for the basic functionality of Toohak. The basic functionality is defined in the interface section below.
     * A stub is a function declaration and sample return value (see example below). **Do NOT write the implementation** for the stubbed functions. That is for the next iteration. In this iteration you are just focusing on setting up your function declarations and getting familiar with Git.
     * Each team member must stub **AT LEAST 1** function each.
-    * Function stub locations should be inside files named a corresponding prefix e.g. `adminQuiz*` inside `quiz.js`.
+    * Function stub locations should be inside files specified in the interface section below.
     * Return values should match the interface table below (see example below).
 ```javascript
 // Sample stub for the authLoginV1 function
@@ -374,7 +375,7 @@ Please see section 6 for information on **due date**.
 
 In this iteration, you are expected to:
 
-1. Write tests for and implement the basic functionality of Toohak. The basic functionality is defined as the `adminAuth*`, `adminQuiz*` and `clear` capabilities/functions, as per the interface section below.
+1. Write tests for and implement the basic functionality of Toohak. The basic functionality is defined as per the interface section below.
     * Test files you add should all be in the form `*.test.js`.
     * Do NOT attempt to try and write or start a web server. Don't overthink how these functions are meant to connect to a frontend yet. That is for the next iteration. In this iteration you are just focusing on the basic backend functionality.
 
