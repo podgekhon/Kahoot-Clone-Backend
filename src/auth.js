@@ -1,24 +1,44 @@
+import {getData, setData} from "./dataStore.js"
 /**
-  * Register a user with an email, password, and names, then returns their authUserId value.
-  * 
-  * @param {string} email - user's email to register
-  * @param {string} password - users' password to register
-  * @param {string} nameFirst - user's first name
-  * @param {string} nameLast - user's last name
-  * 
-  * @returns {integer} authUserId
+ * Register a user with an email, password, and names, then returns their authUserId value.
+ * 
+ * @param {string} email 
+ * @param {string} password
+ * 
+ * @returns {integer} authUserId
 */
 const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
-  return {
-    authUserId: 1
+  let data = getData();
+
+  for (const user of data.users) {
+    if (user.email === email) {
+      return {"error": "Email already used"};
+    }
   }
+
+  if (password.length < 8) {
+    return {"error": "Password is too short"};
+  }
+
+  data.users.push({
+    email: email,
+    password: passwords,
+    name: `$(nameFirst) ${nameLast}`,
+  });
+  
+  return {
+        authUserId: data.users.length
+    }
 }
+
+export {adminAuthRegister}
 
 /**
   * Given a registered user's email and password returns their authUserId value.
   * 
-  * @param {string} email - email to login
-  * @param {string} password - password to login
+  * @param {string} email - description of paramter
+  * @param {string} password - description of parameter
+  * 
   * 
   * @returns {integer} - UserId
 */
@@ -32,7 +52,7 @@ const adminAuthLogin = ( email, password ) => {
   * Given an admin user's authUserId, return details about the user.
     "name" is the first and last name concatenated with a single space between them.
   * 
-  * @param {integer} authUserId - userId to find the user
+  * @param {integer} authUserId - description of paramter
   *
   * @returns { user:
   *    {
@@ -42,7 +62,7 @@ const adminAuthLogin = ( email, password ) => {
   *     numSuccessfulLogins: Integers,
   *     numFailedPasswordsSinceLastLogin: Integers,
   *  }
-  *} - user's details
+  *}
 */
 const adminUserDetails = ( authUserId ) => {
   return { user:
@@ -58,17 +78,17 @@ const adminUserDetails = ( authUserId ) => {
 
 
 /**
-  * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
-  * 
-  * @param {integer} authUserId - authUserId
-  * @param {string} email - email
-  * @param {string} nameFirst - First name
-  * @param {string} nameLast - Last name
-  * 
-  * @return {} empty object;
+ * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
+ * 
+ * @param {integer} authUserId - authUserId
+ * @param {string} email - email
+ * @param {string} nameFirst - First name
+ * @param {string} nameLast - Last name
+ * ...
+ * @return {} no return;
 */
 const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
-  return { }
+    return { }
 }
 
 /**
@@ -77,9 +97,9 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   * @param {integer} authUserId - description of paramter
   * @param {string} oldPassword - oldPassword
   * @param {string} newPassword - newPassword
-  * 
-  * @return {} empty object;
+  * ...
+  * @return {} no return;
 */
 const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
-  return { }
+    return { }
 }
