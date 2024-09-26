@@ -31,7 +31,7 @@ const adminQuizList = ( authUserId  ) => {
   * 
   * @returns {integer} - id of quiz
 */
-const adminQuizCreate = (authUserId, name, description) => {
+export const adminQuizCreate = (authUserId, name, description) => {
   return {
     quizId: 2
   }
