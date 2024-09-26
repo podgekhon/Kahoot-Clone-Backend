@@ -79,7 +79,7 @@ const adminQuizInfo = (authUserId, quizId) => {
   * 
   * @returns {} - empty object
 */
-const adminQuizNameUpdate = (authUserId, quizId, name) => {
+export const adminQuizNameUpdate = (authUserId, quizId, name) => {
   return { }
 }
 
