@@ -70,8 +70,6 @@ describe('adminQuizCreate', () => {
 
         },
 
-
-
     ])(`$testDescription`, ({authUserId, name, description, output}) => {
         expect(adminQuizCreate(authUserId, name, description)).toStrictEqual(output)
     })
