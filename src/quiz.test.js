@@ -31,21 +31,73 @@ describe('test for adminQuizCreate', () => {
     })
 })
 
-describe('test for adminQuizNameUpdate', () => {
+describe('adminQuizNameUpdate', () => {
     test.each([
         //test cases for invalid inputs
-        {authUserId: -100, quizId: 3, name: 'science', output: {error: 'AuthUserId is not a valid user.'}},
-        {authUserId: 2, quizId: -3000, name: 'science', output: {error: 'Quiz ID does not refer to a valid quiz.'}},
-        {authUserId: 2, quizId: 3000, name: 'science', output: {error: 'Quiz ID does not refer to a quiz that this user owns'}},
-        {authUserId: 2, quizId: 3, name: 'science_$%^', output: {error: 'Name contains invalid characters. Valid characters are alphanumeric and spaces.'}},
-        {authUserId: 2, quizId: 3, name: 'sc', output: {error: 'Name is either less than 3 characters long or more than 30 characters long.'}},
-        {authUserId: 2, quizId: 3, name: 'abcdefghijklmnopqrstuvwxyz12345', output: {error: 'Name is either less than 3 characters long or more than 30 characters long.'}},
-        {authUserId: 2, quizId: 3, name: 'maths', output: {error: 'Name is already used by the current logged in user for another quiz.'}},
+        {
+            authUserId: -100, 
+            quizId: 3, 
+            name: 'science', 
+            output: {error: 'AuthUserId is not a valid user.'},
+            testDescription: 'authUserId is not valid',
+        },
+        {
+            authUserId: 2, 
+            quizId: -3000, 
+            name: 'science', 
+            output: {error: 'Quiz ID does not refer to a valid quiz.'},
+            testDescription: 'quizId is not valid',
+        },
+        {
+            authUserId: 2, 
+            quizId: 3000, 
+            name: 'science', 
+            output: {error: 'Quiz ID does not refer to a quiz that this user owns'},
+            testDescription: 'quizId valid but user does not own',
+        },
+        {
+            authUserId: 2, 
+            quizId: 3, 
+            name: 'science_$%^', 
+            output: {error: 'Name contains invalid characters. Valid characters are alphanumeric and spaces.'},
+            testDescription: 'new quiz name contains invalid characters',
+
+        },
+        {
+            authUserId: 2, 
+            quizId: 3, 
+            name: 'sc', 
+            output: {error: 'Name is either less than 3 characters long or more than 30 characters long.'},
+            testDescription: 'new quiz name is less than 3 characters',
+
+        },
+        {
+            authUserId: 2, 
+            quizId: 3, 
+            name: 'abcdefghijklmnopqrstuvwxyz12345', 
+            output: {error: 'Name is either less than 3 characters long or more than 30 characters long.'},
+            testDescription: 'new quiz name is more than 30 characters',
+
+        },
+        {
+            authUserId: 2, 
+            quizId: 3, 
+            name: 'maths', 
+            output: {error: 'Name is already used by the current logged in user for another quiz.'},
+            testDescription: 'duplciate quiz names with another quiz user owns',
+
+        },
 
         //test cases for valid inputs
-        {authUserId: 2, quizId: 3, name: 'science', output: {}},
+        {
+            authUserId: 2, 
+            quizId: 3, 
+            name: 'science',
+            output: {},
+            testDescription: 'valid inputs',
+        },
 
-    ])(`($authUserId, $quizId, $name) : $output`, ({authUserId, quizId, name, output}) => {
+    ])(`$testDescription`, ({authUserId, quizId, name, output}) => {
         expect(adminQuizNameUpdate(authUserId, quizId, name)).toStrictEqual(output);
     })
 })
