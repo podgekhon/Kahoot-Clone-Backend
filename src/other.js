@@ -5,7 +5,7 @@
   * 
   * @returns {} - empty object
 */
-export const clear = () => {
+const clear = () => {
   return { }
 }
   
