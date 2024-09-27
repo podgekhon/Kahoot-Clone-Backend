@@ -1,6 +1,7 @@
 import { adminAuthRegister } from './auth.js';
-import {clear} from './other.js';
-import {adminAuthLogin} from './auth.js';
+import { clear } from './other.js';
+import { adminAuthLogin } from './auth.js';
+import { adminUserDetails } from './auth.js';
 import { adminUserPasswordUpdate } from './auth.js';
 
 beforeEach(() => {
