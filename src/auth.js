@@ -7,7 +7,7 @@ import {getData, setData} from "./dataStore.js"
  * 
  * @returns {integer} authUserId
 */
-const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
+export const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
   let data = getData();
 
   for (const user of data.users) {
@@ -30,8 +30,6 @@ const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
         authUserId: data.users.length
     }
 }
-
-export {adminAuthRegister}
 
 /**
   * Given a registered user's email and password returns their authUserId value.

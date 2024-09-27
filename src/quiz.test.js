@@ -3,8 +3,9 @@ import {
     adminQuizRemove, 
     adminQuizDescriptionUpdate, 
     adminQuizList, 
-    adminQuizNameUpdate 
+    adminQuizNameUpdate,
 } from './quiz.js';
+import { adminAuthRegister } from './auth.js';
 import {clear} from './other.js';
 
 beforeEach(() => {
@@ -119,18 +120,17 @@ describe('adminQuizNameUpdate', () => {
                     testDescription: 'new quiz name is more than 30 characters',
         
                 },
-                {
-                    authUserId: 2, 
-                    quizId: 3, 
-                    name: 'maths', 
-                    testDescription: 'duplciate quiz names with another quiz user owns',
-        
-                },
             ])(`$testDescription`, ({authUserId, quizId, name}) => {
                 expect(adminQuizNameUpdate(authUserId, quizId, name)).toStrictEqual({error: expect.any(String)});
             })
-        })
 
+            test('duplciate quiz names with another quiz user owns', () => {
+                const quiz1Id = adminQuizCreate(2, 'chemQuiz', 'science'); 
+                const quiz2Id = adminQuizCreate(2, 'physicsQuiz', 'science2'); //since quiz2 returns a quizId if successful
+                expect(adminQuizNameUpdate(2, quiz2Id, 'chemQuiz')).toStrictEqual({error: expect.any(String)});
+            })
+        })
+    
     //valid input test
     describe('valid inputs', () => {
         test('returns empty object', () => {
