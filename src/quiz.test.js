@@ -1,7 +1,9 @@
-import { adminQuizCreate } from './quiz.js';
-import { adminQuizRemove } from './quiz.js';
-import { adminQuizDescriptionUpdate } from './quiz.js';
-import { adminQuizList } from './quiz.js';
+import { 
+    adminQuizCreate, 
+    adminQuizRemove, 
+    adminQuizDescriptionUpdate, 
+    adminQuizList 
+} from './quiz.js';
 import {clear} from './other.js';
 
 beforeEach(() => {
