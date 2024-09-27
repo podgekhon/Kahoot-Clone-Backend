@@ -11,7 +11,7 @@
   *     }
   * ]}
 */
-export const adminQuizList = ( authUserId  ) => {
+const adminQuizList = ( authUserId  ) => {
   return { quizzes: [
       {
         quizId: 1,
@@ -46,7 +46,7 @@ export const adminQuizCreate = (authUserId, name, description) => {
   * 
   * @returns {} - empty object
 */
-export const adminQuizRemove = (authUserId, quizId) => {
+const adminQuizRemove = (authUserId, quizId) => {
   return { }
 }
 
@@ -59,7 +59,7 @@ export const adminQuizRemove = (authUserId, quizId) => {
   * 
   * @returns {object} - struct containing info for quiz 
 */
-export const adminQuizInfo = (authUserId, quizId) => {
+const adminQuizInfo = (authUserId, quizId) => {
   return {
       quizId: 1,
       name: 'My Quiz',
@@ -79,7 +79,7 @@ export const adminQuizInfo = (authUserId, quizId) => {
   * 
   * @returns {} - empty object
 */
-export const adminQuizNameUpdate = (authUserId, quizId, name) => {
+const adminQuizNameUpdate = (authUserId, quizId, name) => {
   return { }
 }
 
@@ -93,6 +93,6 @@ export const adminQuizNameUpdate = (authUserId, quizId, name) => {
   * 
   * @returns {} - empty object
 */
-export const adminQuizDescriptionUpdate = (authUserId, quizId, name) => {
+const adminQuizDescriptionUpdate = (authUserId, quizId, name) => {
   return { }
 }

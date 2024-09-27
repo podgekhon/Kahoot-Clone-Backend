@@ -6,13 +6,15 @@ let data = {
   users: [
     {
       authUserId: 2,
+      name: "Patrick Truong",
       nameFirst: "Patrick",
       nameLast: "Truong",
       email: "pat@gmail.com",
       numSuccessfulLogins: 3,
       numFailedPasswordsSinceLastLogin: 1,
-      oldPasswords: ["oldPass123", "olderPass123"],
-      currentPassword: "newPass123",
+      password: "pass123",
+      oldPassword: "pass1",
+      newPassword: "pass123",
     },
   ],
   quizzes: [
