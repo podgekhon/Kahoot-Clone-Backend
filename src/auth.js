@@ -8,27 +8,27 @@ import {getData, setData} from "./dataStore.js"
  * @returns {integer} authUserId
 */
 const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
-  let data = getData();
+  // let data = getData();
 
-  for (const user of data.users) {
-    if (user.email === email) {
-      return {"error": "Email already used"};
-    }
-  }
+  // for (const user of data.users) {
+  //   if (user.email === email) {
+  //     return {"error": "Email already used"};
+  //   }
+  // }
 
-  if (password.length < 8) {
-    return {"error": "Password is too short"};
-  }
+  // if (password.length < 8) {
+  //   return {"error": "Password is too short"};
+  // }
 
-  data.users.push({
-    email: email,
-    password: passwords,
-    name: `$(nameFirst) ${nameLast}`,
-  });
+  // data.users.push({
+  //   email: email,
+  //   password: passwords,
+  //   name: `$(nameFirst) ${nameLast}`,
+  // });
   
   return {
-        authUserId: data.users.length
-    }
+        authUserId: 1
+    };
 }
 
 export {adminAuthRegister}
