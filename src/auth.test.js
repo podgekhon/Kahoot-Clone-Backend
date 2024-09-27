@@ -1,8 +1,11 @@
-import { adminAuthRegister } from './auth.js';
+import { 
+    adminAuthRegister, 
+    adminAuthLogin, 
+    adminUserDetails, 
+    adminUserPasswordUpdate 
+} from './auth.js';
+
 import { clear } from './other.js';
-import { adminAuthLogin } from './auth.js';
-import { adminUserDetails } from './auth.js';
-import { adminUserPasswordUpdate } from './auth.js';
 
 beforeEach(() => {
   // Reset the state of our data so that each tests can run independently
