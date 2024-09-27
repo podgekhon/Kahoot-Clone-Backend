@@ -6,7 +6,7 @@ beforeEach(async () => {
     await clear();
   });
 
-describe('', () => {
+describe('tests for adminAuthRegister', () => {
     test('Check successful registration', () => {
         const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     });
@@ -33,5 +33,5 @@ describe('', () => {
         const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd');
         expect(authUserId).toStrictEqual({error: expect.any(String)});
     })
-});    
 
+});    
