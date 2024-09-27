@@ -1,6 +1,6 @@
 import { adminQuizCreate } from './quiz.js';
 import { adminQuizRemove } from './quiz.js';
-import { getData } from 'dataStore.js';
+import { adminQuizDescriptionUpdate } from './quiz.js';
 import {clear} from './other.js';
 
 beforeEach(() => {
