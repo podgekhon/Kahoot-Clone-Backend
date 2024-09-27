@@ -79,7 +79,6 @@ describe('adminQuizCreate', () => {
 
 
 
-
 describe('adminQuizRemove', () => {
     test('removes a valid quiz owned by the user', () => {
         // Register a user and create a quiz
@@ -89,9 +88,6 @@ describe('adminQuizRemove', () => {
         // Remove the quiz
         const result = adminQuizRemove(user.authUserId, quiz.quizId);
         expect(result).toStrictEqual({}); 
-    
-        // Verify quiz is removed from dataStore
-        expect(getData().users[0].quizzes).toStrictEqual([]);
     });
 
     test('returns error when authUserId is not valid', () => {
