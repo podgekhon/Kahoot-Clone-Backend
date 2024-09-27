@@ -5,7 +5,9 @@ import {
     adminQuizList, 
     adminQuizNameUpdate,
 } from './quiz.js';
-import { adminAuthRegister } from './auth.js';
+import { 
+    adminAuthRegister, 
+    adminAuthLogin, } from './auth.js';
 import {clear} from './other.js';
 
 beforeEach(() => {

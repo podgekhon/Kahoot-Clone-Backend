@@ -8,27 +8,27 @@ import {getData, setData} from "./dataStore.js"
  * @returns {integer} authUserId
 */
 export const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
-  let data = getData();
+  // let data = getData();
 
-  for (const user of data.users) {
-    if (user.email === email) {
-      return {"error": "Email already used"};
-    }
-  }
+  // for (const user of data.users) {
+  //   if (user.email === email) {
+  //     return {"error": "Email already used"};
+  //   }
+  // }
 
-  if (password.length < 8) {
-    return {"error": "Password is too short"};
-  }
+  // if (password.length < 8) {
+  //   return {"error": "Password is too short"};
+  // }
 
-  data.users.push({
-    email: email,
-    password: passwords,
-    name: `$(nameFirst) ${nameLast}`,
-  });
+  // data.users.push({
+  //   email: email,
+  //   password: passwords,
+  //   name: `$(nameFirst) ${nameLast}`,
+  // });
   
   return {
-        authUserId: data.users.length
-    }
+        authUserId: 1
+    };
 }
 
 /**
@@ -40,7 +40,7 @@ export const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
   * 
   * @returns {integer} - UserId
 */
-const adminAuthLogin = ( email, password ) => {
+export const adminAuthLogin = ( email, password ) => {
   return {
     authUserId: 1
   }
@@ -62,7 +62,7 @@ const adminAuthLogin = ( email, password ) => {
   *  }
   *}
 */
-const adminUserDetails = ( authUserId ) => {
+export const adminUserDetails = ( authUserId ) => {
   return { user:
     {
       userId: 1,
@@ -85,7 +85,7 @@ const adminUserDetails = ( authUserId ) => {
  * ...
  * @return {} no return;
 */
-const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
+export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
     return { }
 }
 
@@ -98,6 +98,6 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   * ...
   * @return {} no return;
 */
-const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
+export const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
 }
