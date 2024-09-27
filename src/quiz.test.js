@@ -1,5 +1,10 @@
-import { adminQuizCreate, adminQuizRemove, adminQuizNameUpdate } from './quiz.js';
-import { adminQuizDescriptionUpdate } from './quiz.js';
+import { 
+    adminQuizCreate, 
+    adminQuizRemove, 
+    adminQuizDescriptionUpdate, 
+    adminQuizList, 
+    adminQuizNameUpdate 
+} from './quiz.js';
 import {clear} from './other.js';
 
 beforeEach(() => {
@@ -223,8 +228,42 @@ describe('adminQuizDescriptionUpdate', () => {
         const result = adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, longDescription);
         expect(result).toStrictEqual({ error: expect.any(String) });
     });
-
-    
 });
 
+describe('adminQuizList', () => {
+    test('returns an empty list when user has no quizzes', () => {
+        // Register and login a user who has no quizzes
+        adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+        const loggedInUser = adminAuthLogin('test@gmail.com', 'validPassword5');
+        // Get the list of quizzes for this user (should be empty)
+        const result = adminQuizList(loggedInUser.authUserId);
+        // Expect an empty quizzes array
+        expect(result).toStrictEqual({
+          quizzes: [],
+        });
+    });
+
+    test('returns a list of quizzes owned by the user', () => {
+        // Register and login a user, then create quizzes
+        adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+        const loggedInUser = adminAuthLogin('test@gmail.com', 'validPassword5');
+        const quiz1 = adminQuizCreate(loggedInUser.authUserId, 'Math Quiz', '12345');
+        const quiz2 = adminQuizCreate(loggedInUser.authUserId, 'English Quiz', 'ABCDEF');
+        // Get the list of quizzes for this user
+        const result = adminQuizList(loggedInUser.authUserId);
+        // Expect an array of quizzes owned by the user
+        expect(result).toStrictEqual({
+          quizzes: [
+            { quizId: quiz1.quizId, name: 'Math Quiz' },
+            { quizId: quiz2.quizId, name: 'English Quiz' },
+          ],
+        });
+    });
+
+    test('returns an error when authUserId is not valid', () => {
+        // Pass an arbitrary and invalid authUserId 
+        const result = adminQuizList(999);
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+});
 

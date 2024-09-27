@@ -1,7 +1,11 @@
-import { adminAuthRegister } from './auth.js';
-import {clear} from './other.js';
-import {adminAuthLogin} from './auth.js';
-import { adminUserPasswordUpdate } from './auth.js';
+import { 
+    adminAuthRegister, 
+    adminAuthLogin, 
+    adminUserDetails, 
+    adminUserPasswordUpdate 
+} from './auth.js';
+
+import { clear } from './other.js';
 
 beforeEach(() => {
   // Reset the state of our data so that each tests can run independently
@@ -90,3 +94,71 @@ describe('test for adminUserPasswordUpdate', () => {
 	});
 });
 
+///////////-----adminUserDetails-----////////////
+describe('test for adminUserDetails', () => {
+	test('successfully returns details of a valid user', () => {
+		// Register a user
+		const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+		// Get user details
+		const result = adminUserDetails(user.authUserId);
+		// Validate that the correct user details are returned
+		expect(result).toStrictEqual({
+		  user: {
+			userId: user.authUserId,  
+			// Full name concatenated with single space in between
+			name: 'Patrick Chen',     
+			email: 'test@gmail.com',
+			// Starts at 1 upon registration
+			numSuccessfulLogins: 1,   
+			numFailedPasswordsSinceLastLogin: 0,  
+		  }
+		});
+	});
+
+	test('returns error when authUserId is not valid', () => {
+		// Provide an invalid authUserId (999 is arbitrary and invalid)
+		const result = adminUserDetails(999); 
+		expect(result).toStrictEqual({ error: expect.any(String) });
+	});
+
+
+	test('numSuccessfulLogins increments after successful logins', () => {
+		// Register a user
+		const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+		// Simulate multiple successful logins
+		adminAuthLogin('test@gmail.com', 'validPassword5');
+		adminAuthLogin('test@gmail.com', 'validPassword5');
+		// Get user details
+		const result = adminUserDetails(user.authUserId);
+		// Check if the number of successful logins is correct 
+		// (3 logins: 1 registration + 2 logins)
+		expect(result.user.numSuccessfulLogins).toBe(3);
+	});
+
+	test('numFailedPasswordsSinceLastLogin increments on failed login attempts', () => {
+		// Register a user
+		const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+		// Simulate failed login attempts
+		adminAuthLogin('test@gmail.com', 'wrongPassword');
+		adminAuthLogin('test@gmail.com', 'wrongPassword');
+		// Get user details
+		const result = adminUserDetails(user.authUserId);
+		// Check if the number of failed login attempts since last login is correct (2 failed attempts)
+		expect(result.user.numFailedPasswordsSinceLastLogin).toBe(2);
+	});
+
+	test('numFailedPasswordsSinceLastLogin resets after a successful login', () => {
+		// Register a user
+		const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+		// Simulate failed login attempts
+		adminAuthLogin('test@gmail.com', 'wrongPassword');
+		adminAuthLogin('test@gmail.com', 'wrongPassword');
+		// Now simulate a successful login
+		adminAuthLogin('test@gmail.com', 'validPassword5');
+		// Get user details
+		const result = adminUserDetails(user.authUserId);
+		// Check if the failed attempts reset to 0 after the successful login
+		expect(result.user.numFailedPasswordsSinceLastLogin).toBe(0);
+	});
+
+});
