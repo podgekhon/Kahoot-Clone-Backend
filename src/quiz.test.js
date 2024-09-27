@@ -1,10 +1,11 @@
-import { adminQuizCreate, adminQuizNameUpdate } from './quiz.js';
+import { adminQuizCreate, adminQuizRemove, adminQuizNameUpdate } from './quiz.js';
+import { adminQuizDescriptionUpdate } from './quiz.js';
 import {clear} from './other.js';
 
-beforeEach(async () => {
+beforeEach(() => {
     // Reset the state of our data so that each tests can run independently
-    await clear();
-  });
+    clear();
+});
 
 describe('adminQuizCreate', () => {
 
@@ -132,3 +133,98 @@ describe('adminQuizNameUpdate', () => {
         })
     })
 })
+
+
+describe('adminQuizRemove', () => {
+    test('removes a valid quiz owned by the user', () => {
+        // Register a user and create a quiz
+        const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+        const quiz = adminQuizCreate(user.authUserId, 'validQuizName', 'validQuizDescription');
+    
+        // Remove the quiz
+        const result = adminQuizRemove(user.authUserId, quiz.quizId);
+        expect(result).toStrictEqual({}); 
+    });
+
+    test('returns error when authUserId is not valid', () => {
+        // The first parameter (authUserId) is an arbitrary number, and hence invalid
+        const result = adminQuizRemove(99, 1); 
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('returns error when quizId is not valid', () => {
+        const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+        // The second parameter (quizId) is an arbitrary number, and hence invalid
+        const result = adminQuizRemove(user.authUserId, 999); 
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('returns error when user does not own the quiz', () => {
+        const user1 = adminAuthRegister('user1@gmail.com', 'validPassword1', 'User', 'One');
+        const user2 = adminAuthRegister('user2@gmail.com', 'validPassword2', 'User', 'Two');
+        const quiz1 = adminQuizCreate(user1.authUserId, 'validQuizName', 'validQuizDescription');
+    
+        // User 2 tries to remove User 1's quiz
+        const result = adminQuizRemove(user2.authUserId, quiz1.quizId);
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+});
+
+describe('adminQuizDescriptionUpdate', () => {
+    test('successfully updates the quiz description', () => {
+        // Register a user and create a quiz
+        const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+        const quiz = adminQuizCreate(user.authUserId, 'validQuizName', 'validQuizDescription');
+        
+        // Update the quiz description
+        const result = adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, 'Updated description');
+        expect(result).toStrictEqual({});
+    });
+
+    test('successfully updates quiz description with an empty string', () => {
+        // Register a user and create a quiz
+        const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+        const quiz = adminQuizCreate(user.authUserId, 'validQuizName', 'validQuizDescription');
+        
+        // Update the description wtih an empty string
+        const result = adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, '');
+        expect(result).toStrictEqual({}); 
+    });
+
+    test('returns error when authUserId is not valid', () => {
+        // Attempt to update with an invalid authUserId
+        const result = adminQuizDescriptionUpdate(99, 1, 'New description');
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('returns error when quizId is not valid', () => {
+        const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+        // Attempt to update with an invalid quizId
+        const result = adminQuizDescriptionUpdate(user.authUserId, 999, 'New description');
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('returns error when user does not own the quiz', () => {
+        const user1 = adminAuthRegister('user1@gmail.com', 'validPassword1', 'User', 'One');
+        const user2 = adminAuthRegister('user2@gmail.com', 'validPassword2', 'User', 'Two');
+        const quiz1 = adminQuizCreate(user1.authUserId, 'validQuizName', 'validQuizDescription');
+        
+        // User 2 tries to update User 1's quiz description
+        const result = adminQuizDescriptionUpdate(user2.authUserId, quiz1.quizId, 'New description');
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('returns error when description is longer than 100 characters', () => {
+        const user = adminAuthRegister('test@gmail.com', 'validPassword5', 'Patrick', 'Chen');
+        const quiz = adminQuizCreate(user.authUserId, 'validQuizName', 'validQuizDescription');
+        
+        // Attempt to update with a description longer than 100 characters
+        const longDescription = 'ABC'.repeat(101);
+        const result = adminQuizDescriptionUpdate(user.authUserId, quiz.quizId, longDescription);
+        expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+
+    
+});
+
+
