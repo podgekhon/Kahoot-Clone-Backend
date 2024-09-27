@@ -8,6 +8,36 @@ beforeEach(() => {
   clear();
 });
 
+describe('tests for adminAuthRegister', () => {
+	test('Check successful registration', () => {
+			const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+	});
+	
+	test('Check duplicate email', () => {
+			const authUserId2 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+			expect(authUserId2).toStrictEqual({ error: expect.any(String) });
+	});
+	
+	test('Check fail on short passwords', () => {
+			const authUserId = adminAuthRegister('eric@unsw.edu.au', '', 'Eric', 'Yang');
+			expect(authUserId1).toStrictEqual({error: expect.any(String)});
+			const authUserId2 = adminAuthRegister('eric@unsw.edu.au', '1', 'Eric', 'Yang');
+			expect(authUserId2).toStrictEqual({error: expect.any(String)});
+	});
+	
+	test('Login was successful', () => {
+			const user1 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+			const unser2 = adminAuthRegister('eric@unsw.edu.au', '1234abcd');
+			expect(user1.authUserId).toBe(user2.authUserId);
+	});
+	
+	test('Log in with an email that doesn\'t exist', () => {
+			const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd');
+			expect(authUserId).toStrictEqual({error: expect.any(String)});
+	});
+
+});    
+
 ///////////-----adminAuthLogin-----////////////
 describe('test for adminAuthLogin', () => {
   // test for email address doesn't exists when login
@@ -28,6 +58,7 @@ describe('test for adminAuthLogin', () => {
     expect(result).toStrictEqual(user1);
   });
 });
+
 
 /////////-----adminUserPasswordUpdate-----//////////
 describe('test for adminUserPasswordUpdate', () => {
@@ -87,3 +118,4 @@ describe('test for adminUserPasswordUpdate', () => {
 		expect(result).toStrictEqual({});
 	});
 });
+
