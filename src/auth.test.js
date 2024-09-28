@@ -274,27 +274,10 @@ describe('test for adminUserPasswordUpdate', () => {
 		const result2 = adminUserPasswordUpdate(user1.authUserId, 'newpassword1', '1234abcd');
 		expect(result2).toStrictEqual({ error: expect.any(String) });
 	});
-	// New password is less then 8 characters
-	test('new password too short', () => {
-		const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
-		const result = adminUserPasswordUpdate(user1.authUserId, '1234abcd', '1a');
-		expect(result).toStrictEqual({ error: expect.any(String) });
-	});
-	// New password does not contain at least one number and at least one letter
-	describe('New password does not meet the requirement', () => {
-		test('new password is empty', () => {
-			const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
-			const result = adminUserPasswordUpdate(user1.authUserId, '1234abcd', '');
-			expect(result).toStrictEqual({ error: expect.any(String) });
-		});
-		test('new password contain no number', () => {
-			const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
-			const result = adminUserPasswordUpdate(user1.authUserId, '1234abcd', 'abcdefghi');
-			expect(result).toStrictEqual({ error: expect.any(String) });
-		});
-		test('new password contain no letters', () => {
-			const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
-			const result = adminUserPasswordUpdate(user1.authUserId, '1234abcd', '1234567890');
+	// test for invalid passwords(too short, no characters/numbers)
+	test('invalid new passwords', () => {
+		invalidPasswords.forEach((password) => {
+			const result = adminUserPasswordUpdate(user1.authUserId, '1234abcd', password);
 			expect(result).toStrictEqual({ error: expect.any(String) });
 		});
 	});
