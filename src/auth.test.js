@@ -249,8 +249,9 @@ describe('test for adminAuthLogin', () => {
 
 /////////-----adminUserPasswordUpdate-----//////////
 describe('test for adminUserPasswordUpdate', () => {
+  let user1;
   beforeEach(() => {
-  	const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
+  	user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
   });
   // authUserId is not valid user
   test('invalid authUserId', () => {
