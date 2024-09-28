@@ -249,27 +249,26 @@ describe('test for adminAuthLogin', () => {
 
 /////////-----adminUserPasswordUpdate-----//////////
 describe('test for adminUserPasswordUpdate', () => {
+  beforeEach(() => {
+  	const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
+  });
   // authUserId is not valid user
   test('invalid authUserId', () => {
-  	const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
 		const result = adminUserPasswordUpdate('1234', '1234abcd', 'abcd1234');
 		expect(result).toStrictEqual({ error: expect.any(String) });
   });
 	// Old password is not the correct old password
 	test('old password is wrong', () => {
-		const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
 		const result = adminUserPasswordUpdate(user1.authUserId, 'wrongpassword', 'abcd1234');
 		expect(result).toStrictEqual({ error: expect.any(String) });
 	});
 	// Old password and new password match exactly
 	test('new password is same as the old one', () => {
-		const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
 		const result = adminUserPasswordUpdate(user1.authUserId, '1234abcd', '1234abcd');
 		expect(result).toStrictEqual({ error: expect.any(String) });
 	});
 	// New password has already been used before by this user
 	test('new password has been used before', () => {
-		const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
 		const result1 = adminUserPasswordUpdate(user1.authUserId, '1234abcd', 'newpassword1');
 		const result2 = adminUserPasswordUpdate(user1.authUserId, 'newpassword1', '1234abcd');
 		expect(result2).toStrictEqual({ error: expect.any(String) });
@@ -283,7 +282,6 @@ describe('test for adminUserPasswordUpdate', () => {
 	});
 	// correct return type
 	test('Correct return type', () => {
-		const user1 = adminAuthRegister('XiaoyuanMa@unsw.edu.au', '1234abcd', 'Xiaoyuan', 'Ma');
 		const result = adminUserPasswordUpdate(user1.authUserId, '1234abcd', 'abcd1234');
 		expect(result).toStrictEqual({});
 	});
