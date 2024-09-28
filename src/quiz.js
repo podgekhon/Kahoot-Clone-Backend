@@ -70,10 +70,10 @@ const adminQuizRemove = (authUserId, quizId) => {
   }
 
   // remove the correct quiz
-  quizzes.splice(validOwnerId, 1);
+  data.quizzes.splice(validOwnerId, 1);
 
-  // not sure about how to use setData
-  // setData(newData);
+  // updata dataStor
+  setData(data);
 
   return {};
 }
