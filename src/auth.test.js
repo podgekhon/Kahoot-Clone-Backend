@@ -2,6 +2,7 @@ import {
     adminAuthRegister, 
     adminAuthLogin, 
     adminUserDetails, 
+    adminUserDetailsUpdate,
     adminUserPasswordUpdate 
 } from './auth.js';
 
@@ -10,6 +11,217 @@ import { clear } from './other.js';
 beforeEach(() => {
   // Reset the state of our data so that each tests can run independently
   clear();
+});
+
+const invalidEmails = [
+  'username@', 
+  'username.com', 
+  'user@domain..com', 
+  'user$name@domain.com', 
+  'user~domain@domain.com', 
+];
+
+const invalidNames = [
+  'Eric!', 
+  'John#',
+  'Anna$',       
+  'A', 
+  'VeryLongNameThatExceedsTwentyCharacters', 
+  '1Eric',
+  '' 
+];
+
+const validNames = [
+  'Jean-Paul',
+  "O'Connor",
+  'Mary Anne',
+  "Containstwentycharac",
+  "tw",
+  "  Eric  "
+]
+
+const invalidPasswords = [
+  'abcdefgh', 
+  '12345678', 
+  '1',
+  '123456a', 
+  '', 
+];
+
+/////////////-----adminAuthRegister------///////////
+describe('adminAuthRegister', () => {
+  describe('Tests with 1 ordinary user', () => {
+    beforeEach(() => {
+      const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+    });
+    // Email address is used by another user.
+    test('Check duplicate email', () => {
+      const authUserId2 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Pat', 'Yang');
+      expect(authUserId2).toStrictEqual({ error: expect.any(String) });
+    });
+    // valid cases checking
+  test('Check multiple invalid and valid registrations', () => {
+    const user1 = adminAuthRegister('eric@unsw.edu.au', '1234abc', 'Eric', 'Yang');
+    const user2 = adminAuthRegister('ERIC@UNSW.EDU.AU', '1234ABCD', 'Pat', 'T');
+    const user3 = adminAuthRegister('sam@unsw.edu.au', '12', 'Sam', 'T');
+    const user4 = adminAuthRegister('andrew', '1234abcd', 'Andrew', 'T');
+    expect(user1).toStrictEqual(expect.any(Integer));
+    expect(user2).toStrictEqual(expect.any(Integer));
+    expect(user3).toStrictEqual({ error: expect.any(String) });
+    expect(user4).toStrictEqual({ error: expect.any(String) });
+  });
+  test('Registering two people with the same name and passwords', () => {
+    const user1 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+    const user2 = adminAuthRegister('pat@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+    expect(user1).toStrictEqual(expect.any(Integer));
+    expect(user2).toStrictEqual(expect.any(Integer));
+  });
+  })
+
+  //Email does not satisfy this: https://www.npmjs.com/package/validator (validator.isEmail function).
+  test('Check invalid email', () => {
+    invalidEmails.forEach((email) => {
+      const authUserId = adminAuthRegister(email, 'password123', 'Eric', 'Yang');
+      expect(authUserId).toStrictEqual({ error: expect.any(String) });
+    });
+  });
+
+  // Unusual But Valid Characters in Emails
+  test('valid email with + symbol', () => {
+    const authUserId = adminAuthRegister('eric+@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+    expect(authUserId).toStrictEqual(expect.any(Integer));
+  });
+
+  // NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.
+  // NameFirst is less than 2 characters or more than 20 characters.
+  test('invalid NameFirst with special characters', () => {
+    invalidNames.forEach((name) => {
+      const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', name, 'Yang');
+      expect(authUserId).toStrictEqual({ error: expect.any(String) });
+    });
+  });
+
+  test('valid NameFirst', () => {
+		validNames.forEach((name) => {
+			const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', name, 'Yang');
+			expect(authUserId).toStrictEqual(expect.any(Integer));
+		})
+  });
+
+  // NameLast contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.
+  // NameLast is less than 2 characters or more than 20 characters.
+  test('invalid NameLast', () => {
+    invalidNames.forEach((name) => {
+      const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', name);
+      expect(authUserId).toStrictEqual({ error: expect.any(String) });
+    });
+  });
+
+  test('valid NameLast', () => {
+		validNames.forEach((name) => {
+			const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', name);
+			expect(authUserId).toStrictEqual(expect.any(Integer));
+		})
+  });
+
+  // Password is less than 8 characters.
+  // Password does not contain at least one number and at least one letter.
+  test('invalid Password', () => {
+    invalidPasswords.forEach((password) => {
+      const authUserId = adminAuthRegister('eric@unsw.edu.au', password, 'Eric', 'Yang');
+      expect(authUserId).toStrictEqual({ error: expect.any(String) });
+    });
+  });
+});    
+
+
+
+/////////////-----adminUserDetailsUpdate------///////////
+
+describe('adminUserDetailsUpdate', () => {
+	// Test for invalid authUserId
+	test('invalid authUserId with no registers', () => {
+		const result = adminUserDetailsUpdate(1, 'new.email@example.com', 'John', 'Doe');
+		expect(result).toStrictEqual({ error: expect.any(String) });
+  });
+
+  describe('Tests with at least 1 register', () => {
+    beforeEach(() => {
+      const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+    });
+
+    test('authUserId does not exist', () => {
+      const result = adminUserDetailsUpdate(2, 'new.email@example.com', 'John', 'Doe');
+      expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('authUserId is negative', () => {
+      const result = adminUserDetailsUpdate(-1, 'eric@unsw.edu.au', 'Eric', 'Yang');
+      expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+
+    // Email address is used by another user.
+    test('Check duplicate email', () => {
+      const authUserId2 = adminAuthRegister('pat@unsw.edu.au', '1234abc', 'Pat', 'Yang');
+      const result = adminUserDetailsUpdate(authUserId2, 'eric@unsw.edu.au', 'Pat', 'Yang');
+      expect(result).toStrictEqual({ error: expect.any(String) });
+    });
+    
+    //Email does not satisfy this: https://www.npmjs.com/package/validator (validator.isEmail function).
+    test('Check invalid email', () => {
+      invalidEmails.forEach((email) => {
+        const result = adminUserDetailsUpdate(authUserId, email, 'Eric', 'Yang');
+        expect(result).toStrictEqual({ error: expect.any(String) });
+      });
+    });
+
+    // NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.
+    test('invalid NameFirst with special characters', () => {
+      // Test cases with invalid characters in NameFirst
+      invalidNames.forEach((name) => {
+        const result = adminUserDetailsUpdate(authUserId, 'eric@unsw.edu.au', name, 'Yang');
+        expect(result).toStrictEqual({ error: expect.any(String) });
+      });
+    });
+    test('valid NameFirst', () => {
+      validNames.forEach((name) => {
+        const result = adminUserDetailsUpdate(authUserId, 'eric@unsw.edu.au', name, 'Yang');
+        expect(result).toStrictEqual({});
+      })
+    });
+    // Test for NameLast validation
+    test('invalid NameLast', () => {
+      invalidNames.forEach((name) => {
+        const result = adminUserDetailsUpdate(authUserId, 'eric@unsw.edu.au', 'Eric', name);
+        expect(result).toStrictEqual({ error: expect.any(String) });
+      });
+    });
+  
+    test('valid NameLast', () => {
+      validNames.forEach((name) => {
+        const result = adminUserDetailsUpdate(authUserId, 'eric@unsw.edu.au', 'Eric', name);
+        expect(result).toStrictEqual({});
+      })
+    });
+
+    // valid cases checking
+    test('Check successful details update', () => {
+      const result = adminUserDetailsUpdate(authUserId, 'hello@unsw.edu.au', 'Eric', 'Yang');
+      expect(result).toStrictEqual({});
+    });
+
+    test('No changes to user data', () => {
+      const result = adminUserDetailsUpdate(authUserId, 'eric@unsw.edu.au', 'Eric', 'Yang');
+      expect(result).toStrictEqual({});
+    });
+    
+    test('multiple simultaneous updates to the same user', () => {
+      const result2 = adminUserDetailsUpdate(authUserId, 'NEW.EMAIL2@EXAMPLE.COM', 'Eric', 'Yang');
+      const result3 = adminUserDetailsUpdate(authUserId, 'new.email2', 'Eric', 'Yang');
+      expect(result2).toStrictEqual({}); 	
+      expect(result2).toStrictEqual({error: expect.any(String)}); 	
+    });
+  });
 });
 
 
