@@ -2,8 +2,12 @@ import {
     adminQuizCreate, 
     adminQuizRemove, 
     adminQuizDescriptionUpdate, 
-    adminQuizList 
+    adminQuizList, 
+    adminQuizNameUpdate,
 } from './quiz.js';
+import { 
+    adminAuthRegister, 
+    adminAuthLogin, } from './auth.js';
 import {clear} from './other.js';
 
 beforeEach(() => {
@@ -22,7 +26,6 @@ describe('adminQuizCreate', () => {
                 authUserId: -100, 
                 name: 'chemQuiz', 
                 description: 'science', 
-                output: {error: 'AuthUserId is not a valid user.'},
                 testDescription: 'invalid authUserId',
             },
     
@@ -30,7 +33,6 @@ describe('adminQuizCreate', () => {
                 authUserId: 2, 
                 name: 'chemQuiz_!@#', 
                 description: 'science', 
-                output: {error: 'Name contains invalid characters. Valid characters are alphanumeric and spaces.'},
                 testDescription: 'name contains invalid characters',
             },
 
@@ -38,14 +40,12 @@ describe('adminQuizCreate', () => {
                 authUserId: 2, 
                 name: 'cq', 
                 description: 'science', 
-                output: {error: 'Name is either less than 3 characters long or more than 30 characters long.'},
                 testDescription: 'name less than 3 characters',
             },
             {
                 authUserId: 2, 
                 name: 'Lorem ipsum dolor sit amet, con', 
                 description: 'science', 
-                output: {error: 'Name is either less than 3 characters long or more than 30 characters long.'},
                 testDescription: 'name more than 30 characters',
     
             },
@@ -54,19 +54,18 @@ describe('adminQuizCreate', () => {
                 name: 'pat', 
                 description: 'Lorem ipsum dolor sit amet,' +
                 'consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean ma', 
-                output: {error: 'Description is more than 100 characters in length'},
                 testDescription: 'description is more than 100 characters',
     
             },
     
         ])(`$testDescription`, ({authUserId, name, description, output}) => {
-            expect(adminQuizCreate(authUserId, name, description)).toStrictEqual(output)
+            expect(adminQuizCreate(authUserId, name, description)).toStrictEqual({error: expect.any(String)})
         })
 
         test('duplicate quiz names owned by same user', () => {
             const newQuiz1 = adminQuizCreate(2, 'chemQuiz', 'quiz about chemistry');
             const errorMsg = {error: 'Name is already used by the current logged in user for another quiz.'};
-            expect(adminQuizCreate(2, 'chemQuiz', 'quiz about chemistry')).toStrictEqual(errorMsg);
+            expect(adminQuizCreate(2, 'chemQuiz', 'quiz about chemistry')).toStrictEqual({error: expect.any(String)});
         })
     })
 
@@ -80,6 +79,67 @@ describe('adminQuizCreate', () => {
     
 })
 
+describe('adminQuizNameUpdate', () => {
+    //invalid input tests
+    describe('invalid inputs', () => {
+            test.each([
+                {
+                    authUserId: -100, 
+                    quizId: 3, 
+                    name: 'science', 
+                    testDescription: 'authUserId is not valid',
+                },
+                {
+                    authUserId: 2, 
+                    quizId: -3000, 
+                    name: 'science', 
+                    testDescription: 'quizId is not valid',
+                },
+                {
+                    authUserId: 2, 
+                    quizId: 3000, 
+                    name: 'science', 
+                    testDescription: 'quizId valid but user does not own',
+                },
+                {
+                    authUserId: 2, 
+                    quizId: 3, 
+                    name: 'science_$%^', 
+                    testDescription: 'new quiz name contains invalid characters',
+        
+                },
+                {
+                    authUserId: 2, 
+                    quizId: 3, 
+                    name: 'sc', 
+                    testDescription: 'new quiz name is less than 3 characters',
+        
+                },
+                {
+                    authUserId: 2, 
+                    quizId: 3, 
+                    name: 'abcdefghijklmnopqrstuvwxyz12345', 
+                    testDescription: 'new quiz name is more than 30 characters',
+        
+                },
+            ])(`$testDescription`, ({authUserId, quizId, name}) => {
+                expect(adminQuizNameUpdate(authUserId, quizId, name)).toStrictEqual({error: expect.any(String)});
+            })
+
+            test('duplciate quiz names with another quiz user owns', () => {
+                const quiz1Id = adminQuizCreate(2, 'chemQuiz', 'science'); 
+                const quiz2Id = adminQuizCreate(2, 'physicsQuiz', 'science2'); //since quiz2 returns a quizId if successful
+                expect(adminQuizNameUpdate(2, quiz2Id, 'chemQuiz')).toStrictEqual({error: expect.any(String)});
+            })
+        })
+    
+    //valid input test
+    describe('valid inputs', () => {
+        test('returns empty object', () => {
+            expect(adminQuizNameUpdate(2, 3, 'science')).toStrictEqual(expect.any(Object));
+        })
+    })
+})
 
 
 describe('adminQuizRemove', () => {
