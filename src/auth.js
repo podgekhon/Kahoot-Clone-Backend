@@ -7,7 +7,7 @@ import {getData, setData} from "./dataStore.js"
  * 
  * @returns {integer} authUserId
 */
-const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
+export const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
   // let data = getData();
 
   // for (const user of data.users) {
@@ -31,8 +31,6 @@ const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
     };
 }
 
-export {adminAuthRegister}
-
 /**
   * Given a registered user's email and password returns their authUserId value.
   * 
@@ -42,7 +40,7 @@ export {adminAuthRegister}
   * 
   * @returns {integer} - UserId
 */
-const adminAuthLogin = ( email, password ) => {
+export const adminAuthLogin = ( email, password ) => {
   return {
     authUserId: 1
   }
@@ -64,7 +62,7 @@ const adminAuthLogin = ( email, password ) => {
   *  }
   *}
 */
-const adminUserDetails = ( authUserId ) => {
+export const adminUserDetails = ( authUserId ) => {
   return { user:
     {
       userId: 1,
@@ -87,7 +85,7 @@ const adminUserDetails = ( authUserId ) => {
  * ...
  * @return {} no return;
 */
-const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
+export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
     return { }
 }
 
@@ -100,6 +98,6 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   * ...
   * @return {} no return;
 */
-const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
+export const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
 }
