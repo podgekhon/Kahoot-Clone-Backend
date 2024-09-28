@@ -316,3 +316,11 @@ describe('adminQuizInfo Function Tests', () => {
         expect(result).toEqual({ error: expect.any(String) });
     });
 });
+
+describe('clear function test', () => {
+    // This test verifies the functionality of the clear function.
+    test('should reset the state and return an empty object', () => {
+        const result = clear();
+        expect(result).toEqual({});
+    });
+});
