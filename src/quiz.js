@@ -1,3 +1,5 @@
+import { getData } from './dataStore.js'
+
 /**
   * Provide a list of all quizzes that are owned by 
   * the currently logged in user.
@@ -47,7 +49,33 @@ export const adminQuizCreate = (authUserId, name, description) => {
   * @returns {} - empty object
 */
 const adminQuizRemove = (authUserId, quizId) => {
-  return { }
+  const data = getData();
+  const validUserId = data.users.find(user => user.UserId === authUserId);
+  const validQuizId = data.quizzes.find(quiz => quiz.Id === quizId);
+  
+  // check invalid user id
+  if (!validUserId) {
+    return { error: 'AuthUserId is not valid.' };
+  }
+  
+  // invalid quiz id
+  if (!validQuizId) {
+    return { error: 'QuizID does not refer to a valid quiz.' };
+  }
+  
+  // quiz id does not refer to it's owner
+  const validOwnerId = data.quizzes.find(ownerId => quizzes.ownerId === authUserId);
+  if (!validOwnerId) {
+    return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
+  }
+
+  // remove the correct quiz
+  quizzes.splice(validOwnerId, 1);
+
+  // not sure about how to use setData
+  // setData(newData);
+
+  return {};
 }
 
 
