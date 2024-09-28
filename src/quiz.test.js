@@ -4,6 +4,7 @@ import {
     adminQuizDescriptionUpdate, 
     adminQuizList, 
     adminQuizNameUpdate,
+    adminQuizInfo,
 } from './quiz.js';
 import { 
     adminAuthRegister, 

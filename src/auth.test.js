@@ -51,8 +51,10 @@ const invalidPasswords = [
 /////////////-----adminAuthRegister------///////////
 describe('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
+    let authUserId;
+
     beforeEach(() => {
-      const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+      authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     });
     // Email address is used by another user.
     test('Check duplicate email', () => {
@@ -65,16 +67,16 @@ describe('adminAuthRegister', () => {
     const user2 = adminAuthRegister('ERIC@UNSW.EDU.AU', '1234ABCD', 'Pat', 'T');
     const user3 = adminAuthRegister('sam@unsw.edu.au', '12', 'Sam', 'T');
     const user4 = adminAuthRegister('andrew', '1234abcd', 'Andrew', 'T');
-    expect(user1).toStrictEqual(expect.any(Integer));
-    expect(user2).toStrictEqual(expect.any(Integer));
+    expect(user1).toStrictEqual(expect.any(Number));
+    expect(user2).toStrictEqual(expect.any(Number));
     expect(user3).toStrictEqual({ error: expect.any(String) });
     expect(user4).toStrictEqual({ error: expect.any(String) });
   });
   test('Registering two people with the same name and passwords', () => {
     const user1 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     const user2 = adminAuthRegister('pat@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
-    expect(user1).toStrictEqual(expect.any(Integer));
-    expect(user2).toStrictEqual(expect.any(Integer));
+    expect(user1).toStrictEqual(expect.any(Number));
+    expect(user2).toStrictEqual(expect.any(Number));
   });
   })
 
@@ -89,7 +91,7 @@ describe('adminAuthRegister', () => {
   // Unusual But Valid Characters in Emails
   test('valid email with + symbol', () => {
     const authUserId = adminAuthRegister('eric+@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
-    expect(authUserId).toStrictEqual(expect.any(Integer));
+    expect(authUserId).toStrictEqual(expect.any(Number));
   });
 
   // NameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.
@@ -104,7 +106,7 @@ describe('adminAuthRegister', () => {
   test('valid NameFirst', () => {
 		validNames.forEach((name) => {
 			const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', name, 'Yang');
-			expect(authUserId).toStrictEqual(expect.any(Integer));
+			expect(authUserId).toStrictEqual(expect.any(Number));
 		})
   });
 
@@ -120,7 +122,7 @@ describe('adminAuthRegister', () => {
   test('valid NameLast', () => {
 		validNames.forEach((name) => {
 			const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', name);
-			expect(authUserId).toStrictEqual(expect.any(Integer));
+			expect(authUserId).toStrictEqual(expect.any(Number));
 		})
   });
 
@@ -146,8 +148,10 @@ describe('adminUserDetailsUpdate', () => {
   });
 
   describe('Tests with at least 1 register', () => {
+    let authUserId;
+
     beforeEach(() => {
-      const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+      authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     });
 
     test('authUserId does not exist', () => {
