@@ -269,3 +269,132 @@ describe('adminQuizList', () => {
     });
 });
 
+describe('adminQuizInfo Function Tests', () => {
+    let datastore;
+
+    beforeEach(() => {
+        datastore = {
+            users: [
+                {
+                    authUserId: 2,
+                    name: "Patrick Truong",
+                    email: "pat@gmail.com",
+                },
+            ],
+            quizzes: [
+                {
+                    quizId: 1,
+                    owner: 2,
+                    name: "maths",
+                    description: "this very hard maths quiz",
+                    timeCreated: 1231343122,
+                    timeLastEdited: 132145231415,
+                },
+            ],
+        };
+    });
+
+    test('Valid user and valid quiz ID - should return quiz info', () => {
+        const result = adminQuizInfo(2, 1);
+        expect(result).toEqual({
+            quizId: 1,
+            name: "maths",
+            timeCreated: 1231343122,
+            timeLastEdited: 132145231415,
+            description: "this very hard maths quiz",
+        });
+    });
+
+    test('User does not own the quiz - should return specific error', () => {
+        const result = adminQuizInfo(2, 999);
+        expect(result).toEqual({ error: 'Quiz ID does not refer to a valid quiz.' });
+    });
+
+    test('Invalid user ID - should return specific error', () => {
+        const result = adminQuizInfo(3, 1);
+        expect(result).toEqual({ error: 'AuthUserId is not a valid user.' });
+    });
+
+    test('Quiz ID does not exist - should return specific error', () => {
+        const result = adminQuizInfo(2, 999);
+        expect(result).toEqual({ error: 'Quiz ID does not refer to a valid quiz.' });
+    });
+
+    test('Valid user but quiz ID is null - should return specific error', () => {
+        const result = adminQuizInfo(2, null);
+        expect(result).toEqual({ error: 'Quiz ID does not refer to a valid quiz.' });
+    });
+
+    test('Valid user but quiz ID is undefined - should return specific error', () => {
+        const result = adminQuizInfo(2, undefined);
+        expect(result).toEqual({ error: 'Quiz ID does not refer to a valid quiz.' });
+    });
+
+    test('User queries their own quiz - should return quiz info', () => {
+        const result = adminQuizInfo(2, 1);
+        expect(result).toEqual({
+            quizId: 1,
+            name: "maths",
+            timeCreated: 1231343122,
+            timeLastEdited: 132145231415,
+            description: "this very hard maths quiz",
+        });
+    });
+
+    test('User queries a quiz without description - should return quiz info with empty description', () => {
+        datastore.quizzes.push({
+            quizId: 2,
+            owner: 2,
+            name: "Empty Description Quiz",
+            description: "",
+            timeCreated: 1231343122,
+            timeLastEdited: 132145231415,
+        });
+        const result = adminQuizInfo(2, 2);
+        expect(result).toEqual({
+            quizId: 2,
+            name: "Empty Description Quiz",
+            timeCreated: 1231343122,
+            timeLastEdited: 132145231415,
+            description: "",
+        });
+    });
+
+    test('User queries a quiz with special characters in the name - should return quiz info', () => {
+        datastore.quizzes.push({
+            quizId: 3,
+            owner: 2,
+            name: "Special @# Quiz!",
+            description: "This quiz has special characters.",
+            timeCreated: 1231343122,
+            timeLastEdited: 132145231415,
+        });
+        const result = adminQuizInfo(2, 3);
+        expect(result).toEqual({
+            quizId: 3,
+            name: "Special @# Quiz!",
+            timeCreated: 1231343122,
+            timeLastEdited: 132145231415,
+            description: "This quiz has special characters.",
+        });
+    });
+
+    test('User queries a quiz with an empty name - should return quiz info with empty name', () => {
+        datastore.quizzes.push({
+            quizId: 4,
+            owner: 2,
+            name: "",
+            description: "This quiz has no name.",
+            timeCreated: 1231343122,
+            timeLastEdited: 132145231415,
+        });
+        const result = adminQuizInfo(2, 4);
+        expect(result).toEqual({
+            quizId: 4,
+            name: "",
+            timeCreated: 1231343122,
+            timeLastEdited: 132145231415,
+            description: "This quiz has no name.",
+        });
+    });
+});
