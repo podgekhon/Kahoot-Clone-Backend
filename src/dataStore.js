@@ -1,5 +1,6 @@
 // YOU MAY MODIFY THIS OBJECT BELOW
 let data = {
+  //make sure to delete data
   users: [],  // This will store all registered users
   quizzes: [], // This will store all quizzes
 };
