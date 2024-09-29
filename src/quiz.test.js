@@ -4,6 +4,7 @@ import {
     adminQuizDescriptionUpdate, 
     adminQuizList, 
     adminQuizNameUpdate,
+    adminQuizInfo,
 } from './quiz.js';
 import { 
     adminAuthRegister, 
@@ -269,3 +270,57 @@ describe('adminQuizList', () => {
     });
 });
 
+describe('adminQuizInfo Function Tests', () => {
+    let authUserId;
+    let quizId;
+
+    beforeEach(() => {
+        // Register a user and create a quiz before each test
+        const result = adminAuthRegister("pat@gmail.com", "password123", "Patrick", "Truong");
+        authUserId = result.authUserId;
+
+        const quizResult = adminQuizCreate(authUserId, "code", "this very hard code quiz");
+        quizId = quizResult.quizId;
+    });
+
+    test('Valid user and valid quiz ID - should return quiz info', () => {
+        // Tests quiz info for a valid user and quiz ID
+        const result = adminQuizInfo(authUserId, quizId);
+        expect(result).toEqual({
+            quizId: quizId,
+            name: "code",
+            timeCreated: expect.any(Number),
+            timeLastEdited: expect.any(Number),
+            description: "this very hard code quiz",
+        });
+    });
+
+    test('User queries a quiz they do not own - should return specific error', () => {
+        // Tests error when a user tries to access a quiz they don't own
+        const newUser = adminAuthRegister("newuser@gmail.com", "password456", "New", "User");
+        const newUserId = newUser.authUserId;
+
+        const result = adminQuizInfo(newUserId, quizId);
+        expect(result).toEqual({ error: expect.any(String) });
+    });
+
+    test('Invalid User ID - should return specific error', () => {
+        // Tests error when querying an invalid user ID
+        const result = adminQuizInfo(authUserId + 1, quizId);
+        expect(result).toEqual({ error: expect.any(String) });
+    });
+
+    test('Invalid Quiz ID - should return specific error', () => {
+        // Tests error when querying an invalid quiz ID
+        const result = adminQuizInfo(authUserId, 999);
+        expect(result).toEqual({ error: expect.any(String) });
+    });
+});
+
+describe('clear function test', () => {
+    // This test verifies the functionality of the clear function.
+    test('should reset the state and return an empty object', () => {
+        const result = clear();
+        expect(result).toEqual({});
+    });
+});
