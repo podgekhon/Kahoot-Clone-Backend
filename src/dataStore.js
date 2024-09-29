@@ -1,8 +1,35 @@
 // YOU MAY MODIFY THIS OBJECT BELOW
 let data = {
-  users: [],  // This will store all registered users
-  quizzes: [], // This will store all quizzes
-};
+  users: [
+    {
+      UserId: null,
+      nameFirst: '',
+      nameLast: '',
+      email: '',
+      numSuccessfulLogins: null,
+      numFailedPasswordsSinceLastLogin: null,
+      oldPasswords: [],
+      currentPassword: '',
+    },
+  ],
+  quizzes: [
+    {
+      quizId: null,
+      ownerId: null,
+      name: '',
+      description: '',
+      quiz: {
+        question: '',
+        answers: [],
+      },
+      timeCreated: null,
+      timeLastEdited: null,
+    },
+  ],
+  
+  };
+  
+
 
 // YOU MAY MODIFY THIS OBJECT ABOVE
 
