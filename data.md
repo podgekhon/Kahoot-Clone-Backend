@@ -18,6 +18,7 @@ let data = {
   quizzes: [
     {
       quizId: 1,
+      ownerId: 2,
       name: "maths",
       description: "this very hard maths quiz",
       quiz: [
