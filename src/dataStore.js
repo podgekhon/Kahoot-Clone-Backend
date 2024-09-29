@@ -1,5 +1,8 @@
 // YOU MAY MODIFY THIS OBJECT BELOW
-let data = {};
+let data = {
+  users: [],  // This will store all registered users
+  quizzes: [], // This will store all quizzes
+};
 
 // YOU MAY MODIFY THIS OBJECT ABOVE
 

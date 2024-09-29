@@ -103,5 +103,3 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
 export const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
 }
-
-export {adminUserPasswordUpdate}
