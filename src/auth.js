@@ -85,7 +85,7 @@ export {adminAuthRegister}
   * @returns {integer} - UserId
 */
 const adminAuthLogin = (email, password) => {
-  const { users } = getData();
+  const { users } = data;
   const user = users.find(u => u.email === email);
   if (!user) {
       return { error: 'Email address does not exist.' };
