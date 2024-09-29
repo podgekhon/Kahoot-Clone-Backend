@@ -86,7 +86,7 @@ describe.only('adminAuthRegister', () => {
   });
 
   // Unusual But Valid Characters in Emails
-  test('valid email with + symbol', () => {
+  test.only('valid email with + symbol', () => {
     const authUserId = adminAuthRegister('eric+@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     expect(authUserId).toStrictEqual(expect.any(Number));
   });

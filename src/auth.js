@@ -64,7 +64,7 @@ const adminAuthRegister = (email, password, nameFirst, nameLast) => {
 
   // 7. Register the user and update the data
   const authUserId = data.users.length + 1;
-  data.usersrs.push({
+  data.users.push({
     authUserId: authUserId,
     email: email,
     password: password,
@@ -73,7 +73,7 @@ const adminAuthRegister = (email, password, nameFirst, nameLast) => {
     name: `${nameFirst} ${nameLast}`,
   });
 
-  return { authUserId: authUserId };
+  return authUserId ;
 }
 export {adminAuthRegister}
 
@@ -134,7 +134,7 @@ const adminUserDetails = ( authUserId ) => {
 const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
 
   // Check if authUserId is valid
-  const currentUser = data.usersrs.find(user => user.authUserId === authUserId);
+  const currentUser = data.users.find(user => user.authUserId === authUserId);
   if (!currentUser) {
       return { error: 'AuthUserId is not a valid user.' };
   }
@@ -145,7 +145,7 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   }
 
   // Check if email is already used by another user (excluding the current authorised user)
-  const emailInUse = data.usersrs.find(user => user.email === email && user.authUserId !== authUserId);
+  const emailInUse = data.users.find(user => user.email === email && user.authUserId !== authUserId);
   if (emailInUse) {
       return { error: 'Email is currently used by another user.' };
   }
