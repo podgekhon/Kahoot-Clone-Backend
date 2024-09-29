@@ -10,34 +10,10 @@ export const clear = () => {
   let data = getData();
   
   // Reset the users array
-  data.users = [
-    {
-      userId: null,
-      nameFirst: '',
-      nameLast: '',
-      email: '',
-      numSuccessfulLogins: null,
-      numFailedPasswordsSinceLastLogin: null,
-      oldPasswords: [],
-      currentPassword: '',
-    },
-  ];
+  data.users = [];
 
   // Reset the quizzes array
-  data.quizzes = [
-    {
-      quizId: null,
-      ownerId: null,
-      name: '',
-      description: '',
-      quiz: {
-        question: '',
-        answers: [],
-      },
-      timeCreated: null,
-      timeLastEdited: null,
-    },
-  ];
+  data.quizzes = [];
 
   return {};
 };
