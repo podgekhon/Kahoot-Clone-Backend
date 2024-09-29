@@ -12,7 +12,7 @@ export const clear = () => {
   // Reset the users array
   data.users = [
     {
-      UserId: null,
+      userId: null,
       nameFirst: '',
       nameLast: '',
       email: '',
