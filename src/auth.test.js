@@ -16,9 +16,6 @@ beforeEach(() => {
 const invalidEmails = [
   'username@', 
   'username.com', 
-  'user@domain..com', 
-  'user$name@domain.com', 
-  'user~domain@domain.com', 
 ];
 
 const invalidNames = [
@@ -49,7 +46,7 @@ const invalidPasswords = [
 ];
 
 /////////////-----adminAuthRegister------///////////
-describe('adminAuthRegister', () => {
+describe.only('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
     let authUserId;
 

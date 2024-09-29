@@ -9,7 +9,7 @@ import validator from 'validator';
 // assume white space is kept
 
 /////-----GLOBAL VARIABLES------/////
-const existingUsers = getData().users;
+const data = getData();
 
 
 /**
@@ -23,7 +23,7 @@ const existingUsers = getData().users;
 
 const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
   // 1. Email address is used by another user.
-  const isEmailUsed = existingUsers.some(user => user.email === email);
+  const isEmailUsed = data.users.some(user => user.email === email);
   if (isEmailUsed) {
     return { "error": "Email already used" };
   }
@@ -63,8 +63,8 @@ const adminAuthRegister = (email, password, nameFirst, nameLast) => {
   }
 
   // 7. Register the user and update the data
-  const authUserId = existingUsers.length + 1;
-  existingUsers.push({
+  const authUserId = data.users.length + 1;
+  data.usersrs.push({
     authUserId: authUserId,
     email: email,
     password: password,
@@ -73,7 +73,6 @@ const adminAuthRegister = (email, password, nameFirst, nameLast) => {
     name: `${nameFirst} ${nameLast}`,
   });
 
-  setData(data); 
   return { authUserId: authUserId };
 }
 export {adminAuthRegister}
@@ -135,7 +134,7 @@ const adminUserDetails = ( authUserId ) => {
 const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
 
   // Check if authUserId is valid
-  const currentUser = existingUsers.find(user => user.authUserId === authUserId);
+  const currentUser = data.usersrs.find(user => user.authUserId === authUserId);
   if (!currentUser) {
       return { error: 'AuthUserId is not a valid user.' };
   }
@@ -146,7 +145,7 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   }
 
   // Check if email is already used by another user (excluding the current authorised user)
-  const emailInUse = existingUsers.find(user => user.email === email && user.authUserId !== authUserId);
+  const emailInUse = data.usersrs.find(user => user.email === email && user.authUserId !== authUserId);
   if (emailInUse) {
       return { error: 'Email is currently used by another user.' };
   }
@@ -171,7 +170,6 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   currentUser.nameFirst = nameFirst;
   currentUser.nameLast = nameLast;
   
-  setData(data);
   return {};
 }
 
@@ -187,3 +185,5 @@ const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
 const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
 }
+
+export const dataStructure = () => data; 
