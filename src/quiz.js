@@ -50,23 +50,13 @@ export const adminQuizCreate = (authUserId, name, description) => {
 */
 export const adminQuizRemove = (authUserId, quizId) => {
   const data = getData();
-  
-  const validUserId = data.users.find(user => user.UserId === authUserId);
-  const validQuizId = data.quizzes.find(quiz => quiz.Id === quizId);
-  const validOwnerId = data.quizzes.find(quiz => quiz.ownerId === authUserId);
-  
-  // check invalid user id
-  if (!validUserId) {
-    return { error: 'AuthUserId is not valid.' };
-  } else if (!validQuizId) {
-    // invalid quiz id
-    return { error: 'QuizID does not refer to a valid quiz.' };
-  } else if (!validOwnerId) {
-    // quiz id does not refer to it's owner
-    return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
-  }
+  const error = isValidQuiz(authUserId, quizId, data);
+  if (error) {
+    return error;
+  }  
 
   // remove the correct quiz
+  const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
   data.quizzes.splice(validQuizId, 1);
 
   // update dataStore
@@ -113,10 +103,39 @@ export const adminQuizNameUpdate = (authUserId, quizId, name) => {
   * 
   * @param {integer} authUserId - id of authUser
   * @param {integer} quizId - id of quiz
-  * @param {string} name - quiz name
+  * @param {string} description - quiz name
   * 
   * @returns {} - empty object
 */
-export const adminQuizDescriptionUpdate = (authUserId, quizId, name) => {
+export const adminQuizDescriptionUpdate = (authUserId, quizId, description) => {
+  const data = getData();
+  const error = isValidQuiz(authUserId, quizId, data);
+  if (error) {
+    return error;
+  }
+  if(description.length > 100) {
+    return { error: 'Description too long! (has to be less then 100 characters)'};
+  }
+  const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
+  validQuizId.description = description;
   return { }
+}
+
+
+const isValidQuiz = (authUserId, quizId, data) => {
+  const validUserId = data.users.find(user => user.UserId === authUserId);
+  const validQuizId = data.quizzes.find(quiz => quiz.Id === quizId);
+  const validOwnerId = data.quizzes.find(quiz => quiz.ownerId === authUserId);
+  
+  // check invalid user id
+  if (!validUserId) {
+    return { error: 'AuthUserId is not valid.' };
+  } else if (!validQuizId) {
+    // invalid quiz id
+    return { error: 'QuizID does not refer to a valid quiz.' };
+  } else if (!validOwnerId) {
+    // quiz id does not refer to it's owner
+    return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
+  }
+  return null;
 }
