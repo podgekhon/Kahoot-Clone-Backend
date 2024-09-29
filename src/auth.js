@@ -1,4 +1,17 @@
+
+
+//////----EXTERNAL FILES-----/////
 import {getData, setData} from "./dataStore.js"
+import validator from 'validator';
+
+/////------ASSUMPTIONS----//////
+// assume functions are case sensitive
+// assume white space is kept
+
+/////-----GLOBAL VARIABLES------/////
+const data = getData();
+
+
 /**
  * Register a user with an email, password, and names, then returns their authUserId value.
  * 
@@ -7,29 +20,62 @@ import {getData, setData} from "./dataStore.js"
  * 
  * @returns {integer} authUserId
 */
-export const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
-  // let data = getData();
 
-  // for (const user of data.users) {
-  //   if (user.email === email) {
-  //     return {"error": "Email already used"};
-  //   }
-  // }
+const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
+  // 1. Email address is used by another user.
+  const isEmailUsed = data.users.some(user => user.email === email);
+  if (isEmailUsed) {
+    return { "error": "Email already used" };
+  }
 
-  // if (password.length < 8) {
-  //   return {"error": "Password is too short"};
-  // }
+  // 2. Validate password length
+  if (password.length < 8) {
+    return { "error": "Password is too short" };
+  }
 
-  // data.users.push({
-  //   email: email,
-  //   password: passwords,
-  //   name: `$(nameFirst) ${nameLast}`,
-  // });
-  
-  return {
-        authUserId: 1
-    };
+  // 3. Validate email format
+  if (!validator.isEmail(email)) {
+    return { "error": "Invalid email format" };
+  }
+
+  // 4. Validate first name (NameFirst)
+  const namePattern = /^[a-zA-Z'-\s]+$/;
+  if (!namePattern.test(nameFirst)) {
+    return { "error": "NameFirst contains invalid characters." };
+  }
+  if (nameFirst.length < 2 || nameFirst.length > 20) {
+    return { "error": "NameFirst must be between 2 and 20 characters." };
+  }
+
+  // 5. Validate last name (NameLast)
+  if (!namePattern.test(nameLast)) {
+    return { "error": "NameLast contains invalid characters." };
+  }
+  if (nameLast.length < 2 || nameLast.length > 20) {
+    return { "error": "NameLast must be between 2 and 20 characters." };
+  }
+
+  // 6. Check that password contains at least one number and one letter
+  const containsLetter = /[a-zA-Z]/.test(password);
+  const containsNumber = /\d/.test(password);
+  if (!containsLetter || !containsNumber) {
+    return { "error": "Password must contain at least one letter and one number." };
+  }
+
+  // 7. Register the user and update the data
+  const authUserId = data.users.length + 1;
+  data.users.push({
+    authUserId: authUserId,
+    email: email,
+    password: password,
+    nameFirst: nameFirst,
+    nameLast: nameLast,
+    name: `${nameFirst} ${nameLast}`,
+  });
+
+  return authUserId ;
 }
+export {adminAuthRegister}
 
 /**
   * Given a registered user's email and password returns their authUserId value.
@@ -40,7 +86,7 @@ export const adminAuthRegister = ( email, password, nameFirst, nameLast ) => {
   * 
   * @returns {integer} - UserId
 */
-export const adminAuthLogin = ( email, password ) => {
+const adminAuthLogin = ( email, password ) => {
   return {
     authUserId: 1
   }
@@ -62,7 +108,7 @@ export const adminAuthLogin = ( email, password ) => {
   *  }
   *}
 */
-export const adminUserDetails = ( authUserId ) => {
+const adminUserDetails = ( authUserId ) => {
   return { user:
     {
       userId: 1,
@@ -85,8 +131,46 @@ export const adminUserDetails = ( authUserId ) => {
  * ...
  * @return {} no return;
 */
-export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
-    return { }
+const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
+
+  // Check if authUserId is valid
+  const currentUser = data.users.find(user => user.authUserId === authUserId);
+  if (!currentUser) {
+      return { error: 'AuthUserId is not a valid user.' };
+  }
+
+  // Check if email is valid
+  if (!validator.isEmail(email)) {
+      return { error: 'Invalid email format.' };
+  }
+
+  // Check if email is already used by another user (excluding the current authorised user)
+  const emailInUse = data.users.find(user => user.email === email && user.authUserId !== authUserId);
+  if (emailInUse) {
+      return { error: 'Email is currently used by another user.' };
+  }
+
+  // Validate NameFirst (2-20 chars, and valid characters)
+  if (nameFirst.length < 2 || nameFirst.length > 20) {
+      return { error: 'NameFirst is less than 2 characters or more than 20 characters.' };
+  }
+  if (!/^[A-Za-z\s'-]+$/.test(nameFirst)) {
+      return { error: 'NameFirst contains invalid characters.' };
+  }
+
+  // Validate NameLast (2-20 chars, and valid characters)
+  if (nameLast.length < 2 || nameLast.length > 20) {
+      return { error: 'NameLast is less than 2 characters or more than 20 characters.' };
+  }
+  if (!/^[A-Za-z\s'-]+$/.test(nameLast)) {
+      return { error: 'NameLast contains invalid characters.' };
+  }
+
+  currentUser.email = email;
+  currentUser.nameFirst = nameFirst;
+  currentUser.nameLast = nameLast;
+  
+  return {};
 }
 
 /**
@@ -98,6 +182,8 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
   * ...
   * @return {} no return;
 */
-export const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
+const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
     return { }
 }
+
+export const dataStructure = () => data; 
