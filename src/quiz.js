@@ -58,9 +58,6 @@ export const adminQuizRemove = (authUserId, quizId) => {
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
   data.quizzes.splice(validQuizId, 1);
 
-  // update dataStore
-  setData(data);
-
   return {};
 }
 
