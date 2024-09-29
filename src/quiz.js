@@ -125,6 +125,19 @@ export const adminQuizNameUpdate = (authUserId, quizId, name) => {
   * @returns {} - empty object
 */
 export const adminQuizDescriptionUpdate = (authUserId, quizId, description) => {
+  const data = getData();
+  // error checkings for invalid userId, quizId
+  const error = isValidQuiz(authUserId, quizId, data);
+  if (error) {
+    return error;
+  }
+  // new description should be less then 100 characters
+  if(description.length > 100) {
+    return { error: 'Description too long! (has to be less then 100 characters)'};
+  }
+  // update description
+  const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
+  validQuizId.description = description;
   return { }
 }
 
