@@ -52,8 +52,8 @@ describe('adminQuizCreate', () => {
 
         test('duplicate quiz names owned by same user', () => {
             const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1Id, 'chemQuiz', 'science');
             const quiz2 = adminQuizCreate(user1Id, 'chemQuiz', 'science');
-            console.log(`quiz2 id: ${JSON.stringify(quiz2)}`);
             expect(quiz2).toStrictEqual({error: expect.any(String)});
         })
     })
