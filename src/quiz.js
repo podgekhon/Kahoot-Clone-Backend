@@ -1,3 +1,4 @@
+import {getData} from "./dataStore.js"
 /**
   * Provide a list of all quizzes that are owned by 
   * the currently logged in user.
@@ -60,13 +61,34 @@ export const adminQuizRemove = (authUserId, quizId) => {
   * @returns {object} - struct containing info for quiz 
 */
 export const adminQuizInfo = (authUserId, quizId) => {
-  return {
-      quizId: 1,
-      name: 'My Quiz',
-      timeCreated: 1683125870,
-      timeLastEdited: 1683125871,
-      description: 'This is my quiz',
+  const data = getData();
+
+  // Check if authUserId is valid
+  const user = data.users.find(user => user.authUserId === authUserId);
+  if (!user) {
+    return { error: 'authUserId is not a valid user.' };
   }
+
+  // Check if quizId refers to a valid quiz
+  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  if (!quiz) {
+    return { error: 'quizId does not refer to a valid quiz.' };
+  }
+
+  // Check if the quiz belongs to the given user
+  // Assuming each quiz has an ownerId field to track ownership
+  if (quiz.ownerId !== authUserId) {  
+    return { error: 'quizId does not refer to a quiz that this user owns.' };
+  }
+
+  // Return the quiz information
+  return {
+    quizId: quiz.quizId,
+    name: quiz.name,
+    timeCreated: quiz.timeCreated,
+    timeLastEdited: quiz.timeLastEdited,
+    description: quiz.description,
+  };
 }
 
 
