@@ -143,8 +143,8 @@ export const adminQuizDescriptionUpdate = (authUserId, quizId, description) => {
 
 
 const isValidQuiz = (authUserId, quizId, data) => {
-  const validUserId = data.users.find(user => user.UserId === authUserId);
-  const validQuizId = data.quizzes.find(quiz => quiz.Id === quizId);
+  const validUserId = data.users.find(user => user.userId === authUserId);
+  const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
   const validOwnerId = data.quizzes.find(quiz => quiz.ownerId === authUserId);
   
   // check invalid user id
