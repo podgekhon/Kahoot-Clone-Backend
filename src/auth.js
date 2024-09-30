@@ -86,11 +86,19 @@ export {adminAuthRegister}
   * 
   * @returns {integer} - UserId
 */
-const adminAuthLogin = ( email, password ) => {
-  return {
-    authUserId: 1
+const adminAuthLogin = (email, password) => {
+  const { users } = data;
+  const user = users.find(u => u.email === email);
+  if (!user) {
+      return { error: 'Email address does not exist.' };
   }
-}
+  if (user.password !== password) {
+      return { error: 'Password is not correct for the given email.' };
+  }
+  return { authUserId: user.authUserId };
+};
+
+export {adminAuthLogin}
 
 /**
   * Given an admin user's authUserId, return details about the user.
@@ -108,18 +116,23 @@ const adminAuthLogin = ( email, password ) => {
   *  }
   *}
 */
-const adminUserDetails = ( authUserId ) => {
-  return { user:
-    {
-      userId: 1,
-      name: 'Hayden Smith',
-      email: 'hayden.smith@unsw.edu.au',
-      numSuccessfulLogins: 3,
-      numFailedPasswordsSinceLastLogin: 1,
-    }
+const adminUserDetails = (authUserId) => {
+  const { users } = data;
+  const user = users.find(u => u.authUserId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user.' };
   }
-}
+  const userDetails = {
+    userId: user.authUserId,
+    name: `${user.nameFirst} ${user.nameLast}`,
+    email: user.email,
+    numSuccessfulLogins: user.numSuccessfulLogins,
+    numFailedPasswordsSinceLastLogin: user.numFailedPasswordsSinceLastLogin,
+  };
+  return { user: userDetails };
+};
 
+export {adminUserDetails}
 
 /**
  * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
@@ -192,8 +205,46 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
   * ...
   * @return {} no return;
 */
-const adminUserPasswordUpdate = ( authUserId, oldPassword, newPassword  ) => {
-    return { }
-}
+const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) => {
+  const { users } = data;
+  const user = users.find(u => u.authUserId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user.' };
+  }
+  if (user.currentPassword !== oldPassword) {
+    return { error: 'Old Password is not the correct old password' };
+  }
+  if (oldPassword === newPassword) {
+    return { error: 'Old Password and New Password match exactly' };
+  }
+  if (newPassword.length < 8) {
+    return { error: 'New Password is less than 8 characters' };
+  }
+  if (!isValidPassword(newPassword)) {
+    return { error: 'New Password does not contain at least one number and at least one letter' };
+  }
+  user.oldPasswords.push(user.currentPassword);
+  user.currentPassword = newPassword;
+  return {};
+};
+
+const isValidPassword = (password) => {
+  let Letter = false;
+  let Number = false;
+  for (let char of password) {
+    if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')) {
+      Letter = true;
+    }
+    if (char >= '0' && char <= '9') {
+      Number = true;
+    }
+    if (Letter && Number) {
+      return true;
+    }
+  }
+  return false;
+};
+
+export {adminUserPasswordUpdate}
 
 export const dataStructure = () => data; 

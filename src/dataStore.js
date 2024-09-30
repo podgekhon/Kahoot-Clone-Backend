@@ -1,8 +1,10 @@
 // YOU MAY MODIFY THIS OBJECT BELOW
 let data = {
-  users: [],  // This will store all registered users
-  quizzes: [], // This will store all quizzes
+  users: [],
+  quizzes: [],
 };
+  
+
 
 // YOU MAY MODIFY THIS OBJECT ABOVE
 

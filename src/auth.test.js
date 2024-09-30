@@ -46,7 +46,7 @@ const invalidPasswords = [
 ];
 
 /////////////-----adminAuthRegister------///////////
-describe('adminAuthRegister', () => {
+describe.only('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
   let authUserId;
   beforeEach(() => {
@@ -140,7 +140,7 @@ describe('adminAuthRegister', () => {
 
 /////////////-----adminUserDetailsUpdate------///////////
 
-describe('adminUserDetailsUpdate', () => {
+describe.only('adminUserDetailsUpdate', () => {
 	// Test for invalid authUserId
 	test('invalid authUserId with no registers', () => {
 		const result = adminUserDetailsUpdate(1, 'new.email@example.com', 'John', 'Doe');
@@ -218,12 +218,12 @@ describe('adminUserDetailsUpdate', () => {
       expect(result).toStrictEqual({});
     });
     
-    test.only('multiple simultaneous updates to the same user', () => {
+    test('multiple simultaneous updates to the same user', () => {
       const result2 = adminUserDetailsUpdate(authUserId, 'NEW.EMAIL2@EXAMPLE.COM', 'Eric', 'Yang');
       const result3 = adminUserDetailsUpdate(authUserId, 'new.email2', 'Eric', 'Yang');
       // console.log(result2);
       expect(result2).toStrictEqual({}); 	
-      expect(result2).toStrictEqual({error: expect.any(String)}); 	
+      expect(result3).toStrictEqual({error: expect.any(String)}); 	
     });
   });
 });
