@@ -114,17 +114,21 @@ export {adminAuthLogin}
   *  }
   *}
 */
-const adminUserDetails = ( authUserId ) => {
-  return { user:
-    {
-      userId: 1,
-      name: 'Hayden Smith',
-      email: 'hayden.smith@unsw.edu.au',
-      numSuccessfulLogins: 3,
-      numFailedPasswordsSinceLastLogin: 1,
-    }
+const adminUserDetails = (authUserId) => {
+  const { users } = data;
+  const user = users.find(u => u.authUserId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user.' };
   }
-}
+  const userDetails = {
+    userId: user.authUserId,
+    name: `${user.nameFirst} ${user.nameLast}`,
+    email: user.email,
+    numSuccessfulLogins: user.numSuccessfulLogins,
+    numFailedPasswordsSinceLastLogin: user.numFailedPasswordsSinceLastLogin,
+  };
+  return { user: userDetails };
+};
 
 
 /**
