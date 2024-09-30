@@ -20,11 +20,9 @@ const data = getData();
 */
 
 const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
-  console.log("email " + email + " " + "password " + password + " " + "nameFirst " + nameFirst + " " + "nameLast " + nameLast);
   // 1. Email address is used by another user.
   const isEmailUsed = data.users.find(user => user.email === email);
   if (isEmailUsed) {
-    console.log("wrong error Email already used");
     return { "error": "Email already used" };
   }
 
@@ -73,7 +71,7 @@ const adminAuthRegister = (email, password, nameFirst, nameLast) => {
     name: `${nameFirst} ${nameLast}`,
   });
 
-  return authUserId ;
+  return authUserId;
 }
 export {adminAuthRegister}
 
@@ -145,33 +143,25 @@ export {adminUserDetails}
  * @return {} no return;
 */
 export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
-  console.log("email " + email + " " + "authUserId " + authUserId + " " + "nameFirst " + nameFirst + " " + "nameLast " + nameLast);
-
   // Check if authUserId is valid
   const currentUser = data.users.find(user => user.authUserId === authUserId);
   if (!currentUser) {
-    console.log("AuthUserId is not a valid user.")
     return { error: 'AuthUserId is not a valid user.' };
   }
 
   // Check if email is valid
   if (!validator.isEmail(email)) {
-    console.log("error: 'Invalid email format.")
     return { error: 'Invalid email format.' };
-  } else {
-    console.log("Email is valid: ", email);
   }
 
   // Check if email is already used by another user (excluding the current authorised user)
   const emailInUse = data.users.find(user => user.email === email && user.authUserId !== authUserId);
   if (emailInUse) {
-    console.log("'Email is currently used by another user.'")
     return { error: 'Email is currently used by another user.' };
   }
 
   // Validate NameFirst (2-20 chars, and valid characters)
   if (nameFirst.length < 2 || nameFirst.length > 20) {
-    console.log("'NameFirst is less than 2 characters or more than 20 characters.'")
     return { error: 'NameFirst is less than 2 characters or more than 20 characters.' };
   }
   if (!/^[A-Za-z\s'-]+$/.test(nameFirst)) {
@@ -181,11 +171,9 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
 
   // Validate NameLast (2-20 chars, and valid characters)
   if (nameLast.length < 2 || nameLast.length > 20) {
-    console.log("'NameLast is less than 2 characters or more than 20 characters.'")
     return { error: 'NameLast is less than 2 characters or more than 20 characters.' };
   }
   if (!/^[A-Za-z\s'-]+$/.test(nameLast)) {
-    console.log("'NameLast contains invalid characters.'")
     return { error: 'NameLast contains invalid characters.' };
   }
 

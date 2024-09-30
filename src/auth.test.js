@@ -46,12 +46,12 @@ const invalidPasswords = [
 ];
 
 /////////////-----adminAuthRegister------///////////
-describe.only('adminAuthRegister', () => {
+describe('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
-  let authUserId;
-  beforeEach(() => {
-    authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
-  });
+    let authUserId;
+    beforeEach(() => {
+      authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
+    });
 
   // valid cases checking
   test('Check multiple invalid and valid registrations', () => {
@@ -91,7 +91,6 @@ describe.only('adminAuthRegister', () => {
 
   // nameFirst contains characters other than lowercase letters, uppercase letters, spaces, hyphens, or apostrophes.
   // nameFirst is less than 2 characters or more than 20 characters.
-
   describe('Checking for invalid nameFirst', () => {
     test.each(invalidNames)('Check invalid nameLast for $name', ({ name }) => {
       const authUserId = adminAuthRegister('eric@unsw.edu.au', '1234abcd', name, 'Yang');
@@ -123,10 +122,7 @@ describe.only('adminAuthRegister', () => {
     });
   });
 
-  
-
   // Password is less than 8 characters.
-
   describe('Checking for invalid Password', () => {
     test.each(invalidPasswords)('Check invalid Password for $password', ({ password }) => {
       const authUserId = adminAuthRegister('eric@unsw.edu.au', password, 'Eric', 'Yang');
@@ -140,7 +136,7 @@ describe.only('adminAuthRegister', () => {
 
 /////////////-----adminUserDetailsUpdate------///////////
 
-describe.only('adminUserDetailsUpdate', () => {
+describe('adminUserDetailsUpdate', () => {
 	// Test for invalid authUserId
 	test('invalid authUserId with no registers', () => {
 		const result = adminUserDetailsUpdate(1, 'new.email@example.com', 'John', 'Doe');
@@ -207,6 +203,7 @@ describe.only('adminUserDetailsUpdate', () => {
         expect(result).toStrictEqual({});
       });
     });
+
     // valid cases checking
     test('Check successful details update', () => {
       const result = adminUserDetailsUpdate(authUserId, 'hello@unsw.edu.au', 'Eric', 'Yang');
@@ -221,7 +218,6 @@ describe.only('adminUserDetailsUpdate', () => {
     test('multiple simultaneous updates to the same user', () => {
       const result2 = adminUserDetailsUpdate(authUserId, 'NEW.EMAIL2@EXAMPLE.COM', 'Eric', 'Yang');
       const result3 = adminUserDetailsUpdate(authUserId, 'new.email2', 'Eric', 'Yang');
-      // console.log(result2);
       expect(result2).toStrictEqual({}); 	
       expect(result3).toStrictEqual({error: expect.any(String)}); 	
     });
