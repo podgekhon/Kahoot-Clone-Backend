@@ -12,15 +12,21 @@ import {getData} from "./dataStore.js"
   *     }
   * ]}
 */
-export const adminQuizList = ( authUserId  ) => {
-  return { quizzes: [
-      {
-        quizId: 1,
-        name: 'My Quiz',
-      }
-    ]
+const adminQuizList = (authUserId) => {
+  const { users, quizzes } = getData();
+  const user = users.find(u => u.authUserId === authUserId);
+  if (!user) {
+    return { error: 'AuthUserId is not a valid user.' };
   }
-}
+  const user_quizzes = quizzes.filter(quiz => quiz.ownerId === authUserId);
+  const user_user_quizzes_details = user_quizzes.map(quiz => ({
+    quizId: quiz.quizId,
+    name: quiz.name
+  }));
+  return { quizzes: user_user_quizzes_details };
+};
+ 
+export {adminQuizList}
 
 //helper function: checks if user is valid
 //function will return true if auth is a valid user
