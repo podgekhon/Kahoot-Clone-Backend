@@ -84,11 +84,17 @@ export {adminAuthRegister}
   * 
   * @returns {integer} - UserId
 */
-const adminAuthLogin = ( email, password ) => {
-  return {
-    authUserId: 1
+const adminAuthLogin = (email, password) => {
+  const { users } = data;
+  const user = users.find(u => u.email === email);
+  if (!user) {
+      return { error: 'Email address does not exist.' };
   }
-}
+  if (user.password !== password) {
+      return { error: 'Password is not correct for the given email.' };
+  }
+  return { authUserId: user.authUserId };
+};
 
 export {adminAuthLogin}
 
