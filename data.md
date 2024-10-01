@@ -5,7 +5,7 @@ let data = {
   //educated guesses for variables
   users: [
     {
-      authUserId: 2,
+      userId: 2,
       nameFirst: "Patrick",
       nameLast: "Truong",
       email: "pat@gmail.com",
