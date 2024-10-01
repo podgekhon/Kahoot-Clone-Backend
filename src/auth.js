@@ -23,41 +23,41 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
   // 1. Email address is used by another user.
   const isEmailUsed = data.users.find(user => user.email === email);
   if (isEmailUsed) {
-    return { "error": "Email already used" };
+    return { error: "Email already used" };
   }
 
   // 2. Validate password length
   if (password.length < 8) {
-    return { "error": "Password is too short" };
+    return { error: "Password is too short" };
   }
 
   // 3. Validate email format
   if (!validator.isEmail(email)) {
-    return { "error": "Invalid email format" };
+    return { error: "Invalid email format" };
   }
 
   // 4. Validate first name (NameFirst)
   const namePattern = /^[a-zA-Z'-\s]+$/;
   if (!namePattern.test(nameFirst)) {
-    return { "error": "NameFirst contains invalid characters." };
+    return { error: "NameFirst contains invalid characters." };
   }
   if (nameFirst.length < 2 || nameFirst.length > 20) {
-    return { "error": "NameFirst must be between 2 and 20 characters." };
+    return { error: "NameFirst must be between 2 and 20 characters." };
   }
 
   // 5. Validate last name (NameLast)
   if (!namePattern.test(nameLast)) {
-    return { "error": "NameLast contains invalid characters." };
+    return { error: "NameLast contains invalid characters." };
   }
   if (nameLast.length < 2 || nameLast.length > 20) {
-    return { "error": "NameLast must be between 2 and 20 characters." };
+    return { error: "NameLast must be between 2 and 20 characters." };
   }
 
   // 6. Check that password contains at least one number and one letter
   const containsLetter = /[a-zA-Z]/.test(password);
   const containsNumber = /\d/.test(password);
   if (!containsLetter || !containsNumber) {
-    return { "error": "Password must contain at least one letter and one number." };
+    return { error: "Password must contain at least one letter and one number." };
   }
 
   // 7. Register the user and update the data
