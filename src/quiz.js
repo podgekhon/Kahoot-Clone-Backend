@@ -12,21 +12,27 @@ import {getData} from "./dataStore.js"
   *     }
   * ]}
 */
-const adminQuizList = (authUserId) => {
-  const { users, quizzes } = getData();
-  const user = users.find(u => u.authUserId === authUserId);
+export const adminQuizList = (authUserId) => {
+  const data = getData();
+  // Find the user based on authUserId
+  const user = data.users.find(user => user.userId === authUserId);
+  
+  // Check if the user exists
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
   }
-  const user_quizzes = quizzes.filter(quiz => quiz.ownerId === authUserId);
-  const user_user_quizzes_details = user_quizzes.map(quiz => ({
-    quizId: quiz.quizId,
-    name: quiz.name
-  }));
-  return { quizzes: user_user_quizzes_details };
+
+  // Find all quizzes owned by the user
+  const userQuizzes = data.quizzes
+    .filter(quiz => quiz.ownerId === authUserId)
+    .map(quiz => ({
+      quizId: quiz.quizId,
+      name: quiz.name
+    }));
+
+  // Return the list of quizzes (empty array if no quizzes found)
+  return { quizzes: userQuizzes };
 };
- 
-export {adminQuizList}
 
 //helper function: checks if user is valid
 //function will return true if auth is a valid user
@@ -36,7 +42,7 @@ export const isUserValid = (authUserId) => {
   const data = getData();
 
   for (let i = 0; i < data.users.length; i++) {
-    if (authUserId === data.users[i].authUserId) {
+    if (authUserId === data.users[i].userId) {
       return true;
     }
   }
@@ -111,7 +117,6 @@ export const adminQuizCreate = (authUserId, name, description) => {
     timeCreated: Date.now(),
     timeLastEdited: Date.now(),
   };
-
 
 
   data.quizzes.push(newQuiz);

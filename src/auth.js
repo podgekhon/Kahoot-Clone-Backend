@@ -70,6 +70,7 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
     nameLast: nameLast,
     name: `${nameFirst} ${nameLast}`,
     numSuccessfulLogins: 1,
+    numFailedPasswordsSinceLastLogin: 0,
   });
 
   return { authUserId };

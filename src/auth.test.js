@@ -73,7 +73,7 @@ describe('adminAuthRegister', () => {
   test('Registering two people with the same name and passwords', () => {
     const user2 = adminAuthRegister('pat@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     expect(authUserId.authUserId).toStrictEqual(expect.any(Number));
-    expect(user2).toStrictEqual(expect.any(Number));
+    expect(user2.authUserId).toStrictEqual(expect.any(Number));
   });
   })
 
