@@ -147,8 +147,10 @@ export const adminQuizCreate = (authUserId, name, description) => {
     timeLastEdited: Date.now(),
   };
 
+
+
   data.quizzes.push(newQuiz);
-  return newQuiz.quizId;
+  return { quizId: newQuiz.quizId };
 }
 
 

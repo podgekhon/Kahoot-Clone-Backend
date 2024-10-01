@@ -19,7 +19,7 @@ const data = getData();
  * @returns {integer} authUserId
 */
 
-const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
+export const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
   // 1. Email address is used by another user.
   const isEmailUsed = data.users.find(user => user.email === email);
   if (isEmailUsed) {
@@ -63,17 +63,17 @@ const adminAuthRegister = (email, password, nameFirst, nameLast) => {
   // 7. Register the user and update the data
   const authUserId = data.users.length + 1;
   data.users.push({
-    authUserId: authUserId,
+    userId: authUserId,
     email: email,
     password: password,
     nameFirst: nameFirst,
     nameLast: nameLast,
     name: `${nameFirst} ${nameLast}`,
+    numSuccessfulLogins: 1,
   });
 
-  return authUserId;
+  return { authUserId };
 }
-export {adminAuthRegister}
 
 /**
   * Given a registered user's email and password returns their authUserId value.
@@ -84,19 +84,28 @@ export {adminAuthRegister}
   * 
   * @returns {integer} - UserId
 */
-const adminAuthLogin = (email, password) => {
-  const { users } = data;
-  const user = users.find(u => u.email === email);
-  if (!user) {
-      return { error: 'Email address does not exist.' };
-  }
-  if (user.password !== password) {
-      return { error: 'Password is not correct for the given email.' };
-  }
-  return { authUserId: user.authUserId };
-};
+export const adminAuthLogin = (email, password) => {
+  const data = getData();
 
-export {adminAuthLogin}
+  // Find the user by email
+  const user = data.users.find((user) => user.email === email);
+  if (!user) {
+    return { error: 'Email address does not exist.' };
+  }
+
+  // Check if the password is correct
+  if (user.currentPassword !== password) {
+    // Increment numFailedPasswordsSinceLastLogin
+    user.numFailedPasswordsSinceLastLogin += 1;
+    return { error: 'Password is not correct for the given email.' };
+  }
+
+  // Reset numFailedPasswordsSinceLastLogin and increment numSuccessfulLogins
+  user.numFailedPasswordsSinceLastLogin = 0;
+  user.numSuccessfulLogins += 1;
+
+  return { authUserId: user.userId };
+};
 
 /**
   * Given an admin user's authUserId, return details about the user.
@@ -114,14 +123,17 @@ export {adminAuthLogin}
   *  }
   *}
 */
-const adminUserDetails = (authUserId) => {
-  const { users } = data;
-  const user = users.find(u => u.authUserId === authUserId);
+export const adminUserDetails = (authUserId) => {
+  const data = getData();
+
+  // Find the user by authUserId
+  const user = data.users.find((user) => user.userId === authUserId);
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
   }
+
   const userDetails = {
-    userId: user.authUserId,
+    userId: user.userId,
     name: `${user.nameFirst} ${user.nameLast}`,
     email: user.email,
     numSuccessfulLogins: user.numSuccessfulLogins,
@@ -129,8 +141,6 @@ const adminUserDetails = (authUserId) => {
   };
   return { user: userDetails };
 };
-
-export {adminUserDetails}
 
 /**
  * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
@@ -144,7 +154,7 @@ export {adminUserDetails}
 */
 export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
   // Check if authUserId is valid
-  const currentUser = data.users.find(user => user.authUserId === authUserId);
+  const currentUser = data.users.find(user => user.userId === authUserId);
   if (!currentUser) {
     return { error: 'AuthUserId is not a valid user.' };
   }
@@ -155,7 +165,7 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
   }
 
   // Check if email is already used by another user (excluding the current authorised user)
-  const emailInUse = data.users.find(user => user.email === email && user.authUserId !== authUserId);
+  const emailInUse = data.users.find(user => user.email === email && user.userId !== authUserId);
   if (emailInUse) {
     return { error: 'Email is currently used by another user.' };
   }
@@ -165,7 +175,6 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
     return { error: 'NameFirst is less than 2 characters or more than 20 characters.' };
   }
   if (!/^[A-Za-z\s'-]+$/.test(nameFirst)) {
-    console.log("'NameFirst contains invalid characters.'")
     return { error: 'NameFirst contains invalid characters.' };
   }
 
@@ -193,9 +202,9 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
   * ...
   * @return {} no return;
 */
-const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) => {
+export const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) => {
   const { users } = data;
-  const user = users.find(u => u.authUserId === authUserId);
+  const user = users.find(u => u.userId === authUserId);
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
   }
@@ -217,22 +226,20 @@ const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) => {
 };
 
 const isValidPassword = (password) => {
-  let Letter = false;
-  let Number = false;
+  let letter = false;
+  let number = false;
   for (let char of password) {
     if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')) {
-      Letter = true;
+      letter = true;
     }
     if (char >= '0' && char <= '9') {
-      Number = true;
+      number = true;
     }
-    if (Letter && Number) {
+    if (letter && number) {
       return true;
     }
   }
   return false;
 };
-
-export {adminUserPasswordUpdate}
 
 export const dataStructure = () => data; 
