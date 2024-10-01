@@ -84,19 +84,28 @@ export {adminAuthRegister}
   * 
   * @returns {integer} - UserId
 */
-const adminAuthLogin = (email, password) => {
-  const { users } = data;
-  const user = users.find(u => u.email === email);
-  if (!user) {
-      return { error: 'Email address does not exist.' };
-  }
-  if (user.password !== password) {
-      return { error: 'Password is not correct for the given email.' };
-  }
-  return { authUserId: user.authUserId };
-};
+export const adminAuthLogin = (email, password) => {
+  const data = getData();
 
-export {adminAuthLogin}
+  // Find the user by email
+  const user = data.users.find((user) => user.email === email);
+  if (!user) {
+    return { error: 'Email address does not exist.' };
+  }
+
+  // Check if the password is correct
+  if (user.currentPassword !== password) {
+    // Increment numFailedPasswordsSinceLastLogin
+    user.numFailedPasswordsSinceLastLogin += 1;
+    return { error: 'Password is not correct for the given email.' };
+  }
+
+  // Reset numFailedPasswordsSinceLastLogin and increment numSuccessfulLogins
+  user.numFailedPasswordsSinceLastLogin = 0;
+  user.numSuccessfulLogins += 1;
+
+  return { authUserId: user.UserId };
+};
 
 /**
   * Given an admin user's authUserId, return details about the user.
@@ -114,12 +123,15 @@ export {adminAuthLogin}
   *  }
   *}
 */
-const adminUserDetails = (authUserId) => {
-  const { users } = data;
-  const user = users.find(u => u.authUserId === authUserId);
+export const adminUserDetails = (authUserId) => {
+  const data = getData();
+
+  // Find the user by authUserId
+  const user = data.users.find((user) => user.UserId === authUserId);
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
   }
+  
   const userDetails = {
     userId: user.authUserId,
     name: `${user.nameFirst} ${user.nameLast}`,
@@ -129,8 +141,6 @@ const adminUserDetails = (authUserId) => {
   };
   return { user: userDetails };
 };
-
-export {adminUserDetails}
 
 /**
  * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
