@@ -65,11 +65,13 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
   data.users.push({
     userId: authUserId,
     email: email,
-    password: password,
+    currentPassword: password,
+    oldPasswords: [],
     nameFirst: nameFirst,
     nameLast: nameLast,
     name: `${nameFirst} ${nameLast}`,
     numSuccessfulLogins: 1,
+    numFailedPasswordsSinceLastLogin: 0,
   });
 
   return { authUserId };
@@ -203,43 +205,55 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
   * @return {} no return;
 */
 export const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) => {
-  const { users } = data;
-  const user = users.find(u => u.userId === authUserId);
+  const data = getData();
+  const user = data.users.find(user => user.userId === authUserId);
+
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
   }
+
   if (user.currentPassword !== oldPassword) {
     return { error: 'Old Password is not the correct old password' };
   }
+
   if (oldPassword === newPassword) {
     return { error: 'Old Password and New Password match exactly' };
   }
-  if (newPassword.length < 8) {
-    return { error: 'New Password is less than 8 characters' };
+
+  // Check if the newPassword has been used before
+  if (user.oldPasswords.includes(newPassword)) {
+    return { error: 'New Password has already been used before by this user.' };
   }
-  if (!isValidPassword(newPassword)) {
-    return { error: 'New Password does not contain at least one number and at least one letter' };
+
+  const passwordValidation = isValidPassword(newPassword);
+  // Check if the returned object from isValidPassword helper function has an
+  // error field
+  if (passwordValidation.error) {
+    // Return the error if validation fails
+    return passwordValidation;  
   }
+  
+  // Add the current password to oldPasswords array
   user.oldPasswords.push(user.currentPassword);
   user.currentPassword = newPassword;
   return {};
 };
 
 const isValidPassword = (password) => {
-  let letter = false;
-  let number = false;
-  for (let char of password) {
-    if ((char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z')) {
-      letter = true;
-    }
-    if (char >= '0' && char <= '9') {
-      number = true;
-    }
-    if (letter && number) {
-      return true;
-    }
+  // Check if password length is at least 8 characters
+  if (password.length < 8) {
+    return { error: 'Password is less than 8 characters.' };
   }
-  return false;
+
+  // Check if password contains at least one letter
+  const containsLetter = /[a-zA-Z]/.test(password);
+  // Check if password contains at least one number
+  const containsNumber = /\d/.test(password);
+  if (!containsLetter || !containsNumber) {
+    return { error: 'Password must contain at least one letter and one number.' };
+  }
+
+  return { valid: true };
 };
 
 export const dataStructure = () => data; 
