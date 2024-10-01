@@ -26,8 +26,8 @@ describe('adminQuizCreate', () => {
         })
 
         test('name less than 3 characters', () => {
-            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1 = adminQuizCreate(user1.authUserId, 'cq', 'science');
+            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1Id.authUserId, 'cq', 'science');
             expect(quiz1).toStrictEqual({error: expect.any(String)});
         })
 
@@ -62,12 +62,8 @@ describe('adminQuizCreate', () => {
     describe('valid inputs', () => {
         test('returns quizId', () => {
             const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            console.log(`this is the user1 obj: ${JSON.stringify(user1)}`);
-
-            const newQuiz = adminQuizCreate(user1.userId, 'mathsQuiz', 'maths');
-            console.log(`this is the newQuiz obj: ${JSON.stringify(newQuiz)}`);
-
-            expect(newQuiz.quizId).toStrictEqual({quizId: expect.any(String)});
+            const newQuiz = adminQuizCreate(user1.authUserId, 'mathsQuiz', 'maths');
+            expect(newQuiz.quizId).toStrictEqual(expect.any(Number));
         })
     })
     

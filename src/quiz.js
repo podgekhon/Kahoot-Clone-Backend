@@ -12,21 +12,27 @@ import {getData} from "./dataStore.js"
   *     }
   * ]}
 */
-const adminQuizList = (authUserId) => {
-  const { users, quizzes } = getData();
-  const user = users.find(u => u.authUserId === authUserId);
+export const adminQuizList = (authUserId) => {
+  const data = getData();
+  // Find the user based on authUserId
+  const user = data.users.find(user => user.userId === authUserId);
+  
+  // Check if the user exists
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
   }
-  const user_quizzes = quizzes.filter(quiz => quiz.ownerId === authUserId);
-  const user_user_quizzes_details = user_quizzes.map(quiz => ({
-    quizId: quiz.quizId,
-    name: quiz.name
-  }));
-  return { quizzes: user_user_quizzes_details };
+
+  // Find all quizzes owned by the user
+  const userQuizzes = data.quizzes
+    .filter(quiz => quiz.ownerId === authUserId)
+    .map(quiz => ({
+      quizId: quiz.quizId,
+      name: quiz.name
+    }));
+
+  // Return the list of quizzes (empty array if no quizzes found)
+  return { quizzes: userQuizzes };
 };
- 
-export {adminQuizList}
 
 //helper function: checks if user is valid
 //function will return true if auth is a valid user
@@ -36,59 +42,7 @@ export const isUserValid = (authUserId) => {
   const data = getData();
 
   for (let i = 0; i < data.users.length; i++) {
-    if (authUserId === data.users[i].authUserId) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-//helper function: checks if string contains invalid characters
-//function will return false if string contains invalid char
-//return true if otherwise
-const isStringValid = (string) => {
-  for (let i = 0; i < string.length; i++) {
-    let char = string[i];
-
-    //loops through string
-    if (!(char >= 'a' && char <= 'z') && 
-        !(char >= 'A' && char <= 'Z') && 
-        !(char >= '0' && char <= '9') && 
-        char !== ' ') {
-          //if invalid:
-          return false;
-    }
-  }
-
-  //if valid
-  return true;
-}
-
-//helper function: checks for valid name length
-//function will return false if name length is < 3 or > 30
-//return true if otherwise
-const isNameLengthValid = (name) => {
-    if (name.length < 3) {
-      //if length is less than 3 char
-      return { error: "Name is less than 3 characters." };
-    } else if (name.length > 30) {
-        //if length is more than 30 char
-      return { error: "Name is more than 30 characters." };
-    }
-
-  return undefined;
-}
-
-//helper function: checks if the user has quizzes with same name
-//function willl return true if they do
-//return false if otherwise
-const isNameTaken = (authUserId, name) => {
-  const data = getData();
-  for (let i = 0; i < data.quizzes.length; i++) {
-    if (data.quizzes[i].ownerId === authUserId &&
-        name === data.quizzes[i].name
-    ) {
+    if (authUserId === data.users[i].userId) {
       return true;
     }
   }
@@ -143,10 +97,9 @@ export const adminQuizCreate = (authUserId, name, description) => {
     name: name,
     description: description,
     quiz: [],
-    timeCreated: Date.now(),
-    timeLastEdited: Date.now(),
+    timeCreated: Math.floor(Date.now()),
+    timeLastEdited: Math.floor(Date.now()),
   };
-
 
 
   data.quizzes.push(newQuiz);
@@ -188,7 +141,7 @@ export const adminQuizInfo = (authUserId, quizId) => {
   const data = getData();
 
   // Check if authUserId is valid
-  const user = data.users.find(user => user.authUserId === authUserId);
+  const user = data.users.find(user => user.userId === authUserId);
   if (!user) {
     return { error: 'authUserId is not a valid user.' };
   }
@@ -215,6 +168,58 @@ export const adminQuizInfo = (authUserId, quizId) => {
   };
 }
 
+//helper function: checks if string contains invalid characters
+//function will return false if string contains invalid char
+//return true if otherwise
+const isStringValid = (string) => {
+  for (let i = 0; i < string.length; i++) {
+    let char = string[i];
+
+    //loops through string
+    if (!(char >= 'a' && char <= 'z') && 
+        !(char >= 'A' && char <= 'Z') && 
+        !(char >= '0' && char <= '9') && 
+        char !== ' ') {
+          //if invalid:
+          return false;
+    }
+  }
+
+  //if valid
+  return true;
+}
+
+//helper function: checks for valid name length
+//function will return false if name length is < 3 or > 30
+//return true if otherwise
+const isNameLengthValid = (name) => {
+    if (name.length < 3) {
+      //if length is less than 3 char
+      return { error: "Name is less than 3 characters." };
+    } else if (name.length > 30) {
+        //if length is more than 30 char
+      return { error: "Name is more than 30 characters." };
+    }
+
+  return undefined;
+}
+
+//helper function: checks if the user has quizzes with same name
+//function willl return true if they do
+//return false if otherwise
+const isNameTaken = (authUserId, name) => {
+  const data = getData();
+  for (let i = 0; i < data.quizzes.length; i++) {
+    if (data.quizzes[i].ownerId === authUserId &&
+        name === data.quizzes[i].name
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 
 /**
   * Update the name of the relevant quiz
@@ -226,13 +231,7 @@ export const adminQuizInfo = (authUserId, quizId) => {
   * @returns {} - empty object
 */
 export const adminQuizNameUpdate = (authUserId, quizId, name) => {
-  const data = getData();
-
-  //2. if quizId not valid
-  //3. if user does not own quiz
-  //4. name contains invalid char
-  //5. name length < 3 or > 30
-  //6. name alr used.
+  const data = getData(); 
 
   //check if userId is valid
   if (!isUserValid(authUserId)) {
@@ -240,39 +239,37 @@ export const adminQuizNameUpdate = (authUserId, quizId, name) => {
     return { error: "AuthUserId is not a valid user."};
 
     //userId valid
-  } else { 
+  } 
 
-    //check if quizId is valid
-    const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+  const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
 
-    if (!quiz) {
-          return { error: 'Quiz ID does not refer to a valid quiz.'};
-    }
-
-    //check if quizId belongs to user
-    if (quiz.ownerId !== authUserId) {
-      console.log(`quiz does not belong`);
-      return { error: "Quiz ID does not refer to a quiz that this user owns."};
-    }
-
-    //check if name contains invalid characters
-    if (!isStringValid(name)) {
-      return { error: "Name contains invalid characters. Valid characters are alphanumeric and spaces."};
-    }
-
-    //checks for name length
-    if (isNameLengthValid(name) !== undefined) {
-      return isNameLengthValid(name);
-    }
-
-    //check if user has duplicate quiz names 
-    if (isNameTaken(authUserId, name)) {
-      return { error: "Name is already used by the current logged in user for another quiz."};
-    }
+  if (!quiz) {
+    return { error: "Quiz ID does not refer to a valid quiz." };
   }
 
-  //if inputs are valid
-  data.quizzes[quizId].name = name;
+  if (quiz.ownerId !== authUserId) {
+    return { error: "Quiz ID does not refer to a quiz that this user owns." };
+  }
+
+  //check if name contains invalid characters
+  if (!isStringValid(name)) {
+    return { error: "Name contains invalid characters. Valid characters are alphanumeric and spaces."};
+  }
+
+  //checks for name length
+  if (isNameLengthValid(name) !== undefined) {
+    return isNameLengthValid(name);
+  }
+
+  //check if user has duplicate quiz names 
+  if (isNameTaken(authUserId, name)) {
+    return { error: "Name is already used by the current logged in user for another quiz."};
+  }
+
+  // If inputs are valid
+  quiz.name = name;
+  // Update timeLastEdited
+  quiz.timeLastEdited = Math.floor(Date.now());
   return { };
 }
 
