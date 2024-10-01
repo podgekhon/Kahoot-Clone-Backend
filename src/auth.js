@@ -65,7 +65,8 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
   data.users.push({
     userId: authUserId,
     email: email,
-    password: password,
+    currentPassword: password,
+    oldPasswords: [],
     nameFirst: nameFirst,
     nameLast: nameLast,
     name: `${nameFirst} ${nameLast}`,
