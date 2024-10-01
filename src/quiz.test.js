@@ -26,34 +26,34 @@ describe('adminQuizCreate', () => {
         })
 
         test('name less than 3 characters', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1 = adminQuizCreate(user1Id, 'cq', 'science');
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'cq', 'science');
             expect(quiz1).toStrictEqual({error: expect.any(String)});
         })
 
         test('name more than 30 characters', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1 = adminQuizCreate(user1Id, 'Lorem ipsum dolor sit amet, con', 'science');
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'Lorem ipsum dolor sit amet, con', 'science');
             expect(quiz1).toStrictEqual({error: expect.any(String)});
         })
 
         test('name contains invalid characters', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1 = adminQuizCreate(user1Id, 'chemQuiz_!@#', 'science');
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz_!@#', 'science');
             expect(quiz1).toStrictEqual({error: expect.any(String)});
         })
 
         test('description is more than 100 characters', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1 = adminQuizCreate(user1Id, 'chemQuiz', 'Lorem ipsum dolor sit amet,' + 
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'Lorem ipsum dolor sit amet,' + 
                 'consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean mass');
             expect(quiz1).toStrictEqual({error: expect.any(String)});
         })
 
         test('duplicate quiz names owned by same user', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1 = adminQuizCreate(user1Id, 'chemQuiz', 'science');
-            const quiz2 = adminQuizCreate(user1Id, 'chemQuiz', 'science');
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'science');
+            const quiz2 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'science');
             expect(quiz2).toStrictEqual({error: expect.any(String)});
         })
     })
@@ -61,9 +61,13 @@ describe('adminQuizCreate', () => {
     //valid input tests
     describe('valid inputs', () => {
         test('returns quizId', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const newQuiz = adminQuizCreate(user1Id, 'mathsQuiz', 'maths');
-            expect(newQuiz).toStrictEqual(expect.any(Number));
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            console.log(`this is the user1 obj: ${JSON.stringify(user1)}`);
+
+            const newQuiz = adminQuizCreate(user1.userId, 'mathsQuiz', 'maths');
+            console.log(`this is the newQuiz obj: ${JSON.stringify(newQuiz)}`);
+
+            expect(newQuiz.quizId).toStrictEqual({quizId: expect.any(String)});
         })
     })
     
@@ -74,57 +78,57 @@ describe('adminQuizNameUpdate', () => {
     describe('invalid inputs', () => {
 
         test('invalid authUserId', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1Id = adminQuizCreate(user1Id, 'chemQuiz', 'science');
-            expect(adminQuizNameUpdate(3, quiz1Id, 'maths')).toStrictEqual({error: expect.any(String)});
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'science');
+            expect(adminQuizNameUpdate(3, quiz1.quizId, 'maths')).toStrictEqual({error: expect.any(String)});
         })
 
         test('invalid quizId', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quizId1 = adminQuizCreate(user1Id, 'chemQuiz', 'science');
-            expect(adminQuizNameUpdate(user1Id, 2, 'maths')).toStrictEqual({error: expect.any(String)});
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'science'); //idk if i need this
+            expect(adminQuizNameUpdate(user1.authUserId, 2, 'maths')).toStrictEqual({error: expect.any(String)});
         })
 
         test('user does not own quizId', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const user2Id = adminAuthRegister('andy123@gmail.com', 'wordpass123', 'andy', 'smart');
-            const quiz1Id = adminQuizCreate(user2Id, 'chemQuiz', 'science');
-            expect(adminQuizNameUpdate(user1Id, quiz1Id, 'maths')).toStrictEqual({error: expect.any(String)});
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const user2 = adminAuthRegister('andy123@gmail.com', 'wordpass123', 'andy', 'smart');
+            const quiz1 = adminQuizCreate(user2.authUserId, 'chemQuiz', 'science');
+            expect(adminQuizNameUpdate(user1.authUserId, quiz1.quizId, 'maths')).toStrictEqual({error: expect.any(String)});
         })
 
         test('name contains invalid characters', () => {
             const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1Id = adminQuizCreate(user1Id, 'chemQuiz', 'science');
-            expect(adminQuizNameUpdate(user1Id, quiz1Id, 'maths_!@#$')).toStrictEqual({error: expect.any(String)});
+            const quiz1Id = adminQuizCreate(user1Id.authUserId, 'chemQuiz', 'science');
+            expect(adminQuizNameUpdate(user1Id.authUserId, quiz1Id, 'maths_!@#$')).toStrictEqual({error: expect.any(String)});
         })
 
         test('name less than 3 characters', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1Id = adminQuizCreate(user1Id, 'chemQuiz', 'science');
-            expect(adminQuizNameUpdate(user1Id, quiz1Id, 'cq')).toStrictEqual({error: expect.any(String)});
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'science');
+            expect(adminQuizNameUpdate(user1.authUserId, quiz1.quizId, 'cq')).toStrictEqual({error: expect.any(String)});
         })
 
         test('name more than 30 characters', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1Id = adminQuizCreate(user1Id, 'chemQuiz', 'science');
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'science');
             const newName = 'Lorem ipsum dolor sit amet, con';
-            expect(adminQuizNameUpdate(user1Id, quiz1Id, newName)).toStrictEqual({error: expect.any(String)});
+            expect(adminQuizNameUpdate(user1.authUserId, quiz1.quizId, newName)).toStrictEqual({error: expect.any(String)});
         })
 
         test('duplicate quiz names owned by same user', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1Id = adminQuizCreate(user1Id, 'chemQuiz', 'science');
-            const quiz2Id = adminQuizCreate(user1Id, 'mathQuiz', 'science');
-            expect(adminQuizNameUpdate(user1Id, quiz2Id, 'chemQuiz')).toStrictEqual({error: expect.any(String)});
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'science');
+            const quiz2 = adminQuizCreate(user1.authUserId, 'mathQuiz', 'science');
+            expect(adminQuizNameUpdate(user1.authUserId, quiz2.quizId, 'chemQuiz')).toStrictEqual({error: expect.any(String)});
         })
     })
     
     //valid input test
     describe('valid inputs', () => {
         test('returns empty object', () => {
-            const user1Id = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
-            const quiz1Id = adminQuizCreate(user1Id, 'chemQuiz', 'science');
-            expect(adminQuizNameUpdate(user1Id, quiz1Id, 'mathsQuiz')).toStrictEqual({ });
+            const user1 = adminAuthRegister('john123@gmail.com', 'wordpass123', 'john', 'smith');
+            const quiz1 = adminQuizCreate(user1.authUserId, 'chemQuiz', 'science');
+            expect(adminQuizNameUpdate(user1.authUserId, quiz1.quizId, 'mathsQuiz')).toStrictEqual({ });
         })
     })
 })

@@ -243,13 +243,15 @@ export const adminQuizNameUpdate = (authUserId, quizId, name) => {
   } else { 
 
     //check if quizId is valid
-    if (quizId > data.quizzes.length ||
-        quizId < 0 ) {
+    const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
+
+    if (!quiz) {
           return { error: 'Quiz ID does not refer to a valid quiz.'};
     }
 
     //check if quizId belongs to user
-    if (data.quizzes[quizId].ownerId !== authUserId) {
+    if (quiz.ownerId !== authUserId) {
+      console.log(`quiz does not belong`);
       return { error: "Quiz ID does not refer to a quiz that this user owns."};
     }
 
