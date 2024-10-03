@@ -123,8 +123,6 @@ const isValidPassword = (password) => {
   * @returns {integer} - UserId
 */
 export const adminAuthLogin = (email, password) => {
-  const data = getData();
-
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
   if (!user) {
@@ -162,9 +160,7 @@ export const adminAuthLogin = (email, password) => {
   *}
 */
 export const adminUserDetails = (authUserId) => {
-  const data = getData();
-
-  // Find the user by authUserId
+// Find the user by authUserId
   const user = data.users.find((user) => user.userId === authUserId);
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
@@ -236,7 +232,6 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
   * @return {} no return;
 */
 export const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) => {
-  const data = getData();
   const user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {

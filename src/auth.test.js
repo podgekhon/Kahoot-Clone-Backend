@@ -133,7 +133,6 @@ describe('adminAuthRegister', () => {
 });    
 
 
-
 /////////////-----adminUserDetailsUpdate------///////////
 
 describe('adminUserDetailsUpdate', () => {
