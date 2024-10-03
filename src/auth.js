@@ -21,8 +21,7 @@ const data = getData();
 
 export const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
   // 1. Email address is used by another user.
-  const isEmailUsed = data.users.find(user => user.email === email);
-  if (isEmailUsed) {
+  if (isEmailUsed(email)) {
     return { error: "Email already used" };
   }
 
@@ -37,28 +36,20 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
   }
 
   // 4. Validate first name (NameFirst)
-  const namePattern = /^[a-zA-Z'-\s]+$/;
-  if (!namePattern.test(nameFirst)) {
-    return { error: "NameFirst contains invalid characters." };
-  }
-  if (nameFirst.length < 2 || nameFirst.length > 20) {
-    return { error: "NameFirst must be between 2 and 20 characters." };
+  if (!isNameValid(nameFirst)) {
+    return { error: 'First name invalid' };
   }
 
   // 5. Validate last name (NameLast)
-  if (!namePattern.test(nameLast)) {
-    return { error: "NameLast contains invalid characters." };
-  }
-  if (nameLast.length < 2 || nameLast.length > 20) {
-    return { error: "NameLast must be between 2 and 20 characters." };
+  if (!isNameValid(nameLast)) {
+    return { error: 'Last name invalid' };
   }
 
   // 6. Check that password contains at least one number and one letter
-  const containsLetter = /[a-zA-Z]/.test(password);
-  const containsNumber = /\d/.test(password);
-  if (!containsLetter || !containsNumber) {
-    return { error: "Password must contain at least one letter and one number." };
+  if (!isPasswordValid(password)) {
+    return { error: 'Password must contain at least one letter and one number.'}
   }
+
 
   // 7. Register the user and update the data
   const authUserId = data.users.length + 1;
@@ -76,6 +67,39 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
 
   return { authUserId };
 }
+
+// helper functions for adminAuthRegister
+
+/**
+ * 
+ * @param {string} email - email use to register
+ * @returns {boolean} - return true if valid
+ */
+const isEmailUsed = (email) => {
+  return data.users.some(user => user.email === email);
+}
+
+/**
+ * 
+ * @param {string} name - user's firstname or lastname
+ * @returns {boolean} - return true if name is valid
+ */
+const isNameValid = (name) => {
+  const namePattern = /^[a-zA-z'-\s]+$/;
+  return namePattern.test(name) && name.length >= 2 && name.length <= 20;
+}
+
+/**
+ * 
+ * @param {string} password - user's password 
+ * @returns {boolean} - return true if password is valid
+ */
+const isPasswordValid = (password) => {
+  const containsLetter = /[a-zA-Z]/.test(password);
+  const containsNumber = /\d/.test(password);
+  return containsLetter && containsNumber;
+}
+
 
 /**
   * Given a registered user's email and password returns their authUserId value.
