@@ -133,11 +133,10 @@ describe('adminAuthRegister', () => {
 });    
 
 
-
 /////////////-----adminUserDetailsUpdate------///////////
 
 describe('adminUserDetailsUpdate', () => {
-	// Test for invalid authUserId
+
 	test('invalid authUserId with no registers', () => {
 		const result = adminUserDetailsUpdate(1, 'new.email@example.com', 'John', 'Doe');
 		expect(result).toStrictEqual({ error: expect.any(String) });
