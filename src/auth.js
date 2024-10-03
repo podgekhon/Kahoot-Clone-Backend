@@ -1,5 +1,5 @@
 //////----EXTERNAL FILES-----/////
-import {getData, setData} from "./dataStore.js"
+import { getData } from "./dataStore.js"
 import validator from 'validator';
 
 /////------ASSUMPTIONS----//////
