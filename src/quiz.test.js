@@ -8,7 +8,8 @@ import {
 } from './quiz.js';
 import { 
     adminAuthRegister, 
-    adminAuthLogin, } from './auth.js';
+    adminAuthLogin, 
+} from './auth.js';
 import {clear} from './other.js';
 
 beforeEach(() => {

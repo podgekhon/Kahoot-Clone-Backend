@@ -20,36 +20,33 @@ const data = getData();
 */
 
 export const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
-  // 1. Email address is used by another user.
+  // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
     return { error: "Email already used" };
   }
 
-  // 2. Validate password length
-  if (password.length < 8) {
-    return { error: "Password is too short" };
-  }
-
-  // 3. Validate email format
+  // Validate email format
   if (!validator.isEmail(email)) {
     return { error: "Invalid email format" };
   }
 
-  // 4. Validate first name (NameFirst)
+  // Validate first name (NameFirst)
   if (!isNameValid(nameFirst)) {
     return { error: 'First name invalid' };
   }
 
-  // 5. Validate last name (NameLast)
+  // Validate last name (NameLast)
   if (!isNameValid(nameLast)) {
     return { error: 'Last name invalid' };
   }
 
-  // 6. Check that password contains at least one number and one letter
-  if (!isPasswordValid(password)) {
-    return { error: 'Password must contain at least one letter and one number.'}
+  const passwordValidation = isValidPassword(password);
+  // Check if the returned object from isValidPassword helper function has an
+  // error field
+  if (passwordValidation.error) {
+    // Return the error if validation fails
+    return passwordValidation;  
   }
-
 
   // 7. Register the user and update the data
   const authUserId = data.users.length + 1;
@@ -90,15 +87,30 @@ const isNameValid = (name) => {
 }
 
 /**
- * 
- * @param {string} password - user's password 
- * @returns {boolean} - return true if password is valid
+ * Validates a password based on length, letter, and number criteria.
+ *
+ * @param {string} password - The password to be validated.
+ * @returns {object} An object with an error message if invalid, or 
+ * { valid: true } if the password is valid.
+ *
  */
-const isPasswordValid = (password) => {
+const isValidPassword = (password) => {
+  // Check if password length is at least 8 characters
+  if (password.length < 8) {
+    return { error: 'Password is less than 8 characters.' };
+  }
+
+  // Check if password contains at least one letter
   const containsLetter = /[a-zA-Z]/.test(password);
+  // Check if password contains at least one number
   const containsNumber = /\d/.test(password);
-  return containsLetter && containsNumber;
-}
+  if (!containsLetter || !containsNumber) {
+    return { error: 'Password must contain at least one letter and one number.' };
+  }
+
+  return { valid: true };
+};
+
 
 
 /**
@@ -165,6 +177,7 @@ export const adminUserDetails = (authUserId) => {
     numSuccessfulLogins: user.numSuccessfulLogins,
     numFailedPasswordsSinceLastLogin: user.numFailedPasswordsSinceLastLogin,
   };
+
   return { user: userDetails };
 };
 
@@ -196,22 +209,16 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
     return { error: 'Email is currently used by another user.' };
   }
 
-  // Validate NameFirst (2-20 chars, and valid characters)
-  if (nameFirst.length < 2 || nameFirst.length > 20) {
-    return { error: 'NameFirst is less than 2 characters or more than 20 characters.' };
-  }
-  if (!/^[A-Za-z\s'-]+$/.test(nameFirst)) {
-    return { error: 'NameFirst contains invalid characters.' };
+  // Validate first name (NameFirst)
+  if (!isNameValid(nameFirst)) {
+    return { error: 'First name invalid' };
   }
 
-  // Validate NameLast (2-20 chars, and valid characters)
-  if (nameLast.length < 2 || nameLast.length > 20) {
-    return { error: 'NameLast is less than 2 characters or more than 20 characters.' };
+  // Validate last name (NameLast)
+  if (!isNameValid(nameLast)) {
+    return { error: 'Last name invalid' };
   }
-  if (!/^[A-Za-z\s'-]+$/.test(nameLast)) {
-    return { error: 'NameLast contains invalid characters.' };
-  }
-
+    
   currentUser.email = email;
   currentUser.nameFirst = nameFirst;
   currentUser.nameLast = nameLast;
@@ -262,22 +269,3 @@ export const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) =>
   user.currentPassword = newPassword;
   return {};
 };
-
-const isValidPassword = (password) => {
-  // Check if password length is at least 8 characters
-  if (password.length < 8) {
-    return { error: 'Password is less than 8 characters.' };
-  }
-
-  // Check if password contains at least one letter
-  const containsLetter = /[a-zA-Z]/.test(password);
-  // Check if password contains at least one number
-  const containsNumber = /\d/.test(password);
-  if (!containsLetter || !containsNumber) {
-    return { error: 'Password must contain at least one letter and one number.' };
-  }
-
-  return { valid: true };
-};
-
-export const dataStructure = () => data; 
