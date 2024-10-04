@@ -26,12 +26,12 @@ describe('adminQuizCreate', () => {
 
 		test('invalid authUserId', () => {
 			expect(adminQuizCreate(
-                3, 
-                'chemQuiz', 
-                'quiz about chemistry'
-            )).toStrictEqual(
-                { error: expect.any(String) }
-            );
+        3,
+        'chemQuiz', 
+        'quiz about chemistry'
+      )).toStrictEqual(
+        { error: expect.any(String) }
+      );
 		})
 
 		test('name less than 3 characters', () => {
