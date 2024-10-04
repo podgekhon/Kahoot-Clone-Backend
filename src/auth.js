@@ -11,7 +11,10 @@ const data = getData();
 
 
 /**
- * Register a user with an email, password, and names, then returns their authUserId value.
+ * Register a user with an email, 
+ * password, 
+ * and names, 
+ * then returns their authUserId value.
  * 
  * @param {string} email 
  * @param {string} password
@@ -105,7 +108,9 @@ const isValidPassword = (password) => {
   // Check if password contains at least one number
   const containsNumber = /\d/.test(password);
   if (!containsLetter || !containsNumber) {
-    return { error: 'Password must contain at least one letter and one number.' };
+    return { 
+      error: 'Password must contain at least one letter and one number.' 
+    };
   }
 
   return { valid: true };
@@ -145,7 +150,8 @@ export const adminAuthLogin = (email, password) => {
 
 /**
   * Given an admin user's authUserId, return details about the user.
-    "name" is the first and last name concatenated with a single space between them.
+  * "name" is the first and last name concatenated 
+  * with a single space between them.
   * 
   * @param {integer} authUserId - description of paramter
   *
@@ -178,7 +184,8 @@ export const adminUserDetails = (authUserId) => {
 };
 
 /**
- * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
+ * Given an admin user's authUserId and a set of properties, 
+ * update the properties of this logged in admin user.
  * 
  * @param {integer} authUserId - authUserId
  * @param {string} email - email
@@ -187,7 +194,12 @@ export const adminUserDetails = (authUserId) => {
  * ...
  * @return {} no return;
 */
-export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
+export const adminUserDetailsUpdate = ( 
+  authUserId, 
+  email, 
+  nameFirst, 
+  nameLast 
+) => {
   // Check if authUserId is valid
   const currentUser = data.users.find(user => user.userId === authUserId);
   if (!currentUser) {
@@ -199,8 +211,13 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
     return { error: 'Invalid email format.' };
   }
 
-  // Check if email is already used by another user (excluding the current authorised user)
-  const emailInUse = data.users.find(user => user.email === email && user.userId !== authUserId);
+  // Check if email is already used by another user 
+  // (excluding the current authorised user)
+  const emailInUse = data.users.find(
+    user => user.email === email && 
+    user.userId !== authUserId
+  );
+
   if (emailInUse) {
     return { error: 'Email is currently used by another user.' };
   }
@@ -223,7 +240,8 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
 }
 
 /**
-  * Given details relating to a password change, update the password of a logged in user.
+  * Given details relating to a password change, 
+  * update the password of a logged in user.
   * 
   * @param {integer} authUserId - description of paramter
   * @param {string} oldPassword - oldPassword
@@ -231,7 +249,11 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
   * ...
   * @return {} no return;
 */
-export const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) => {
+export const adminUserPasswordUpdate = (
+  authUserId, 
+  oldPassword, 
+  newPassword
+) => {
   const user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {
