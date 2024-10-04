@@ -69,7 +69,7 @@ export const adminQuizCreate = (authUserId, name, description) => {
   //checks if user is valid
   if (!isUserValid(authUserId)) {
     //if user not valid, return error
-    return { error: "AuthUserId is not a valid user."};
+    return { error: 'AuthUserId is not a valid user.'};
   } 
   
   //checks for name length
@@ -79,17 +79,22 @@ export const adminQuizCreate = (authUserId, name, description) => {
 
   //checks if check contains invalid characters
   if (!isStringValid(name)) {
-    return { error: "Name contains invalid characters. Valid characters are alphanumeric and spaces."};
+    return { 
+      error: 'Name contains invalid characters.' +
+             'Valid characters are alphanumeric and spaces.'
+            };
   }
 
   //checks for description is more than 100 characters
   if (description.length > 100) {
-    return { error: "Description is more than 100 characters in length."};
+    return { error: 'Description is more than 100 characters in length.'};
   }
 
   //checks if quiz name is already used by another quiz the same user owns
   if (isNameTaken(authUserId, name)) {
-    return { error: "Name is already used by the current logged in user for another quiz."};
+    return { 
+      error: 'Name is already used by the' + 
+      ' current logged in user for another quiz.'};
   }
   
   //push new quiz object into db & return quizId
@@ -254,7 +259,9 @@ export const adminQuizNameUpdate = (authUserId, quizId, name) => {
 
   //check if name contains invalid characters
   if (!isStringValid(name)) {
-    return { error: "Name contains invalid characters. Valid characters are alphanumeric and spaces."};
+    return { 
+      error:  'Name contains invalid characters.' + 
+              'Valid characters are alphanumeric and spaces.' };
   }
   //checks for name length
   if (isNameLengthValid(name) !== undefined) {
@@ -262,7 +269,9 @@ export const adminQuizNameUpdate = (authUserId, quizId, name) => {
   }
   //check if user has duplicate quiz names 
   if (isNameTaken(authUserId, name)) {
-    return { error: "Name is already used by the current logged in user for another quiz."};
+    return { 
+      error:  'Name is already used by the current' +
+              ' logged in user for another quiz.'};
   }
 
   quiz.name = name;
@@ -290,7 +299,8 @@ export const adminQuizDescriptionUpdate = (authUserId, quizId, description) => {
   }
   // new description should be less then 100 characters
   if(description.length > 100) {
-    return { error: 'Description too long! (has to be less then 100 characters)'};
+    return { error: 'Description too long!' +
+      ' (has to be less then 100 characters)'};
   }
   // update description and timeLastEdited
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
@@ -305,7 +315,8 @@ export const adminQuizDescriptionUpdate = (authUserId, quizId, description) => {
  * @param {string} authUserId - the user ID of the authorized user.
  * @param {string} quizId - the ID of the quiz to be validated.
  * @param {object} data - the dataset containing user and quiz information.
- * @returns {object|null} - an error object if validation fails, or null if the quiz and user are valid.
+ * @returns {object|null} - an error object if validation fails,
+ *                         or null if the quiz and user are valid.
  *
  */
 const isValidQuiz = (authUserId, quizId, data) => {
