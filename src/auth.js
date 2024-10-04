@@ -6,14 +6,14 @@ import validator from 'validator';
 // assume functions are case sensitive
 // assume white space is kept
 
-/////-----GLOBAL VARIABLES------/////
-const data = getData();
-
-
 /**
+<<<<<<< HEAD
  * Register a user with an email, 
  * password, 
  * and names, 
+=======
+ * Register a user with an email, password, and names, 
+>>>>>>> master
  * then returns their authUserId value.
  * 
  * @param {string} email 
@@ -23,6 +23,7 @@ const data = getData();
 */
 
 export const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
+  const data = getData();
   // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
     return { error: "Email already used" };
@@ -76,6 +77,7 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
  * @returns {boolean} - return true if valid
  */
 const isEmailUsed = (email) => {
+  const data = getData();
   return data.users.some(user => user.email === email);
 }
 
@@ -128,6 +130,7 @@ const isValidPassword = (password) => {
   * @returns {integer} - UserId
 */
 export const adminAuthLogin = (email, password) => {
+  const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
   if (!user) {
@@ -166,6 +169,7 @@ export const adminAuthLogin = (email, password) => {
   *}
 */
 export const adminUserDetails = (authUserId) => {
+  const data = getData();
 // Find the user by authUserId
   const user = data.users.find((user) => user.userId === authUserId);
   if (!user) {
@@ -200,6 +204,7 @@ export const adminUserDetailsUpdate = (
   nameFirst, 
   nameLast 
 ) => {
+  const data = getData();
   // Check if authUserId is valid
   const currentUser = data.users.find(user => user.userId === authUserId);
   if (!currentUser) {
@@ -254,6 +259,7 @@ export const adminUserPasswordUpdate = (
   oldPassword, 
   newPassword
 ) => {
+  const data = getData();
   const user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {

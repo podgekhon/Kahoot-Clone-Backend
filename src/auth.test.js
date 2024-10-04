@@ -92,8 +92,7 @@ describe('adminAuthRegister', () => {
   });
   })
 
-  //Email does not satisfy this: 
-  //https://www.npmjs.com/package/validator (validator.isEmail function).
+  //Email does not satisfy validator.isEmail function
   test.each(invalidEmails)('Check invalid email for $email', ({ email }) => {
     const authUserId = adminAuthRegister(email, 'password123', 'Eric', 'Yang');
     expect(authUserId).toStrictEqual({ error: expect.any(String) });
@@ -111,7 +110,7 @@ describe('adminAuthRegister', () => {
   });
 
   // nameFirst contains characters other than lowercase letters, 
-  //uppercase letters, spaces, hyphens, or apostrophes.
+  // uppercase letters, spaces, hyphens, or apostrophes.
   // nameFirst is less than 2 characters or more than 20 characters.
   describe('Checking for invalid nameFirst', () => {
     test.each(invalidNames)('Check invalid nameLast for $name', ({ name }) => {
@@ -138,7 +137,7 @@ describe('adminAuthRegister', () => {
   });
 
   // nameLast contains characters other than lowercase letters, 
-  //uppercase letters, spaces, hyphens, or apostrophes.
+  // uppercase letters, spaces, hyphens, or apostrophes.
   // nameLast is less than 2 characters or more than 20 characters.
   describe('Checking for invalid nameLast', () => {
     test.each(invalidNames)('Check invalid nameLast for $name', ({ name }) => {
