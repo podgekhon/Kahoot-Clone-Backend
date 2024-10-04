@@ -6,12 +6,9 @@ import validator from 'validator';
 // assume functions are case sensitive
 // assume white space is kept
 
-/////-----GLOBAL VARIABLES------/////
-const data = getData();
-
-
 /**
- * Register a user with an email, password, and names, then returns their authUserId value.
+ * Register a user with an email, password, and names, 
+ * then returns their authUserId value.
  * 
  * @param {string} email 
  * @param {string} password
@@ -20,6 +17,7 @@ const data = getData();
 */
 
 export const adminAuthRegister = (email, password, nameFirst, nameLast) => {  
+  const data = getData();
   // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
     return { error: "Email already used" };
@@ -73,6 +71,7 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
  * @returns {boolean} - return true if valid
  */
 const isEmailUsed = (email) => {
+  const data = getData();
   return data.users.some(user => user.email === email);
 }
 
@@ -123,6 +122,7 @@ const isValidPassword = (password) => {
   * @returns {integer} - UserId
 */
 export const adminAuthLogin = (email, password) => {
+  const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
   if (!user) {
@@ -160,6 +160,7 @@ export const adminAuthLogin = (email, password) => {
   *}
 */
 export const adminUserDetails = (authUserId) => {
+  const data = getData();
 // Find the user by authUserId
   const user = data.users.find((user) => user.userId === authUserId);
   if (!user) {
@@ -178,7 +179,8 @@ export const adminUserDetails = (authUserId) => {
 };
 
 /**
- * Given an admin user's authUserId and a set of properties, update the properties of this logged in admin user.
+ * Given an admin user's authUserId and a set of properties, 
+ * update the properties of this logged in admin user.
  * 
  * @param {integer} authUserId - authUserId
  * @param {string} email - email
@@ -188,6 +190,7 @@ export const adminUserDetails = (authUserId) => {
  * @return {} no return;
 */
 export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast ) => {
+  const data = getData();
   // Check if authUserId is valid
   const currentUser = data.users.find(user => user.userId === authUserId);
   if (!currentUser) {
@@ -199,8 +202,13 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
     return { error: 'Invalid email format.' };
   }
 
-  // Check if email is already used by another user (excluding the current authorised user)
-  const emailInUse = data.users.find(user => user.email === email && user.userId !== authUserId);
+  // Check if email is already used by another user 
+  // (excluding the current authorised user)
+  const emailInUse = data.users.find(user => 
+    user.email === email && 
+    user.userId !== authUserId
+  );
+
   if (emailInUse) {
     return { error: 'Email is currently used by another user.' };
   }
@@ -223,7 +231,8 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
 }
 
 /**
-  * Given details relating to a password change, update the password of a logged in user.
+  * Given details relating to a password change, 
+  * update the password of a logged in user.
   * 
   * @param {integer} authUserId - description of paramter
   * @param {string} oldPassword - oldPassword
@@ -232,6 +241,7 @@ export const adminUserDetailsUpdate = ( authUserId, email, nameFirst, nameLast )
   * @return {} no return;
 */
 export const adminUserPasswordUpdate = (authUserId, oldPassword, newPassword) => {
+  const data = getData();
   const user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {
