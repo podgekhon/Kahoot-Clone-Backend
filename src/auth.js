@@ -7,13 +7,7 @@ import validator from 'validator';
 // assume white space is kept
 
 /**
-<<<<<<< HEAD
- * Register a user with an email, 
- * password, 
- * and names, 
-=======
  * Register a user with an email, password, and names, 
->>>>>>> master
  * then returns their authUserId value.
  * 
  * @param {string} email 
