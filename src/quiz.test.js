@@ -25,14 +25,10 @@ describe('adminQuizCreate', () => {
 	describe('invalid inputs', () => {
 
 		test('invalid authUserId', () => {
-			expect(adminQuizCreate(
-        3,
-        'chemQuiz', 
-        'quiz about chemistry'
-      )).toStrictEqual(
-        { error: expect.any(String) }
-      );
-		})
+            expect(
+                adminQuizCreate(3, 'chemQuiz', 'quiz about chemistry')
+            ).toStrictEqual({ error: expect.any(String) });
+        });
 
 		test('name less than 3 characters', () => {
 			const user1Id = adminAuthRegister(
@@ -297,30 +293,30 @@ describe('adminQuizNameUpdate', () => {
 				'chemQuiz'
 			)).toStrictEqual({ error: expect.any(String) });
 		})
-})
+    })
 
-//valid input test
-describe('valid inputs', () => {
-  test('returns empty object', () => {
-    const user1 = adminAuthRegister(
-      'john123@gmail.com', 
-      'wordpass123', 
-      'john', 
-      'smith'
-    );
-    const quiz1 = adminQuizCreate(
-      user1.authUserId, 
-      'chemQuiz', 
-      'science'
-    );
+    //valid input test
+    describe('valid inputs', () => {
+        test('returns empty object', () => {
+            const user1 = adminAuthRegister(
+            'john123@gmail.com', 
+            'wordpass123', 
+            'john', 
+            'smith'
+            );
+            const quiz1 = adminQuizCreate(
+            user1.authUserId, 
+            'chemQuiz', 
+            'science'
+            );
 
-    expect(adminQuizNameUpdate(
-      user1.authUserId, 
-      quiz1.quizId, 
-      'mathsQuiz'
-    )).toStrictEqual({ });
-  })
-})
+            expect(adminQuizNameUpdate(
+            user1.authUserId, 
+            quiz1.quizId, 
+            'mathsQuiz'
+            )).toStrictEqual({ });
+        })
+    })
 })
 
 
