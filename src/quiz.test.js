@@ -301,25 +301,25 @@ describe('adminQuizNameUpdate', () => {
 
 //valid input test
 describe('valid inputs', () => {
-		test('returns empty object', () => {
-				const user1 = adminAuthRegister(
-					'john123@gmail.com', 
-					'wordpass123', 
-					'john', 
-					'smith'
-				);
-				const quiz1 = adminQuizCreate(
-					user1.authUserId, 
-					'chemQuiz', 
-					'science'
-				);
+  test('returns empty object', () => {
+    const user1 = adminAuthRegister(
+      'john123@gmail.com', 
+      'wordpass123', 
+      'john', 
+      'smith'
+    );
+    const quiz1 = adminQuizCreate(
+      user1.authUserId, 
+      'chemQuiz', 
+      'science'
+    );
 
-				expect(adminQuizNameUpdate(
-					user1.authUserId, 
-					quiz1.quizId, 
-					'mathsQuiz'
-				)).toStrictEqual({ });
-		})
+    expect(adminQuizNameUpdate(
+      user1.authUserId, 
+      quiz1.quizId, 
+      'mathsQuiz'
+    )).toStrictEqual({ });
+  })
 })
 })
 
