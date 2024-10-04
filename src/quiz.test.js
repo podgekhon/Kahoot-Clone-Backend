@@ -116,10 +116,10 @@ describe('adminQuizCreate', () => {
 
 			expect(quiz2).toStrictEqual({ error: expect.any(String) });
 		})
-})
+	})
 
-//valid input tests
-describe('valid inputs', () => {
+	//valid input tests
+	describe('valid inputs', () => {
 		test('returns quizId', () => {
 			const user1 = adminAuthRegister(
 				'john123@gmail.com', 
