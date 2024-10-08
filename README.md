@@ -1052,7 +1052,7 @@ E.G. If I create a quiz at 12:22:21pm I will then check in my tests if the times
 ### 🐝 4.6. Continuous Integration
 
 With the introduction of linting to the project with `ESlint`, you will need to manually edit the `gitlab-ci.yml` file to lint code within the pipeline. This will require the following:
- * Addition of `npm run lint` as a script under a custom `linting` variable, apart of `stage: checks`.
+ * Addition of `npm run lint` as a script under a custom `linting` variable, a part of `stage: checks`.
 
 Refer to the lecture slides on continuous integration to find exactly how you should add these.
 
