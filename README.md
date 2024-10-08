@@ -920,7 +920,7 @@ Tips to ensure dryrun runs successfully:
 
 Please see section 6 for information on **due date** and on how you will **demonstrate this iteration**.
 
-Please see section 7.5 for information on **peer assessment**.
+Please see section 7.5 for information on **teamwork evaluation**.
 
 ### 🐭 3.11. FAQs
 
@@ -1253,7 +1253,7 @@ cat ~cs1531/bin/iter2.test.js
 
 Please see section 6 for information on **due date** and on how you will **demonstrate this iteration**.
 
-Please see section 7.5 for information on **peer assessment**.
+Please see section 7.5 for information on **teamwork evaluation**.
 
 ### 🐭 4.16. FAQs
 
@@ -1424,9 +1424,9 @@ Note that, **contributing more documentation is not a substitute for not contrib
 
 **Please note: Failure to complete teamwork evaluation for a particular iteration may result in a mark penalty of 10% for the iteration**
 
-At the end of each iteration, there will be a peer assessment survey where you will rate and leave comments about each team member's contribution to the project up until that point. 
+At the end of each iteration, there will be a teamwork evaluation survey where you will rate and leave comments about each team member's contribution to the project up until that point. 
 
-Your other team members will **not** be able to see how you rated them or what comments you left in either peer assessment. If your team members give you a less than satisfactory rating, your contribution will be scrutinised and you may find your final mark scaled down (after review by your tutor).
+Your other team members will **not** be able to see how you rated them or what comments you left in either teamwork evaluation. If your team members give you a less than satisfactory rating, your contribution will be scrutinised and you may find your final mark scaled down (after review by your tutor).
 
 The following criteria will be assessed by your team members:
 * **Participation**: What was the level of participation in group work, attendance at meetings, making suggestions, taking responsibility for tasks, being in communication with the team?
