@@ -1,10 +1,8 @@
 // YOU MAY MODIFY THIS OBJECT BELOW
-let data = {
+const data = {
   users: [],
   quizzes: [],
 };
-  
-
 
 // YOU MAY MODIFY THIS OBJECT ABOVE
 
