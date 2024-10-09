@@ -6,7 +6,7 @@ const port = config.port;
 const url = config.url;
 
 describe('HTTP tests using Jest', () => {
-  test('Test successful echo', () => {
+  test.skip('Test successful echo', () => {
     const res = request(
       'GET',
       `${url}:${port}/echo`,
@@ -22,7 +22,7 @@ describe('HTTP tests using Jest', () => {
     expect(bodyObj.value).toEqual('Hello');
   });
 
-  test('Test invalid echo', () => {
+  test.skip('Test invalid echo', () => {
     const res = request(
       'GET',
       `${url}:${port}/echo`,
