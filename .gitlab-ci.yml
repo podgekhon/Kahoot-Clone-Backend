@@ -6,6 +6,11 @@ stages:
 before_script:
   - npm install
 
+linting:
+    stage: checks
+    script: 
+      - npm run lint
+
 tests:
   stage: checks
   only:
