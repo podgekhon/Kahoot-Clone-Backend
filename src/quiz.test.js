@@ -10,7 +10,7 @@ import {
 import {
   adminAuthRegister,
   adminAuthLogin,
-} from './auth.js';
+} from './auth.ts';
 
 import { clear } from './other.js';
 
