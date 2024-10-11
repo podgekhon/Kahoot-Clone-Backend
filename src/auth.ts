@@ -16,7 +16,12 @@ import validator from 'validator';
  * @returns {integer} authUserId
 */
 
-export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
+export const adminAuthRegister = (
+  email: string,
+  password: string,
+  nameFirst: string,
+  nameLast: string
+): object => {
   const data = getData();
   // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
@@ -70,7 +75,7 @@ export const adminAuthRegister = (email, password, nameFirst, nameLast) => {
  * @param {string} email - email use to register
  * @returns {boolean} - return true if valid
  */
-const isEmailUsed = (email) => {
+const isEmailUsed = (email: string): boolean => {
   const data = getData();
   return data.users.some(user => user.email === email);
 };
@@ -80,7 +85,7 @@ const isEmailUsed = (email) => {
  * @param {string} name - user's firstname or lastname
  * @returns {boolean} - return true if name is valid
  */
-const isNameValid = (name) => {
+const isNameValid = (name: string): boolean => {
   const namePattern = /^[a-zA-z'-\s]+$/;
   return namePattern.test(name) && name.length >= 2 && name.length <= 20;
 };
@@ -93,7 +98,7 @@ const isNameValid = (name) => {
  * { valid: true } if the password is valid.
  *
  */
-const isValidPassword = (password) => {
+const isValidPassword = (password: string): { valid?: boolean; error?: string } => {
   // Check if password length is at least 8 characters
   if (password.length < 8) {
     return { error: 'Password is less than 8 characters.' };
@@ -121,7 +126,7 @@ const isValidPassword = (password) => {
   *
   * @returns {integer} - UserId
 */
-export const adminAuthLogin = (email, password) => {
+export const adminAuthLogin = (email: string, password: string): object => {
   const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
@@ -160,7 +165,7 @@ export const adminAuthLogin = (email, password) => {
   *  }
   *}
 */
-export const adminUserDetails = (authUserId) => {
+export const adminUserDetails = (authUserId: number): object => {
   const data = getData();
   // Find the user by authUserId
   const user = data.users.find((user) => user.userId === authUserId);
@@ -191,11 +196,11 @@ export const adminUserDetails = (authUserId) => {
  * @return {} no return;
 */
 export const adminUserDetailsUpdate = (
-  authUserId,
-  email,
-  nameFirst,
-  nameLast
-) => {
+  authUserId: number,
+  email: string,
+  nameFirst: string,
+  nameLast: string
+): object => {
   const data = getData();
   // Check if authUserId is valid
   const currentUser = data.users.find(user => user.userId === authUserId);
@@ -247,10 +252,10 @@ export const adminUserDetailsUpdate = (
   * @return {} no return;
 */
 export const adminUserPasswordUpdate = (
-  authUserId,
-  oldPassword,
-  newPassword
-) => {
+  authUserId: number,
+  oldPassword: string,
+  newPassword: string
+): object => {
   const data = getData();
   const user = data.users.find(user => user.userId === authUserId);
 
