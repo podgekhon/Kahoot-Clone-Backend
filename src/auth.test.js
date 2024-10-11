@@ -4,7 +4,7 @@ import {
   adminUserDetails,
   adminUserDetailsUpdate,
   adminUserPasswordUpdate
-} from './auth.js';
+} from './auth.ts';
 
 import { clear } from './other.js';
 
