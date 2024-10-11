@@ -3,8 +3,11 @@ import {
   adminAuthLogin,
   adminUserDetails,
   adminUserDetailsUpdate,
-  adminUserPasswordUpdate
-} from './auth.ts';
+  adminUserPasswordUpdate,
+  authResponse,
+  errorMessages,
+  userDetails
+} from './auth';
 
 import { clear } from './other.js';
 
@@ -48,7 +51,7 @@ const invalidPasswords = [
 /// //////////-----adminAuthRegister------///////////
 describe('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
-    let user1;
+    let user1: authResponse | errorMessages;
     beforeEach(() => {
       user1 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     });
@@ -63,8 +66,8 @@ describe('adminAuthRegister', () => {
       );
       const user3 = adminAuthRegister('sam@unsw.edu.au', '12', 'Sam', 'Yang');
       const user4 = adminAuthRegister('andrew', '1234abcd', 'Andrew', 'Yang');
-      expect(user1.authUserId).toStrictEqual(expect.any(Number));
-      expect(user2.authUserId).toStrictEqual(expect.any(Number));
+      expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
+      expect((user2 as authResponse).authUserId).toStrictEqual(expect.any(Number));
       expect(user3).toStrictEqual({ error: expect.any(String) });
       expect(user4).toStrictEqual({ error: expect.any(String) });
     });
@@ -87,8 +90,8 @@ describe('adminAuthRegister', () => {
         'Eric',
         'Yang'
       );
-      expect(user1.authUserId).toStrictEqual(expect.any(Number));
-      expect(user2.authUserId).toStrictEqual(expect.any(Number));
+      expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
+      expect((user2 as authResponse).authUserId).toStrictEqual(expect.any(Number));
     });
   });
 
@@ -106,7 +109,7 @@ describe('adminAuthRegister', () => {
       'Eric',
       'Yang'
     );
-    expect(user1.authUserId).toStrictEqual(expect.any(Number));
+    expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
   });
 
   // nameFirst contains characters other than lowercase letters,
@@ -132,7 +135,7 @@ describe('adminAuthRegister', () => {
         name,
         'Yang'
       );
-      expect(user1.authUserId).toStrictEqual(expect.any(Number));
+      expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
     });
   });
 
@@ -159,7 +162,7 @@ describe('adminAuthRegister', () => {
         'Eric',
         name
       );
-      expect(user1.authUserId).toStrictEqual(expect.any(Number));
+      expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
     });
   });
 
@@ -193,7 +196,7 @@ describe('adminUserDetailsUpdate', () => {
   });
 
   describe('Tests with at least 1 register', () => {
-    let user1;
+    let user1: authResponse | errorMessages;
     beforeEach(() => {
       user1 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     });
@@ -224,7 +227,7 @@ describe('adminUserDetailsUpdate', () => {
         'Yang'
       );
       const result = adminUserDetailsUpdate(
-        user2.authUserId,
+        (user2 as authResponse).authUserId,
         'eric@unsw.edu.au',
         'Pat',
         'Yang'
@@ -239,7 +242,7 @@ describe('adminUserDetailsUpdate', () => {
         'Check invalid email for $email',
         ({ email }) => {
           const result = adminUserDetailsUpdate(
-            user1.authUserId,
+            (user1 as authResponse).authUserId,
             email,
             'Eric',
             'Yang'
@@ -253,7 +256,7 @@ describe('adminUserDetailsUpdate', () => {
     describe('Checking for invalid nameFirst', () => {
       test.each(invalidNames)('invalid nameFirst for $name', ({ name }) => {
         const result = adminUserDetailsUpdate(
-          user1.authUserId,
+          (user1 as authResponse).authUserId,
           'eric@unsw.edu.au',
           name,
           'Yang'
@@ -265,7 +268,7 @@ describe('adminUserDetailsUpdate', () => {
     describe('Checking for valid nameFirst', () => {
       test.each(validNames)('valid nameFirst for $name', ({ name }) => {
         const result = adminUserDetailsUpdate(
-          user1.authUserId,
+          (user1 as authResponse).authUserId,
           'eric@unsw.edu.au',
           name,
           'Yang'
@@ -278,7 +281,7 @@ describe('adminUserDetailsUpdate', () => {
     describe('Checking for invalid nameLast', () => {
       test.each(invalidNames)('invalid nameLast for $name', ({ name }) => {
         const result = adminUserDetailsUpdate(
-          user1.authUserId,
+          (user1 as authResponse).authUserId,
           'eric@unsw.edu.au',
           'Eric',
           name
@@ -290,7 +293,7 @@ describe('adminUserDetailsUpdate', () => {
     describe('Checking for valid nameLast', () => {
       test.each(validNames)('valid nameLast for $name', ({ name }) => {
         const result = adminUserDetailsUpdate(
-          user1.authUserId,
+          (user1 as authResponse).authUserId,
           'eric@unsw.edu.au',
           'Eric',
           name
@@ -302,7 +305,7 @@ describe('adminUserDetailsUpdate', () => {
     // valid cases checking
     test('Check successful details update', () => {
       const result = adminUserDetailsUpdate(
-        user1.authUserId,
+        (user1 as authResponse).authUserId,
         'hello@unsw.edu.au',
         'Eric',
         'Yang'
@@ -312,7 +315,7 @@ describe('adminUserDetailsUpdate', () => {
 
     test('No changes to user data', () => {
       const result = adminUserDetailsUpdate(
-        user1.authUserId,
+        (user1 as authResponse).authUserId,
         'eric@unsw.edu.au',
         'Eric',
         'Yang'
@@ -322,13 +325,13 @@ describe('adminUserDetailsUpdate', () => {
 
     test('multiple simultaneous updates to the same user', () => {
       const result2 = adminUserDetailsUpdate(
-        user1.authUserId,
+        (user1 as authResponse).authUserId,
         'NEW.EMAIL2@EXAMPLE.COM',
         'Eric',
         'Yang'
       );
       const result3 = adminUserDetailsUpdate(
-        user1.authUserId,
+        (user1 as authResponse).authUserId,
         'new.email2',
         'Eric',
         'Yang'
@@ -372,7 +375,7 @@ describe('test for adminAuthLogin', () => {
 
 /// //////-----adminUserPasswordUpdate-----//////////
 describe('test for adminUserPasswordUpdate', () => {
-  let user1;
+  let user1: authResponse | errorMessages;
   beforeEach(() => {
     user1 = adminAuthRegister(
       'XiaoyuanMa@unsw.edu.au',
@@ -383,13 +386,13 @@ describe('test for adminUserPasswordUpdate', () => {
   });
   // authUserId is not valid user
   test('invalid authUserId', () => {
-    const result = adminUserPasswordUpdate('1234', '1234abcd', 'abcd1234');
+    const result = adminUserPasswordUpdate(12345, '1234abcd', 'abcd1234');
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
   // Old password is not the correct old password
   test('old password is wrong', () => {
     const result = adminUserPasswordUpdate(
-      user1.authUserId,
+      (user1 as authResponse).authUserId,
       'wrongpassword',
       'abcd1234'
     );
@@ -398,7 +401,7 @@ describe('test for adminUserPasswordUpdate', () => {
   // Old password and new password match exactly
   test('new password is same as the old one', () => {
     const result = adminUserPasswordUpdate(
-      user1.authUserId,
+      (user1 as authResponse).authUserId,
       '1234abcd',
       '1234abcd'
     );
@@ -407,12 +410,12 @@ describe('test for adminUserPasswordUpdate', () => {
   // New password has already been used before by this user
   test('new password has been used before', () => {
     adminUserPasswordUpdate(
-      user1.authUserId,
+      (user1 as authResponse).authUserId,
       '1234abcd',
       'newpassword1'
     );
     const result2 = adminUserPasswordUpdate(
-      user1.authUserId,
+      (user1 as authResponse).authUserId,
       'newpassword1',
       '1234abcd'
     );
@@ -420,9 +423,9 @@ describe('test for adminUserPasswordUpdate', () => {
   });
   // test for invalid passwords(too short, no characters/numbers)
   test('invalid new passwords', () => {
-    invalidPasswords.forEach((password) => {
+    invalidPasswords.forEach(({ password }) => {
       const result = adminUserPasswordUpdate(
-        user1.authUserId,
+        (user1 as authResponse).authUserId,
         '1234abcd',
         password
       );
@@ -432,7 +435,7 @@ describe('test for adminUserPasswordUpdate', () => {
   // correct return type
   test('Correct return type', () => {
     const result = adminUserPasswordUpdate(
-      user1.authUserId,
+      (user1 as authResponse).authUserId,
       '1234abcd',
       'abcd1234'
     );
@@ -451,11 +454,11 @@ describe('test for adminUserDetails', () => {
       'Chen'
     );
     // Get user details
-    const result = adminUserDetails(user.authUserId);
+    const result = adminUserDetails((user as authResponse).authUserId);
     // Validate that the correct user details are returned
     expect(result).toStrictEqual({
       user: {
-        userId: user.authUserId,
+        userId: (user as authResponse).authUserId,
         // Full name concatenated with single space in between
         name: 'Patrick Chen',
         email: 'test@gmail.com',
@@ -484,7 +487,7 @@ describe('test for adminUserDetails', () => {
     adminAuthLogin('test@gmail.com', 'validPassword5');
     adminAuthLogin('test@gmail.com', 'validPassword5');
     // Get user details
-    const result = adminUserDetails(user.authUserId);
+    const result = adminUserDetails((user as authResponse).authUserId) as userDetails;
     // Check if the number of successful logins is correct
     // (3 logins: 1 registration + 2 logins)
     expect(result.user.numSuccessfulLogins).toStrictEqual(expect.any(Number));
@@ -504,7 +507,7 @@ describe('test for adminUserDetails', () => {
       adminAuthLogin('test@gmail.com', 'wrongPassword');
       adminAuthLogin('test@gmail.com', 'wrongPassword');
       // Get user details
-      const result = adminUserDetails(user.authUserId);
+      const result = adminUserDetails((user as authResponse).authUserId) as userDetails;
       // Check if the number of failed login attempts,
       // since last login is correct (2 failed attempts)
       expect(
@@ -528,7 +531,7 @@ describe('test for adminUserDetails', () => {
       // Now simulate a successful login
       adminAuthLogin('test@gmail.com', 'validPassword5');
       // Get user details
-      const result = adminUserDetails(user.authUserId);
+      const result = adminUserDetails((user as authResponse).authUserId) as userDetails;
       // Check if the failed attempts reset to 0 after the successful login
       expect(
         result.user.numFailedPasswordsSinceLastLogin

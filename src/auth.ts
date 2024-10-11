@@ -6,6 +6,26 @@ import validator from 'validator';
 // assume functions are case sensitive
 // assume white space is kept
 
+export interface errorMessages {
+  error: string,
+}
+
+export interface authResponse {
+  authUserId: number,
+}
+
+export interface userDetails {
+  user:
+  {
+    userId: number,
+    name: string,
+    email: string,
+    numSuccessfulLogins: number,
+    numFailedPasswordsSinceLastLogin: number,
+  }
+}
+
+interface emptyReturn {}
 /**
  * Register a user with an email, password, and names,
  * then returns their authUserId value.
@@ -21,7 +41,7 @@ export const adminAuthRegister = (
   password: string,
   nameFirst: string,
   nameLast: string
-): object => {
+): authResponse | errorMessages => {
   const data = getData();
   // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
@@ -48,7 +68,7 @@ export const adminAuthRegister = (
   // error field
   if (passwordValidation.error) {
     // Return the error if validation fails
-    return passwordValidation;
+    return { error: 'password invalid' };
   }
 
   // 7. Register the user and update the data
@@ -126,7 +146,7 @@ const isValidPassword = (password: string): { valid?: boolean; error?: string } 
   *
   * @returns {integer} - UserId
 */
-export const adminAuthLogin = (email: string, password: string): object => {
+export const adminAuthLogin = (email: string, password: string): errorMessages | authResponse => {
   const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
@@ -165,7 +185,7 @@ export const adminAuthLogin = (email: string, password: string): object => {
   *  }
   *}
 */
-export const adminUserDetails = (authUserId: number): object => {
+export const adminUserDetails = (authUserId: number): errorMessages | userDetails => {
   const data = getData();
   // Find the user by authUserId
   const user = data.users.find((user) => user.userId === authUserId);
@@ -200,7 +220,7 @@ export const adminUserDetailsUpdate = (
   email: string,
   nameFirst: string,
   nameLast: string
-): object => {
+): errorMessages | emptyReturn => {
   const data = getData();
   // Check if authUserId is valid
   const currentUser = data.users.find(user => user.userId === authUserId);
@@ -255,7 +275,7 @@ export const adminUserPasswordUpdate = (
   authUserId: number,
   oldPassword: string,
   newPassword: string
-): object => {
+): errorMessages | emptyReturn => {
   const data = getData();
   const user = data.users.find(user => user.userId === authUserId);
 
