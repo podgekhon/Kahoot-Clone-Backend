@@ -13,7 +13,6 @@ interface session {
   userId: number;
 }
 
-
 export interface errorMessages {
   error: string,
 }

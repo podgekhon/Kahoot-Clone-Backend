@@ -1,10 +1,45 @@
+import { fstat } from "fs";
+import fs from 'fs';
+
 // YOU MAY MODIFY THIS OBJECT BELOW
-const data = {
+let data = {
   users: [],
   quizzes: [],
   sessions: []
 };
 
+
+interface dataStore {
+  users: [
+    {
+      userId: number,
+      email: string,
+      currentPassword: string,
+      oldPasswords: [],
+      nameFirst: string,
+      nameLast: string,
+      name: string,
+      numSuccessfulLogins: number,
+      numFailedPasswordsSinceLastLogin: number,
+    },
+  ],
+  quizzes: [
+    {
+      quizId: number,
+      ownerId: number,
+      name: string,
+      description: string,
+      quiz: 
+        {
+          question: string,
+          answers: [],
+        },
+      timeCreated: Date,
+      timeLastEdited: Date,
+    },
+  ],
+  sessions: [];
+}
 // YOU MAY MODIFY THIS OBJECT ABOVE
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1
@@ -25,4 +60,9 @@ function getData() {
   return data;
 }
 
-export { getData };
+function setData(newData: dataStore) {
+  const updateData = JSON.stringify(newData);
+  fs.writeFileSync('./dataStore.json', updateData, {flag: 'w'});
+  data = newData;
+}
+export { getData, setData };

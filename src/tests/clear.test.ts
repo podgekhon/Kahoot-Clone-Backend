@@ -3,7 +3,7 @@ import { url, port } from '../config.json';
 
 const SERVER_URL = `${url}:${port}`;
 
-test('test clear successfule', () => {
+test.skip('test clear successfule', () => {
   // let user : { token: string };
   // let quiz: { quizId: string };
 

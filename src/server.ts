@@ -51,6 +51,8 @@ app.get('/echo', (req: Request, res: Response) => {
 });
 
 
+
+
 app.delete('/v1/clear', (req: Request, res: Response) => {
   const result = clear();
   return res.json(result);
