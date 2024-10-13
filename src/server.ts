@@ -30,6 +30,16 @@ const HOST: string = process.env.IP || '127.0.0.1';
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================
 
+import{ clear } from './other';
+
+import { getData } from './dataStore.js';
+
+enum httpStatus {
+  UNAUTHORIZED = 401,
+  BAD_REQUEST = 400,
+  FORBIDDEN = 403
+}
+
 // Example get request
 app.get('/echo', (req: Request, res: Response) => {
   const result = echo(req.query.echo as string);
@@ -39,6 +49,13 @@ app.get('/echo', (req: Request, res: Response) => {
 
   return res.json(result);
 });
+
+
+app.delete('/v1/clear', (req: Request, res: Response) => {
+  const result = clear();
+  return res.json(result);
+});
+
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

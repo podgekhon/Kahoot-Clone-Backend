@@ -6,6 +6,14 @@ import validator from 'validator';
 // assume functions are case sensitive
 // assume white space is kept
 
+let lastSessionId = 0;
+
+interface session {
+  sessionId: number;
+  userId: number;
+}
+
+
 export interface errorMessages {
   error: string,
 }
@@ -84,11 +92,33 @@ export const adminAuthRegister = (
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   });
+  generateToken(authUserId);
 
   return { authUserId };
 };
 
 // helper functions for adminAuthRegister
+
+
+/**
+  * Generates a session token for a given userId and stores the session
+  * in the data store.
+  *
+  * @param {number} userId - The unique identifier of the user
+  *
+  * @returns {string} - A URL-encoded token containing the session ID
+  */
+function generateToken(userId: number): string {
+  const data = getData();
+  const sessionId = lastSessionId++;
+  const session: session = {
+    sessionId,
+    userId,
+  };
+  data.sessions.push(session);
+  return encodeURIComponent(JSON.stringify({ sessionId }));
+}
+
 
 /**
  *
@@ -164,6 +194,7 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   // Reset numFailedPasswordsSinceLastLogin and increment numSuccessfulLogins
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
+  generateToken(user.userId);
 
   return { authUserId: user.userId };
 };
