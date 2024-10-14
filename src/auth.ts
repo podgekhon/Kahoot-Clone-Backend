@@ -1,4 +1,7 @@
 /// ///----EXTERNAL FILES-----/////
+
+/// //////////// UNCOMMENT THIS LINE BELOW //////////////
+// import { TokenType } from 'yaml/dist/parse/cst.js';
 import { getData } from './dataStore.js';
 import validator from 'validator';
 
@@ -6,12 +9,19 @@ import validator from 'validator';
 // assume functions are case sensitive
 // assume white space is kept
 
+// Global variable to keep track of the last used session ID
+let lastSessionId = 0;
+
 export interface errorMessages {
   error: string,
 }
 
 export interface authResponse {
   authUserId: number,
+}
+
+export interface tokenReturn {
+  token: string,
 }
 
 export interface userDetails {
@@ -23,6 +33,11 @@ export interface userDetails {
     numSuccessfulLogins: number,
     numFailedPasswordsSinceLastLogin: number,
   }
+}
+
+interface session {
+  sessionId: number;
+  userId: number;
 }
 
 interface emptyReturn {}
@@ -41,7 +56,7 @@ export const adminAuthRegister = (
   password: string,
   nameFirst: string,
   nameLast: string
-): authResponse | errorMessages => {
+): authResponse | errorMessages | tokenReturn => {
   const data = getData();
   // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
@@ -84,8 +99,8 @@ export const adminAuthRegister = (
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   });
-
-  return { authUserId };
+  const token = generateToken(authUserId);
+  return { token };
 };
 
 // helper functions for adminAuthRegister
@@ -136,6 +151,17 @@ const isValidPassword = (password: string): { valid?: boolean; error?: string } 
 
   return { valid: true };
 };
+
+function generateToken(userId: number): string {
+  const data = getData();
+  const sessionId = lastSessionId++;
+  const session: session = {
+    sessionId,
+    userId,
+  };
+  data.sessions.push(session);
+  return encodeURIComponent(JSON.stringify({ sessionId }));
+}
 
 /**
   * Given a registered user's email and password returns their authUserId value.

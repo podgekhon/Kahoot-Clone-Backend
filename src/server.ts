@@ -8,6 +8,20 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
+import {
+  adminAuthRegister,
+} from './auth';
+/// ////////------UNCOMMENT THIS LINE BELOW--------//////////
+// import { getData } from './dataStore.js';
+// import { adminQuizDescriptionUpdate } from './quiz';
+
+enum httpStatus {
+  UNAUTHORIZED = 401,
+  BAD_REQUEST = 400,
+  FORBIDDEN = 403,
+  SUCCESSFUL_REQUEST = 200,
+}
+import { clear } from './other';
 
 // Set up web app
 const app = express();
@@ -34,9 +48,30 @@ const HOST: string = process.env.IP || '127.0.0.1';
 app.get('/echo', (req: Request, res: Response) => {
   const result = echo(req.query.echo as string);
   if ('error' in result) {
-    res.status(400);
+    res.status(httpStatus.BAD_REQUEST);
   }
 
+  return res.json(result);
+});
+
+// ------clear---------///
+app.delete('/v1/clear', (req: Request, res: Response) => {
+  const result = clear();
+  return res.json(result);
+});
+
+// -------auth.test.ts-------//
+// adminAuthRegister
+app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
+  const { email, password, nameFirst, nameLast } = req.body;
+
+  const result = adminAuthRegister(email, password, nameFirst, nameLast);
+
+  if ('error' in result) {
+    res.status(httpStatus.BAD_REQUEST).json(result);
+  } else {
+    res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  }
   return res.json(result);
 });
 

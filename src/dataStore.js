@@ -2,6 +2,7 @@
 const data = {
   users: [],
   quizzes: [],
+  sessions: []
 };
 
 // YOU MAY MODIFY THIS OBJECT ABOVE
