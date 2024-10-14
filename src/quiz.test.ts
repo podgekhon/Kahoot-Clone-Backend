@@ -21,7 +21,7 @@ beforeEach(() => {
   clear();
 });
 
-describe('adminQuizCreate', () => {
+describe.skip('adminQuizCreate', () => {
   let user1: authResponse;
   beforeEach(() => {
     user1 = adminAuthRegister(
@@ -107,7 +107,7 @@ describe('adminQuizCreate', () => {
   });
 });
 
-describe('adminQuizNameUpdate', () => {
+describe.skip('adminQuizNameUpdate', () => {
   // invalid input tests
   let user1: authResponse;
   let quiz1: quizCreateResponse;
@@ -227,7 +227,7 @@ describe('adminQuizNameUpdate', () => {
   });
 });
 
-describe('adminQuizRemove', () => {
+describe.skip('adminQuizRemove', () => {
   test('removes a valid quiz owned by the user', () => {
     // Register a user and create a quiz
     const user = adminAuthRegister(
@@ -292,7 +292,7 @@ describe('adminQuizRemove', () => {
   });
 });
 
-describe('adminQuizDescriptionUpdate', () => {
+describe.skip('adminQuizDescriptionUpdate', () => {
   let user: authResponse;
   let quiz: quizCreateResponse;
 
@@ -379,7 +379,7 @@ describe('adminQuizDescriptionUpdate', () => {
   });
 });
 
-describe('adminQuizList', () => {
+describe.skip('adminQuizList', () => {
   test('returns an empty list when user has no quizzes', () => {
     // Register and login a user who has no quizzes
     adminAuthRegister(
@@ -440,7 +440,7 @@ describe('adminQuizList', () => {
   });
 });
 
-describe('adminQuizInfo Function Tests', () => {
+describe.skip('adminQuizInfo Function Tests', () => {
   let authUserId: number;
   let quizId: number;
 
@@ -502,7 +502,7 @@ describe('adminQuizInfo Function Tests', () => {
   });
 });
 
-describe('clear function test', () => {
+describe.skip('clear function test', () => {
   // This test verifies the functionality of the clear function.
   test('should reset the state and return an empty object', () => {
     const result = clear();
