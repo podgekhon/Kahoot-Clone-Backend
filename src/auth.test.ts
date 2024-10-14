@@ -10,7 +10,6 @@ import {
   tokenReturn
 } from './auth';
 
-import { clear } from './other.js';
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
 

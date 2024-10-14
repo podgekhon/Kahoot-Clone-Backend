@@ -10,23 +10,19 @@ import path from 'path';
 import process from 'process';
 import {
   adminAuthRegister,
-  adminAuthLogin,
-  adminUserDetails,
-  adminUserDetailsUpdate,
-  adminUserPasswordUpdate,
-  authResponse,
-  errorMessages,
-  userDetails
 } from './auth';
-import { getData } from './dataStore.js';
-import { adminQuizDescriptionUpdate } from './quiz';
+// import { getData } from './dataStore.js';
+// import { adminQuizDescriptionUpdate } from './quiz';
 
 enum httpStatus {
   UNAUTHORIZED = 401,
   BAD_REQUEST = 400,
-  FORBIDDEN = 403
+  FORBIDDEN = 403,
+  SUCCESSFUL_REQUEST = 200,
 }
 import { clear } from './other';
+
+
 
 // Set up web app
 const app = express();
@@ -53,17 +49,20 @@ const HOST: string = process.env.IP || '127.0.0.1';
 app.get('/echo', (req: Request, res: Response) => {
   const result = echo(req.query.echo as string);
   if ('error' in result) {
-    res.status(400);
+    res.status(httpStatus.BAD_REQUEST);
   }
 
   return res.json(result);
 });
 
-// ------clear---------///
+//------clear---------///
 app.delete('/v1/clear', (req: Request, res: Response) => {
   const result = clear();
   return res.json(result);
 });
+
+
+
 
 // -------auth.test.ts-------//
 // adminAuthRegister
@@ -73,16 +72,12 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
 
   if ('error' in result) {
-    res.status(400).json(result);
+
+    res.status(httpStatus.BAD_REQUEST).json(result);
   } else {
-    res.status(200).json(result);
+    res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   }
   return res.json(result);
-
-  console.log('Received email:', email);
-  console.log('Received password::', password);
-  console.log('Received nameFirst::', nameFirst);
-  console.log('Received nameLast::', nameLast);
 });
 
 // ====================================================================
