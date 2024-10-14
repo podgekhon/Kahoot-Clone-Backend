@@ -1,4 +1,5 @@
 /// ///----EXTERNAL FILES-----/////
+import { TokenType } from 'yaml/dist/parse/cst.js';
 import { getData } from './dataStore.js';
 import validator from 'validator';
 
@@ -12,6 +13,10 @@ export interface errorMessages {
 
 export interface authResponse {
   authUserId: number,
+}
+
+export interface tokenReturn {
+  token: string,
 }
 
 export interface userDetails {
@@ -36,12 +41,13 @@ interface emptyReturn {}
  * @returns {integer} authUserId
 */
 
+
 export const adminAuthRegister = (
   email: string,
   password: string,
   nameFirst: string,
   nameLast: string
-): authResponse | errorMessages => {
+): authResponse | errorMessages | tokenReturn => {
   const data = getData();
   // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
@@ -84,8 +90,8 @@ export const adminAuthRegister = (
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   });
-
-  return { authUserId };
+  
+  
 };
 
 // helper functions for adminAuthRegister
