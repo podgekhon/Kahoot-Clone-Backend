@@ -1,5 +1,7 @@
 /// ///----EXTERNAL FILES-----/////
-// import { TokenType } from 'yaml/dist/parse/cst.js';       /////////////// UNCOMMENT THIS //////////////
+
+/// //////////// UNCOMMENT THIS LINE BELOW //////////////
+// import { TokenType } from 'yaml/dist/parse/cst.js';
 import { getData } from './dataStore.js';
 import validator from 'validator';
 

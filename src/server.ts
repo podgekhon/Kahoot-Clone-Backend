@@ -11,7 +11,8 @@ import process from 'process';
 import {
   adminAuthRegister,
 } from './auth';
-// import { getData } from './dataStore.js';              ///////////------UNCOMMENT THIS--------//////////
+/// ////////------UNCOMMENT THIS LINE BELOW--------//////////
+// import { getData } from './dataStore.js';
 // import { adminQuizDescriptionUpdate } from './quiz';
 
 enum httpStatus {
@@ -21,8 +22,6 @@ enum httpStatus {
   SUCCESSFUL_REQUEST = 200,
 }
 import { clear } from './other';
-
-
 
 // Set up web app
 const app = express();
@@ -55,14 +54,11 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-//------clear---------///
+// ------clear---------///
 app.delete('/v1/clear', (req: Request, res: Response) => {
   const result = clear();
   return res.json(result);
 });
-
-
-
 
 // -------auth.test.ts-------//
 // adminAuthRegister
@@ -72,7 +68,6 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
 
   if ('error' in result) {
-
     res.status(httpStatus.BAD_REQUEST).json(result);
   } else {
     res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
