@@ -6,7 +6,8 @@ import {
   adminUserPasswordUpdate,
   authResponse,
   errorMessages,
-  userDetails
+  userDetails,
+  tokenReturn
 } from './auth';
 
 import { clear } from './other.js';
@@ -53,127 +54,137 @@ const invalidPasswords = [
 ];
 
 /// //////////-----adminAuthRegister------///////////
-describe('adminAuthRegister', () => {
+describe.only('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
     // let user1: authResponse | errorMessages;
-    let user1Id: {authUserId: number};
+    let user1Return: string;
     let user1: any;
     beforeEach(() => {
-      // user1 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
       user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
-        json: { 
-          email: 'eric@unsw.edu.au', 
-          password: '1234abcd', 
-          nameFirst: 'Eric', 
+        json: {
+          email: 'eric@unsw.edu.au',
+          password: '1234abcd',
+          nameFirst: 'Eric',
           nameLast: 'Yang'
-        }, 
+        },
         timeout: TIMEOUT_MS
       });
-      
 
-      user1Id = JSON.parse(user1.body.toString());
+      user1Return = JSON.parse(user1.body.toString());
     });
 
     // valid cases checking
-    test.only('Check multiple invalid and valid registrations', () => {
-      // const user2 = adminAuthRegister(
-      //   'PAT@UNSW.EDU.AU',
-      //   '1234ABCD',
-      //   'Pat',
-      //   'Yang'
-      // );
-      // const user3 = adminAuthRegister('sam@unsw.edu.au', '12', 'Sam', 'Yang');
-      // const user4 = adminAuthRegister('andrew', '1234abcd', 'Andrew', 'Yang');
-      // expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
-      // expect((user2 as authResponse).authUserId).toStrictEqual(expect.any(Number));
-      // expect(user3).toStrictEqual({ error: expect.any(String) });
-      // expect(user4).toStrictEqual({ error: expect.any(String) });
+    test('Check multiple invalid and valid registrations', () => {
+      const user2 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'pat@unsw.edu.au',
+          password: '1234ABCD',
+          nameFirst: 'Pat',
+          nameLast: 'Yang'
+        },
+        timeout: TIMEOUT_MS
+      });
 
-      const user2 = JSON.parse(
-        request('POST', SERVER_URL + '/v1/admin/auth/register', {
-          json: {
-            email: 'pat@unsw.edu.au',
-            password: '1234ABCD',
-            nameFirst: 'Pat',
-            nameLast: 'Yang'
-          },
-          timeout: TIMEOUT_MS
-        }).body.toString()
-      );
+      const user2Return = JSON.parse(user2.body.toString());
 
-      const user3 = JSON.parse(
-        request('POST', SERVER_URL + '/v1/admin/auth/register', {
-          json: {
-            email: 'sam@unsw.edu.au',
-            password: '12',
-            nameFirst: 'Sam',
-            nameLast: 'Yang'
-          },
-          timeout: TIMEOUT_MS
-        }).body.toString()
-      );
+      const user3 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'sam@unsw.edu.au',
+          password: '12',
+          nameFirst: 'Sam',
+          nameLast: 'Yang'
+        },
+        timeout: TIMEOUT_MS
+      });
 
-      const user4 = JSON.parse(
-        request('POST', SERVER_URL + '/v1/admin/auth/register', {
-          json: {
-            email: 'andrew',
-            password: '1234abcd',
-            nameFirst: 'Andrew',
-            nameLast: 'Yang'
-          },
-          timeout: TIMEOUT_MS
-        }).body.toString()
-      );
+      const user3Return = JSON.parse(user3.body.toString());
+
+      const user4 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'andrew',
+          password: '1234abcd',
+          nameFirst: 'Andrew',
+          nameLast: 'Yang'
+        },
+        timeout: TIMEOUT_MS
+      });
+
+      const user4Return = JSON.parse(user4.body.toString());
 
       // Assertions for valid and invalid cases
-      expect(user1Id.authUserId).toStrictEqual(expect.any(Number)); // User 1 should have a valid authUserId
+      expect(user1Return).toStrictEqual({ token: expect.any(String) });
       expect(user1.statusCode).toStrictEqual(200);
-      expect(user2.authUserId).toStrictEqual(expect.any(Number)); // User 2 should also be valid
-      expect(user4.statusCode).toStrictEqual(400);
-      expect(user3).toStrictEqual({ error: expect.any(String) }); // User 3 should fail with an error
-      expect(user3.statusCode).toStrictEqual(400);
-      expect(user4).toStrictEqual({ error: expect.any(String) }); // User 4 should fail with an error
-      expect(user4.statusCode).toStrictEqual(400);
-    });
 
-    test('Check duplicate email', () => {
-      const authUserId2 = adminAuthRegister(
-        'eric@unsw.edu.au',
-        '1234abcd',
-        'Pat',
-        'Yang'
-      );
-      expect(authUserId2).toStrictEqual({ error: expect.any(String) });
+      expect(user2Return).toStrictEqual({ token: expect.any(String) });
+
+      expect(user3Return).toStrictEqual({ error: expect.any(String) });
+      expect(user3.statusCode).toStrictEqual(400);
+
+      expect(user4Return).toStrictEqual({ error: expect.any(String) });
+      expect(user4.statusCode).toStrictEqual(400);
     });
 
     // Email address is used by another user.
+    test('Check duplicate email', () => {
+      const user2 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'eric@unsw.edu.au',
+          password: '1234abcd',
+          nameFirst: 'Pat',
+          nameLast: 'Yang'
+        },
+        timeout: TIMEOUT_MS
+      });
+      const user2Return = JSON.parse(user2.body.toString());
+      expect(user2Return).toStrictEqual({ error: expect.any(String) });
+    });
+
     test('Registering two people with the same name and passwords', () => {
-      const user2 = adminAuthRegister(
-        'pat@unsw.edu.au',
-        '1234abcd',
-        'Eric',
-        'Yang'
-      );
-      expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
-      expect((user2 as authResponse).authUserId).toStrictEqual(expect.any(Number));
+      const user2 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'pat@unsw.edu.au',
+          password: '1234abcd',
+          nameFirst: 'Eric',
+          nameLast: 'Yang'
+        },
+        timeout: TIMEOUT_MS
+      });
+      const user2Return = JSON.parse(user2.body.toString());
+      expect(user1Return).toStrictEqual({ token: expect.any(String) });
+      expect(user2Return).toStrictEqual({ token: expect.any(String) });
     });
   });
 
   // Email does not satisfy validator.isEmail function
   test.each(invalidEmails)('Check invalid email for $email', ({ email }) => {
-    const authUserId = adminAuthRegister(email, 'password123', 'Eric', 'Yang');
-    expect(authUserId).toStrictEqual({ error: expect.any(String) });
+    const user = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: email,
+        password: 'password123',
+        nameFirst: 'Eric',
+        nameLast: 'Yang'
+      },
+      timeout: TIMEOUT_MS
+    });
+
+    const userReturn = JSON.parse(user.body.toString());
+    expect(userReturn).toStrictEqual({ error: expect.any(String) });
   });
 
   // Unusual But Valid Characters in Emails
   test('valid email with + symbol', () => {
-    const user1 = adminAuthRegister(
-      'eric+@unsw.edu.au',
-      '1234abcd',
-      'Eric',
-      'Yang'
-    );
-    expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
+    const user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'eric+@unsw.edu.au',
+        password: '1234abcd',
+        nameFirst: 'Eric',
+        nameLast: 'Yang'
+      },
+      timeout: TIMEOUT_MS
+    });
+
+    const user1Return = JSON.parse(user1.body.toString());
+    expect(user1Return).toStrictEqual({ token: expect.any(String) });
   });
 
   // nameFirst contains characters other than lowercase letters,
@@ -181,72 +192,95 @@ describe('adminAuthRegister', () => {
   // nameFirst is less than 2 characters or more than 20 characters.
   describe('Checking for invalid nameFirst', () => {
     test.each(invalidNames)('Check invalid nameLast for $name', ({ name }) => {
-      const authUserId = adminAuthRegister(
-        'eric@unsw.edu.au',
-        '1234abcd',
-        name,
-        'Yang'
-      );
-      expect(authUserId).toStrictEqual({ error: expect.any(String) });
+      const user = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'eric@unsw.edu.au',
+          password: '1234abcd',
+          nameFirst: name,
+          nameLast: 'Yang'
+        },
+        timeout: TIMEOUT_MS
+      });
+      const userReturn = JSON.parse(user.body.toString());
+      expect(userReturn).toStrictEqual({ error: expect.any(String) });
     });
   });
 
   describe('Checking for valid nameFirst', () => {
-    test.each(validNames)('Check invalid nameLast for $name', ({ name }) => {
-      const user1 = adminAuthRegister(
-        'eric@unsw.edu.au',
-        '1234abcd',
-        name,
-        'Yang'
-      );
-      expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
+    test.each(validNames)('Check valid nameFirst for $name', ({ name }) => {
+      const user = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'eric@unsw.edu.au',
+          password: '1234abcd',
+          nameFirst: name,
+          nameLast: 'Yang'
+        },
+        timeout: TIMEOUT_MS,
+      });
+
+      const userReturn = JSON.parse(user.body.toString());
+      expect(userReturn).toStrictEqual({ token: expect.any(String) });
     });
   });
 
   // nameLast contains characters other than lowercase letters,
   // uppercase letters, spaces, hyphens, or apostrophes.
   // nameLast is less than 2 characters or more than 20 characters.
+
   describe('Checking for invalid nameLast', () => {
     test.each(invalidNames)('Check invalid nameLast for $name', ({ name }) => {
-      const authUserId = adminAuthRegister(
-        'eric@unsw.edu.au',
-        '1234abcd',
-        'Eric',
-        name
-      );
-      expect(authUserId).toStrictEqual({ error: expect.any(String) });
+      const user = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'eric@unsw.edu.au',
+          password: '1234abcd',
+          nameFirst: 'Eric',
+          nameLast: name
+        },
+        timeout: TIMEOUT_MS,
+      });
+
+      const userReturn = JSON.parse(user.body.toString());
+      expect(userReturn).toStrictEqual({ error: expect.any(String) });
     });
   });
 
   describe('Checking for valid nameLast', () => {
-    test.each(validNames)('Check invalid nameLast for $name', ({ name }) => {
-      const user1 = adminAuthRegister(
-        'eric@unsw.edu.au',
-        '1234abcd',
-        'Eric',
-        name
-      );
-      expect((user1 as authResponse).authUserId).toStrictEqual(expect.any(Number));
+    test.each(validNames)('Check valid nameLast for $name', ({ name }) => {
+      const user = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'eric@unsw.edu.au',
+          password: '1234abcd',
+          nameFirst: 'Eric',
+          nameLast: name
+        },
+        timeout: TIMEOUT_MS,
+      });
+
+      const userReturn = JSON.parse(user.body.toString());
+      expect(userReturn).toStrictEqual({ token: expect.any(String) });
     });
   });
 
   // Password is less than 8 characters.
   describe('Checking for invalid Password', () => {
-    test.each(invalidPasswords)(
-      'Check invalid Password for $password',
-      ({ password }) => {
-        const authUserId = adminAuthRegister(
-          'eric@unsw.edu.au',
+    test.each(invalidPasswords)('Check invalid Password for $password', ({ password }) => {
+      const user = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+        json: {
+          email: 'eric@unsw.edu.au',
           password,
-          'Eric',
-          'Yang'
-        );
-        expect(authUserId).toStrictEqual({ error: expect.any(String) });
+          nameFirst: 'Eric',
+          nameLast: 'Yang'
+        },
+        timeout: TIMEOUT_MS,
       });
+
+      const userReturn = JSON.parse(user.body.toString());
+      expect(userReturn).toStrictEqual({ error: expect.any(String) });
+    });
   });
 });
 
-/// //////////-----adminUserDetailsUpdate------///////////
+/// ////////-----adminUserDetailsUpdate------///////////
 
 describe('adminUserDetailsUpdate', () => {
   test('invalid authUserId with no registers', () => {
@@ -260,7 +294,7 @@ describe('adminUserDetailsUpdate', () => {
   });
 
   describe('Tests with at least 1 register', () => {
-    let user1: authResponse | errorMessages;
+    let user1: authResponse | errorMessages | tokenReturn;
     beforeEach(() => {
       user1 = adminAuthRegister('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     });
@@ -439,7 +473,7 @@ describe('test for adminAuthLogin', () => {
 
 /// //////-----adminUserPasswordUpdate-----//////////
 describe('test for adminUserPasswordUpdate', () => {
-  let user1: authResponse | errorMessages;
+  let user1: authResponse | errorMessages | tokenReturn;
   beforeEach(() => {
     user1 = adminAuthRegister(
       'XiaoyuanMa@unsw.edu.au',

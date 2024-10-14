@@ -18,8 +18,15 @@ import {
   errorMessages,
   userDetails
 } from './auth';
-import { clear } from './other';
+import { getData } from './dataStore.js';
+import { adminQuizDescriptionUpdate } from './quiz';
 
+enum httpStatus {
+  UNAUTHORIZED = 401,
+  BAD_REQUEST = 400,
+  FORBIDDEN = 403
+}
+import { clear } from './other';
 
 // Set up web app
 const app = express();
@@ -52,29 +59,25 @@ app.get('/echo', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-//------clear---------///
-app.delete('${url}:${port}/v1/clear', (req: Request, res: Response) => {
+// ------clear---------///
+app.delete('/v1/clear', (req: Request, res: Response) => {
   const result = clear();
   return res.json(result);
 });
 
-
-
-
 // -------auth.test.ts-------//
 // adminAuthRegister
-app.post('${url}:${port}/v1/admin/auth/register', (req: Request, res: Response) => {
+app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
 
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
 
   if ('error' in result) {
     res.status(400).json(result);
-    res.json(result);
   } else {
     res.status(200).json(result);
-    res.json(result);
   }
+  return res.json(result);
 
   console.log('Received email:', email);
   console.log('Received password::', password);

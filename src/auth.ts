@@ -7,6 +7,9 @@ import validator from 'validator';
 // assume functions are case sensitive
 // assume white space is kept
 
+// Global variable to keep track of the last used session ID
+let lastSessionId = 0;
+
 export interface errorMessages {
   error: string,
 }
@@ -30,6 +33,11 @@ export interface userDetails {
   }
 }
 
+interface session {
+  sessionId: number;
+  userId: number;
+}
+
 interface emptyReturn {}
 /**
  * Register a user with an email, password, and names,
@@ -40,7 +48,6 @@ interface emptyReturn {}
  *
  * @returns {integer} authUserId
 */
-
 
 export const adminAuthRegister = (
   email: string,
@@ -90,8 +97,8 @@ export const adminAuthRegister = (
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   });
-  
-  
+  const token = generateToken(authUserId);
+  return { token };
 };
 
 // helper functions for adminAuthRegister
@@ -142,6 +149,17 @@ const isValidPassword = (password: string): { valid?: boolean; error?: string } 
 
   return { valid: true };
 };
+
+function generateToken(userId: number): string {
+  const data = getData();
+  const sessionId = lastSessionId++;
+  const session: session = {
+    sessionId,
+    userId,
+  };
+  data.sessions.push(session);
+  return encodeURIComponent(JSON.stringify({ sessionId }));
+}
 
 /**
   * Given a registered user's email and password returns their authUserId value.
