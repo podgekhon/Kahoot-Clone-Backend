@@ -11,7 +11,7 @@ import process from 'process';
 import {
   adminAuthRegister,
 } from './auth';
-// import { getData } from './dataStore.js';
+// import { getData } from './dataStore.js';              ///////////------UNCOMMENT THIS--------//////////
 // import { adminQuizDescriptionUpdate } from './quiz';
 
 enum httpStatus {
