@@ -79,6 +79,18 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// adminAuthLogin
+app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  const result = adminAuthLogin(email, password);
+
+  if ('error' in result) {
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+});
+
 // ------clear---------/ //
 app.delete('/v1/clear', (req: Request, res: Response) => {
   const result = clear();

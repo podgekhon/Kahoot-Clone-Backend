@@ -273,7 +273,7 @@ describe('test for adminAuthLogin', () => {
   let userId: { authUserId: number };
 
   // test for email address doesn't exists when login
-  test.skip('Check invalid email', () => {
+  test('Check invalid email', () => {
     const resAuthLogin = request(
       'POST',
       SERVER_URL + '/v1/admin/auth/login',
@@ -330,7 +330,7 @@ describe('test for adminAuthLogin', () => {
   });
 
   // test for successful login
-  test.skip('successful login', () => {
+  test('successful login', () => {
     const resRegister = request(
       'POST',
       `${url}:${port}/v1/admin/auth/register`,
