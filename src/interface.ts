@@ -59,4 +59,25 @@ export interface userDetails {
 }
 
 export interface emptyReturn {}
+
 ////////////// interface for quiz.ts //////////////////
+export interface quizList {
+  quizzes: {
+    quizId: number,
+    name: string,
+  }[]
+}
+
+
+export interface quizCreateResponse {
+  quizId: number,
+}
+
+
+export interface quizInfo {
+  quizId: number,
+  name: string,
+  timeCreated: number,
+  timeLastEdited: number,
+  description: string,
+}

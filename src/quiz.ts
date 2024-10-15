@@ -1,63 +1,32 @@
-import { getData } from './dataStore.js';
+import { getData, setData } from './dataStore';
+import {
+  validateToken,
+  generateToken, 
+  isUserValid, 
+  isStringValid,
+  isNameLengthValid,
+  isNameTaken,
+  isValidQuiz
+} from './helperfunction'
 
-interface emptyReturn {}
+import { 
+  emptyReturn,
+  errorMessages,
+  quizList,
+  quizCreateResponse,
+  quizInfo,
+  quiz,
+  user,
+  dataStore as data
+} from './interface';
 
-export interface errorMessages {
-  error: string,
-}
 
-export interface quizList {
-  quizzes: {
-    quizId: number,
-    name: string,
-  }[]
-}
-
-export interface quizCreateResponse {
-  quizId: number,
-}
-
-export interface quizInfo {
-  quizId: number,
-  name: string,
-  timeCreated: Date,
-  timeLastEdited: Date,
-  description: string,
-}
-
-interface quiz {
-  quizId: number,
-  ownerId: number,
-  name: string,
-  description: string,
-  quiz: {
-    question: string,
-    answers: [],
-  },
-  timeCreated: Date,
-  timeLastEdited: Date,
-}
-
-interface user {
-  userId: number,
-  nameFirst: string,
-  nameLast: string,
-  email: string,
-  numSuccessfulLogins: number,
-  numFailedPasswordsSinceLastLogin: number,
-  oldPasswords: [],
-  currentPassword: string,
-}
-interface data {
-  users: user[],
-  quizzes: quiz[]
-}
 
 /**
   * Provide a list of all quizzes that are owned by
   * the currently logged in user.
   *
-  * @param {integer} authUserId - authUserId
+  * @param {string} token - authUserId
   *
   * @return {quizzes : [
   *     {
@@ -66,8 +35,14 @@ interface data {
   *     }
   * ]}
 */
-export const adminQuizList = (authUserId: number): errorMessages| quizList => {
+export const adminQuizList = (token: string): errorMessages| quizList => {
   const data = getData();
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+
   // Find the user based on authUserId
   const user = data.users.find(user => user.userId === authUserId);
 
@@ -89,40 +64,26 @@ export const adminQuizList = (authUserId: number): errorMessages| quizList => {
 };
 
 /**
- * Checks if the provided user ID refers to a valid user.
- *
- * @param {integer} authUserId - the user ID to be validated.
- * @returns {boolean} - returns true if the user exists, false otherwise.
- *
- */
-export const isUserValid = (authUserId: number): boolean => {
-  // loop thru users array and match authUserId
-  const data = getData();
-  const user = data.users.find(users => users.userId === authUserId);
-
-  // check if user valid
-  if (user) {
-    return true;
-  }
-
-  return false;
-};
-
-/**
   * Given basic details about a new quiz, create one for the logged in user.
   *
-  * @param {integer} authUserId - id of authUser
+  * @param {string} token - id of authUser
   * @param {string} name - name of new quiz
   * @param {string} description - description of new quiz for logged in user
   *
   * @returns {integer} - id of quiz
 */
 export const adminQuizCreate = (
-  authUserId: number,
+  token: string,
   name: string,
   description: string
 ): quizCreateResponse | errorMessages => {
   const data = getData();
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
 
   // checks if user is valid
   if (!isUserValid(authUserId)) {
@@ -162,28 +123,39 @@ export const adminQuizCreate = (
     ownerId: authUserId,
     name: name,
     description: description,
-    quiz: {},
+    quiz: {
+      question: '',
+      answers: [] as string[],
+    },
     timeCreated: Math.floor(Date.now()),
     timeLastEdited: Math.floor(Date.now()),
   };
 
   data.quizzes.push(newQuiz);
+  setData(data);
   return { quizId: newQuiz.quizId };
 };
 
 /**
   * Given a particular quiz, permanently remove the quiz.
   *
-  * @param {integer} authUserId - id of authUser
+  * @param {string} token - id of authUser
   * @param {integer} quizId - id of quiz
   *
   * @returns {} - empty object
 */
 export const adminQuizRemove = (
-  authUserId: number,
+  token: string,
   quizId: number
 ): errorMessages | emptyReturn => {
   const data = getData();
+    // get userId from token
+    const tokenValidation = validateToken(token);
+    if ('error' in tokenValidation) {
+      return { error: tokenValidation.error };
+    }
+    const authUserId = tokenValidation.authUserId;
+  
   const error = isValidQuiz(authUserId, quizId, data);
   if (error) {
     return error;
@@ -192,20 +164,26 @@ export const adminQuizRemove = (
   // remove the correct quiz
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   data.quizzes.splice(quizIndex, 1);
-
+  setData(data);
   return {};
 };
 
 /**
   * Get all of the relevant information about the current quiz.
   *
-  * @param {integer} authUserId - id of authUser
+  * @param {string} token - id of authUser
   * @param {integer} quizId - id of quiz
   *
   * @returns {object} - struct containing info for quiz
 */
-export const adminQuizInfo = (authUserId: number, quizId: number): errorMessages | quizInfo => {
+export const adminQuizInfo = (token: string, quizId: number): errorMessages | quizInfo => {
   const data = getData();
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
 
   // Check if authUserId is valid
   const user = data.users.find(user => user.userId === authUserId);
@@ -234,81 +212,28 @@ export const adminQuizInfo = (authUserId: number, quizId: number): errorMessages
   };
 };
 
-/**
-  * checks if string contains invalid characters
-  *
-  * @param {string}  - any string user inputs
-  *
-  * @returns {boolean} - false if string contains non alphanumeric
-*/
-const isStringValid = (string: string): boolean => {
-  const containsInvalidChar = /[^a-zA-Z0-9\s]/.test(string);
-  // checks if string contains invalid char
-  if (containsInvalidChar) {
-    return false;
-  }
-
-  return true;
-};
-
-// helper function: checks for valid name length
-// function will return false if name length is < 3 or > 30
-// return true if otherwise
-
-/**
-  * checks for length of name, returns error if name < 3 or > 30
-  *
-  * @param {string} name - any string name
-  *
-  * @returns {object} - returns specific error object depending on name length
-*/
-const isNameLengthValid = (name: string): errorMessages | null => {
-  if (name.length < 3) {
-    // if length is less than 3 char
-    return { error: 'Name is less than 3 characters.' };
-  } else if (name.length > 30) {
-    // if length is more than 30 char
-    return { error: 'Name is more than 30 characters.' };
-  }
-
-  return undefined;
-};
-
-// helper function: checks if the user has quizzes with same name
-// function willl return true if they do
-// return false if otherwise
-
-/**
-  * checks if name is already taken
-  *
-  * @param {number}  authUserId - user's Id
-  * @param {string}  name - any string name
-  *
-  * @returns {boolean} - returns false if name is already taken
-*/
-const isNameTaken = (authUserId: number, name: string): boolean => {
-  const data = getData();
-  return data.quizzes.some((quiz) => {
-    return (quiz.ownerId === authUserId &&
-    name === quiz.name);
-  });
-};
 
 /**
   * Update the name of the relevant quiz
   *
-  * @param {integer} authUserId - id of authUser
+  * @param {integestringr} token - id of authUser
   * @param {integer} quizId - id of quiz
   * @param {string} name - quiz name
   *
   * @returns {} - empty object
 */
 export const adminQuizNameUpdate = (
-  authUserId: number,
+  token: string,
   quizId: number,
   name: string
 ): errorMessages | emptyReturn => {
   const data = getData();
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
 
   if (!isUserValid(authUserId)) {
     return { error: 'AuthUserId is not a valid user.' };
@@ -344,24 +269,32 @@ export const adminQuizNameUpdate = (
   quiz.name = name;
   // Update timeLastEdited
   quiz.timeLastEdited = Math.floor(Date.now());
+  setData(data);
   return { };
 };
 
 /**
   * Update the description of the relevant quiz
   *
-  * @param {integer} authUserId - id of authUser
+  * @param {string} token - id of authUser
   * @param {integer} quizId - id of quiz
   * @param {string} description - quiz name
   *
   * @returns {} - empty object
 */
 export const adminQuizDescriptionUpdate = (
-  authUserId: number,
+  token: string,
   quizId: number,
   description: string
 ): errorMessages | emptyReturn => {
   const data = getData();
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+  
   // error checkings for invalid userId, quizId
   const error = isValidQuiz(authUserId, quizId, data);
   if (error) {
@@ -378,32 +311,7 @@ export const adminQuizDescriptionUpdate = (
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
   validQuizId.description = description;
   validQuizId.timeLastEdited = Math.floor(Date.now());
+  
+  setData(data);
   return { };
-};
-
-/**
- * Validates if a quiz is associated with a valid user and is owned by that user.
- *
- * @param {integer} authUserId - the user ID of the authorized user.
- * @param {integer} quizId - the ID of the quiz to be validated.
- * @param {object} data - the dataset containing user and quiz information.
- * @returns {object|null} - an error object if validation fails,
- *                         or null if the quiz and user are valid.
- *
- */
-const isValidQuiz = (authUserId: number, quizId: number, data: data): errorMessages | null => {
-  const validUserId = data.users.find(user => user.userId === authUserId);
-  const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
-
-  // check invalid user id
-  if (!validUserId) {
-    return { error: 'AuthUserId is not valid.' };
-  } else if (!validQuizId) {
-    // invalid quiz id
-    return { error: 'QuizID does not refer to a valid quiz.' };
-  } else if (validQuizId.ownerId !== authUserId) {
-    // quiz id does not refer to it's owner
-    return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
-  }
-  return null;
 };

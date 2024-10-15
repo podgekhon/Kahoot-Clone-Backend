@@ -231,7 +231,7 @@ export const adminUserDetailsUpdate = (
   currentUser.email = email;
   currentUser.nameFirst = nameFirst;
   currentUser.nameLast = nameLast;
-
+  setData(data);
   return {};
 };
 
@@ -288,5 +288,6 @@ export const adminUserPasswordUpdate = (
   // Add the current password to oldPasswords array
   user.oldPasswords.push(user.currentPassword);
   user.currentPassword = newPassword;
+  setData(data);
   return {};
 };
