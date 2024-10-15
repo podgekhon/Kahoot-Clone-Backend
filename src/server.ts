@@ -34,7 +34,8 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 import {
   adminAuthRegister,
-  adminUserPasswordUpdate
+  adminUserPasswordUpdate,
+  adminAuthLogin
 } from './auth';
 import { adminQuizCreate } from './quiz';
 import { clear } from './other';
@@ -75,6 +76,30 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
     res.status(httpStatus.BAD_REQUEST).json(result);
     return;
   }
+  return res.json(result);
+});
+
+// ------clear---------/ //
+app.delete('/v1/clear', (req: Request, res: Response) => {
+  const result = clear();
+  return res.json(result);
+});
+// adminUserPasswordUpdate\
+app.put('/v1/admin/user/password', (req: Request, res: Response) => {
+  const { token, oldPassword, newPassword } = req.body;
+  const validtoken = validateToken(token);
+  // invalid token
+  if ('error' in validtoken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'token is empty or invalid'
+    });
+  }
+
+  const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
+  if ('error' in result) {
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+
   return res.json(result);
 });
 
