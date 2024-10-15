@@ -35,7 +35,9 @@ const HOST: string = process.env.IP || '127.0.0.1';
 import {
   adminAuthRegister,
   adminUserPasswordUpdate,
-  adminAuthLogin
+  adminAuthLogin,
+  adminUserDetails,
+  adminUserDetailsUpdate
 } from './auth';
 import { adminQuizCreate } from './quiz';
 import { clear } from './other';
@@ -150,6 +152,33 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
   return res.json(result);
+});
+
+
+app.get('/v1/admin/user/details', (req, res) => {
+  const { token } = req.body;
+  const result = validateToken(token);
+  if ('error' in result) {
+    return res.status(401).json({error: 'Unknown Type: string - error'});
+  }
+  const userDetails = adminUserDetails(token);
+  if ('error' in userDetails) {
+    return res.status(401).json({ error: "Unknown Type: string - error" });
+  }
+  return res.status(200).json(userDetails);
+});
+
+app.put('/v1/admin/user/details', (req, res) => {
+  const { token, email, nameFirst, nameLast } = req.body;
+  const result = validateToken(token);
+  if ('error' in result) {
+    return res.status(401).json({error: 'Unknown Type: string - error'});
+  }
+  const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+  if ('error' in updateResult) {
+    return res.status(400).json({ error: "Unknown Type: string - error" });
+  }
+  return res.status(200).json({});
 });
 
 // ====================================================================

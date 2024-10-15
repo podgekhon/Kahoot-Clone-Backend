@@ -710,6 +710,200 @@ describe('test for adminUserPasswordUpdate', () => {
   });
 });
 
+
+// tests for adminUserDetail
+describe('adminUserDetail', () => {
+  let admin: any;
+  let adminToken: string;
+
+  beforeEach(() => {
+    const response = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'admin@unsw.edu.au',
+        password: 'AdminPass1234',
+        nameFirst: 'Admin',
+        nameLast: 'User'
+      },
+      timeout: TIMEOUT_MS
+    });
+    admin = JSON.parse(response.body.toString());
+    adminToken = admin.token;
+  });
+
+  test('Get user details successfully', () => {
+    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+      json: { token: adminToken },
+      timeout: TIMEOUT_MS
+    });
+    const userDetails = JSON.parse(userDetailsResponse.body.toString());
+    expect(userDetailsResponse.statusCode).toStrictEqual(200);
+    expect(userDetails.user).toHaveProperty('email', 'admin@unsw.edu.au');
+    expect(userDetails.user).toHaveProperty('name', 'Admin User');
+    expect(userDetails.user).toHaveProperty('numFailedPasswordsSinceLastLogin', 0);
+    expect(userDetails.user).toHaveProperty('numSuccessfulLogins', 1);
+  });
+
+  test('Get user details with invalid format token', () => {
+    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+      json: { token: 12345 },
+      timeout: TIMEOUT_MS
+    });
+    expect(userDetailsResponse.statusCode).toStrictEqual(401);
+  });
+
+  test('Get user details with valid token but missing fields in response', () => {
+    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+      json: { token: adminToken },
+      timeout: TIMEOUT_MS
+    });
+    const userDetails = JSON.parse(userDetailsResponse.body.toString());
+    expect(userDetailsResponse.statusCode).toStrictEqual(200);
+    expect(userDetails.user).toHaveProperty('email');
+    expect(userDetails.user).toHaveProperty('name');
+  });
+
+  test('Get user details with token from different user', () => {
+    const newAdminResponse = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'newadmin@unsw.edu.au',
+        password: 'NewAdminPass1234',
+        nameFirst: 'New',
+        nameLast: 'Admin'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const newAdmin = JSON.parse(newAdminResponse.body.toString());
+    const newAdminToken = newAdmin.token;
+
+    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+      json: { token: newAdminToken },
+      timeout: TIMEOUT_MS
+    });
+    const userDetails = JSON.parse(userDetailsResponse.body.toString());
+    expect(userDetailsResponse.statusCode).toStrictEqual(200);
+    expect(userDetails.user).toHaveProperty('email', 'newadmin@unsw.edu.au');
+  });
+
+  test('Get user details with token that was generated from an earlier session', () => {
+    const earlierToken = adminToken; 
+    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+      json: { token: earlierToken },
+      timeout: TIMEOUT_MS
+    });
+    expect(userDetailsResponse.statusCode).toStrictEqual(200);
+  });
+
+  test('Get user details when server is under heavy load', () => {
+    for (let i = 0; i < 100; i++) {
+      request('GET', SERVER_URL + '/v1/admin/user/details', {
+        json: { token: adminToken },
+        timeout: TIMEOUT_MS
+      });
+    }
+    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+      json: { token: adminToken },
+      timeout: TIMEOUT_MS
+    });
+    expect(userDetailsResponse.statusCode).toStrictEqual(200);
+  });
+});
+
+
+// tests for adminUserDetailsUpdate
+describe('adminUserDetailsUpdate', () => {
+  let admin: any;
+  let adminToken: string;
+
+  beforeEach(() => {
+    const response = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'admin@unsw.edu.au',
+        password: 'AdminPass1234',
+        nameFirst: 'Admin',
+        nameLast: 'User'
+      },
+      timeout: TIMEOUT_MS
+    });
+    admin = JSON.parse(response.body.toString());
+    adminToken = admin.token;
+  });
+
+  test('Update user details successfully', () => {
+    const updateResponse = request('PUT', SERVER_URL + '/v1/admin/user/details', {
+      json: {
+        token: adminToken,
+        nameFirst: 'UpdatedFirst',
+        nameLast: 'UpdatedLast',
+        email: 'newadmin@unsw.edu.au'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const updateResult = JSON.parse(updateResponse.body.toString());
+    expect(updateResponse.statusCode).toStrictEqual(200);
+    expect(updateResult).toStrictEqual({});
+  });
+
+  test('Update user details with invalid email', () => {
+    const updateResponse = request('PUT', SERVER_URL + '/v1/admin/user/details', {
+      json: {
+        token: adminToken,
+        nameFirst: 'UpdatedFirst',
+        nameLast: 'UpdatedLast',
+        email: 'invalidEmail'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const updateResult = JSON.parse(updateResponse.body.toString());
+    expect(updateResponse.statusCode).toStrictEqual(400);
+    expect(updateResult).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Update user details with invalid first name', () => {
+    const updateResponse = request('PUT', SERVER_URL + '/v1/admin/user/details', {
+      json: {
+        token: adminToken,
+        nameFirst: 'Invalid@Name',
+        nameLast: 'UpdatedLast',
+        email: 'newadmin@unsw.edu.au'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const updateResult = JSON.parse(updateResponse.body.toString());
+    expect(updateResponse.statusCode).toStrictEqual(400);
+    expect(updateResult).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Update user details with invalid last name', () => {
+    const updateResponse = request('PUT', SERVER_URL + '/v1/admin/user/details', {
+      json: {
+        token: adminToken,
+        nameFirst: 'UpdatedFirst',
+        nameLast: 'Invalid@Name',
+        email: 'newadmin@unsw.edu.au'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const updateResult = JSON.parse(updateResponse.body.toString());
+    expect(updateResponse.statusCode).toStrictEqual(400);
+    expect(updateResult).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Update user details with all empty fields', () => {
+    const updateResponse = request('PUT', SERVER_URL + '/v1/admin/user/details', {
+      json: {
+        token: adminToken,
+        nameFirst: '',
+        nameLast: '',
+        email: ''
+      },
+      timeout: TIMEOUT_MS
+    });
+    const updateResult = JSON.parse(updateResponse.body.toString());
+    expect(updateResponse.statusCode).toStrictEqual(400);
+    expect(updateResult).toStrictEqual({ error: expect.any(String) });
+  });
+});
+
 // /// ////////-----adminUserDetails-----////////////
 // describe('test for adminUserDetails', () => {
 //   test('successfully returns details of a valid user', () => {
