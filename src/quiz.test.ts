@@ -522,7 +522,7 @@ test('test clear successfule', () => {
   );
   // has correct return type
   expect(JSON.parse(result.body.toString())).toStrictEqual({});
-
+  expect(result.statusCode).toStrictEqual(200);
   /*
   // clear up everything so will return error if a get request is called
   const userListRes = request('GET', SERVER_URL + '/v1/admin/user/details', {
