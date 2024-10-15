@@ -159,12 +159,12 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 
 
 app.get('/v1/admin/user/details', (req, res) => {
-  const { token } = req.body;
-  const result = validateToken(token);
+  const { token } = req.query;
+  const result = validateToken(token as string);
   if ('error' in result) {
     return res.status(401).json({error: 'Unknown Type: string - error'});
   }
-  const userDetails = adminUserDetails(token);
+  const userDetails = adminUserDetails(token as string);
   if ('error' in userDetails) {
     return res.status(401).json({ error: "Unknown Type: string - error" });
   }
