@@ -1,6 +1,5 @@
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
-import { validateToken } from './helperfunction';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
@@ -42,7 +41,7 @@ const invalidPasswords = [
 ];
 
 /// //////////-----adminAuthRegister------///////////
-describe.only('adminAuthRegister', () => {
+describe('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
     // let user1: authResponse | errorMessages;
     let user1Return: string;
@@ -461,20 +460,21 @@ describe.only('adminAuthRegister', () => {
 
 /// //////-----adminUserPasswordUpdate-----//////////
 describe('test for adminUserPasswordUpdate', () => {
-  let user1Return: string;
-  let user1: any;
+  let user1Return: any;
+  let user1token: string;
+  let user1;
   beforeEach(() => {
     user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
       json: {
-        email: 'eric@unsw.edu.au',
-        password: '1234abcd',
+        email: 'ericMa@unsw.edu.au',
+        password: 'EricMa1234',
         nameFirst: 'Eric',
         nameLast: 'Ma'
       },
       timeout: TIMEOUT_MS
     });
-
     user1Return = JSON.parse(user1.body.toString());
+    user1token = user1Return.token;
   });
 
   // authUserId is not valid user
@@ -484,32 +484,34 @@ describe('test for adminUserPasswordUpdate', () => {
       SERVER_URL + '/v1/admin/user/password',
       {
         json: {
-          token: 'abcd',
+          token: JSON.stringify('abcd'),
           oldPassword: 'EricMa1234',
           newPassword: '1234EricMa'
         },
         timeout: TIMEOUT_MS
       }
-    )
+    );
     expect(result.statusCode).toStrictEqual(401);
     expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
   });
+
   test('empty token', () => {
     const result = request(
       'PUT',
       SERVER_URL + '/v1/admin/user/password',
       {
         json: {
-          token: '',
+          token: JSON.stringify(''),
           oldPassword: 'EricMa1234',
           newPassword: '1234EricMa'
         },
         timeout: TIMEOUT_MS
       }
-    )
+    );
     expect(result.statusCode).toStrictEqual(401);
     expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
   });
+
   // Old password is not the correct old password
   test('old password is wrong', () => {
     const result = request(
@@ -517,13 +519,13 @@ describe('test for adminUserPasswordUpdate', () => {
       SERVER_URL + '/v1/admin/user/password',
       {
         json: {
-          token: user1Return,
+          token: user1token,
           oldPassword: 'wrong',
           newPassword: '1234EricMa'
         },
         timeout: TIMEOUT_MS
       }
-    )
+    );
     expect(result.statusCode).toStrictEqual(400);
     expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
   });
@@ -534,13 +536,13 @@ describe('test for adminUserPasswordUpdate', () => {
       SERVER_URL + '/v1/admin/user/password',
       {
         json: {
-          token: user1Return,
+          token: user1token,
           oldPassword: 'EricMa1234',
           newPassword: 'EricMa1234'
         },
         timeout: TIMEOUT_MS
       }
-    )
+    );
     expect(result.statusCode).toStrictEqual(400);
     expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
   });
@@ -551,25 +553,25 @@ describe('test for adminUserPasswordUpdate', () => {
       SERVER_URL + '/v1/admin/user/password',
       {
         json: {
-          token: user1Return,
+          token: user1token,
           oldPassword: 'EricMa1234',
           newPassword: '1234EricMa'
         },
         timeout: TIMEOUT_MS
       }
-    )
+    );
     const result = request(
       'PUT',
       SERVER_URL + '/v1/admin/user/password',
       {
         json: {
-          token: user1Return,
+          token: user1token,
           oldPassword: '1234EricMa',
           newPassword: 'EricMa1234'
         },
         timeout: TIMEOUT_MS
       }
-    )
+    );
     expect(result.statusCode).toStrictEqual(400);
     expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
   });
@@ -581,13 +583,13 @@ describe('test for adminUserPasswordUpdate', () => {
         SERVER_URL + '/v1/admin/user/password',
         {
           json: {
-            token: user1Return,
+            token: user1token,
             oldPassword: 'EricMa1234',
             newPassword: password
           },
           timeout: TIMEOUT_MS
         }
-      )
+      );
       expect(result.statusCode).toStrictEqual(400);
       expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
     });
@@ -599,13 +601,13 @@ describe('test for adminUserPasswordUpdate', () => {
       SERVER_URL + '/v1/admin/user/password',
       {
         json: {
-          token: user1Return,
+          token: user1token,
           oldPassword: 'EricMa1234',
           newPassword: '1234EricMa'
         },
         timeout: TIMEOUT_MS
       }
-    )
+    );
     expect(result.statusCode).toStrictEqual(200);
     expect(JSON.parse(result.body.toString())).toStrictEqual({});
   });

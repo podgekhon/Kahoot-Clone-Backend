@@ -41,11 +41,11 @@ export function generateToken(userId: number): string {
   const sessionId = lastSessionId++;
   const session: token = {
     sessionId,
-    userId,
+    userId
   };
   data.sessions.push(session);
   setData(data);
-  return encodeURIComponent(JSON.stringify({ sessionId }));
+  return encodeURIComponent(JSON.stringify({ sessionId: sessionId }));
 }
 
 /// ///////////////////////////////////////////////////////////////
