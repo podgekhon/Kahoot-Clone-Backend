@@ -81,7 +81,7 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
 // adminUserPasswordUpdate\
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
-  const validtoken = validateToken(JSON.stringify(token));
+  const validtoken = validateToken(token);
   // invalid token
   if ('error' in validtoken) {
     return res.status(httpStatus.UNAUTHORIZED).json({
