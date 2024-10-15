@@ -710,11 +710,10 @@ describe('test for adminUserPasswordUpdate', () => {
   });
 });
 
-
 /// ////////-----adminUserDetails-----////////////
 describe('test for adminUserDetails', () => {
   let user: { token: string };
-  
+
   beforeEach(() => {
     // Register a user
     const resRegister = request('POST', `${url}:${port}/v1/admin/auth/register`, {
@@ -752,7 +751,7 @@ describe('test for adminUserDetails', () => {
       timeout: 100,
     });
     const result = JSON.parse(resDetails.body as string);
-    
+
     expect(result).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -843,7 +842,6 @@ describe('test for adminUserDetails', () => {
     expect(result.user.numFailedPasswordsSinceLastLogin).toBe(0);
   });
 });
-
 
 // tests for adminUserDetailsUpdate
 describe('adminUserDetailsUpdate', () => {

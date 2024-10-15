@@ -154,7 +154,6 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-
 app.get('/v1/admin/user/details', (req, res) => {
   const { token } = req.query;
 
@@ -170,11 +169,11 @@ app.put('/v1/admin/user/details', (req, res) => {
   const { token, email, nameFirst, nameLast } = req.body;
   const result = validateToken(token);
   if ('error' in result) {
-    return res.status(401).json({error: 'Unknown Type: string - error'});
+    return res.status(401).json({ error: 'Unknown Type: string - error' });
   }
   const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
   if ('error' in updateResult) {
-    return res.status(400).json({ error: "Unknown Type: string - error" });
+    return res.status(400).json({ error: 'Unknown Type: string - error' });
   }
   return res.status(200).json({});
 });
