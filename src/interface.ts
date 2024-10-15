@@ -47,12 +47,12 @@ export interface tokenReturn {
 
 export interface userDetails {
 user: {
-		userId: number,
-		name: string,
-		email: string,
-		numSuccessfulLogins: number,
-		numFailedPasswordsSinceLastLogin: number,
- 	}
+userId: number,
+name: string,
+email: string,
+numSuccessfulLogins: number,
+numFailedPasswordsSinceLastLogin: number,
+}
 }
 
 export interface emptyReturn {}
