@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { dataStore } from './interface';
 
 // YOU MAY MODIFY THIS OBJECT BELOW
 let data: dataStore = {
@@ -7,41 +8,6 @@ let data: dataStore = {
   sessions: []
 };
 
-export interface dataStore {
-  users: user[],
-  quizzes: quiz[],
-  sessions: token[];
-}
-
-export interface user {
-  userId: number,
-  nameFirst: string,
-  nameLast: string,
-  name: string,
-  email: string,
-  numSuccessfulLogins: number,
-  numFailedPasswordsSinceLastLogin: number,
-  oldPasswords: string[],
-  currentPassword: string,
-}
-
-export interface quiz {
-  quizId: number,
-  ownerId: number,
-  name: string,
-  description: string,
-  quiz: {
-    question: string,
-    answers: string[],
-  },
-  timeCreated: number,
-  timeLastEdited: number,
-}
-
-export interface token {
-  sessionId: number;
-  userId: number;
-}
 
 // YOU MAY MODIFY THIS OBJECT ABOVE
 

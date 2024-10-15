@@ -2,35 +2,20 @@
 
 /// //////////// UNCOMMENT THIS LINE BELOW //////////////
 // import { TokenType } from 'yaml/dist/parse/cst.js';
-import { getData, setData, token } from './dataStore';
+import { getData, setData } from './dataStore';
+import { token } from './interface';
+import {
+  errorMessages,
+  tokenReturn,
+  userDetails,
+} from './interface';
 import validator from 'validator';
-
 /// //------ASSUMPTIONS----//////
 // assume functions are case sensitive
 // assume white space is kept
 
 // Global variable to keep track of the last used session ID
 let lastSessionId = 0;
-
-export interface errorMessages {
-  error: string,
-}
-
-export interface tokenReturn {
-  token: string,
-}
-
-export interface userDetails {
-  user:
-  {
-    userId: number,
-    name: string,
-    email: string,
-    numSuccessfulLogins: number,
-    numFailedPasswordsSinceLastLogin: number,
-  }
-}
-
 
 interface emptyReturn {}
 /**
