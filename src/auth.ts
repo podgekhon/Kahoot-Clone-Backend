@@ -8,7 +8,17 @@ import {
   errorMessages,
   tokenReturn,
   userDetails,
+  emptyReturn
 } from './interface';
+
+import {
+  validateToken,
+  generateToken,
+  isEmailUsed,
+  isNameValid,
+  isValidPassword
+} from './helperfunction';
+
 import validator from 'validator';
 /// //------ASSUMPTIONS----//////
 // assume functions are case sensitive
@@ -17,7 +27,7 @@ import validator from 'validator';
 // Global variable to keep track of the last used session ID
 let lastSessionId = 0;
 
-interface emptyReturn {}
+
 /**
  * Register a user with an email, password, and names,
  * then returns their authUserId value.
@@ -65,6 +75,7 @@ export const adminAuthRegister = (
 
   // 7. Register the user and update the data
   const authUserId = data.users.length + 1;
+  
   data.users.push({
     userId: authUserId,
     email: email,
@@ -76,79 +87,14 @@ export const adminAuthRegister = (
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   });
+
   const token = generateToken(authUserId);
   setData(data);
   return { token };
 };
 
-// helper functions for adminAuthRegister
 
-/**
-  * Generates a session token for a given userId and stores the session
-  * in the data store.
-  *
-  * @param {number} userId - The unique identifier of the user
-  *
-  * @returns {string} - A URL-encoded token containing the session ID
-  */
-function generateToken(userId: number): string {
-  const data = getData();
-  const sessionId = lastSessionId++;
-  const session: token = {
-    sessionId,
-    userId,
-  };
-  data.sessions.push(session);
-  setData(data);
-  return encodeURIComponent(JSON.stringify({ sessionId }));
-}
 
-/**
- *
- * @param {string} email - email use to register
- * @returns {boolean} - return true if valid
- */
-const isEmailUsed = (email: string): boolean => {
-  const data = getData();
-  return data.users.some(user => user.email === email);
-};
-
-/**
- *
- * @param {string} name - user's firstname or lastname
- * @returns {boolean} - return true if name is valid
- */
-const isNameValid = (name: string): boolean => {
-  const namePattern = /^[a-zA-z'-\s]+$/;
-  return namePattern.test(name) && name.length >= 2 && name.length <= 20;
-};
-
-/**
- * Validates a password based on length, letter, and number criteria.
- *
- * @param {string} password - The password to be validated.
- * @returns {object} An object with an error message if invalid, or
- * { valid: true } if the password is valid.
- *
- */
-const isValidPassword = (password: string): { valid?: boolean; error?: string } => {
-  // Check if password length is at least 8 characters
-  if (password.length < 8) {
-    return { error: 'Password is less than 8 characters.' };
-  }
-
-  // Check if password contains at least one letter
-  const containsLetter = /[a-zA-Z]/.test(password);
-  // Check if password contains at least one number
-  const containsNumber = /\d/.test(password);
-  if (!containsLetter || !containsNumber) {
-    return {
-      error: 'Password must contain at least one letter and one number.'
-    };
-  }
-
-  return { valid: true };
-};
 
 /**
   * Given a registered user's email and password returns their authUserId value.
@@ -178,7 +124,7 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
   const token = generateToken(user.userId);
-
+  setData(data);
   return { token };
 };
 

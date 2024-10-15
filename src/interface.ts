@@ -57,5 +57,6 @@ export interface userDetails {
 		numFailedPasswordsSinceLastLogin: number,
 	}
 }
-  
+
+export interface emptyReturn {}
 ////////////// interface for quiz.ts //////////////////
