@@ -178,7 +178,6 @@ describe('adminQuizCreate', () => {
   });
 });
 
-//  tests for adminQuizRemove
 describe('adminQuizRemove', () => {
   let quiz: any;
   let adminToken: string;
@@ -207,10 +206,7 @@ describe('adminQuizRemove', () => {
   });
 
   test('Successfully delete quiz', () => {
-    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}`, {
-      qs: {
-        token: adminToken,
-      },
+    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`, {
       timeout: TIMEOUT_MS
     });
     expect(deleteResponse.statusCode).toEqual(200);
@@ -218,10 +214,7 @@ describe('adminQuizRemove', () => {
   });
 
   test('Attempt to delete non-existent quiz', () => {
-    const deleteResponse = request('DELETE', SERVER_URL + '/v1/admin/quiz/9999', {
-      qs: {
-        token: adminToken,
-      },
+    const deleteResponse = request('DELETE', SERVER_URL + '/v1/admin/quiz/9999?token=' + adminToken, {
       timeout: TIMEOUT_MS
     });
     expect(deleteResponse.statusCode).toEqual(403);
@@ -229,10 +222,7 @@ describe('adminQuizRemove', () => {
   });
 
   test('Attempt to delete quiz with invalid quiz ID format', () => {
-    const deleteResponse = request('DELETE', SERVER_URL + '/v1/admin/quiz/invalidID', {
-      qs: {
-        token: adminToken,
-      },
+    const deleteResponse = request('DELETE', SERVER_URL + '/v1/admin/quiz/invalidID?token=' + adminToken, {
       timeout: TIMEOUT_MS
     });
     expect(deleteResponse.statusCode).toEqual(403);
@@ -240,17 +230,11 @@ describe('adminQuizRemove', () => {
   });
 
   test('Attempt to delete already deleted quiz', () => {
-    request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}`, {
-      qs: {
-        token: adminToken,
-      },
+    request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`, {
       timeout: TIMEOUT_MS
     });
 
-    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}`, {
-      qs: {
-        token: adminToken,
-      },
+    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`, {
       timeout: TIMEOUT_MS
     });
     expect(deleteResponse.statusCode).toEqual(403);
@@ -269,16 +253,14 @@ describe('adminQuizRemove', () => {
     });
     const otherToken = JSON.parse(registerOtherResponse.body.toString()).token;
 
-    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}`, {
-      qs: {
-        token: otherToken,
-      },
+    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${otherToken}`, {
       timeout: TIMEOUT_MS
     });
     expect(deleteResponse.statusCode).toEqual(403);
     expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
   });
 });
+
 
 /*
 describe.skip('adminQuizNameUpdate', () => {
