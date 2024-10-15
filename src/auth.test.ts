@@ -747,7 +747,7 @@ describe('test for adminUserDetails', () => {
     });
   });
 
-  test('returns error when token d is not valid', () => {
+  test('returns error when token is not valid', () => {
     const resDetails = request('GET', `${url}:${port}/v1/admin/user/details?token=invalidToken`, {
       timeout: 100,
     });
