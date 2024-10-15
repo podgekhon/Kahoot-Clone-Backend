@@ -22,10 +22,7 @@ export interface quiz {
     ownerId: number,
     name: string,
     description: string,
-    quiz: {
-      question: string,
-      answers: string[],
-    },
+    question: {},
     timeCreated: number,
     timeLastEdited: number,
   }
@@ -35,6 +32,21 @@ export interface token {
     userId: number;
   }
 
+	
+export interface question {
+	token: string, 
+	questionBody: {
+		question: string,
+		timelimit: number,
+		points: number,
+		answerOptions: answers[]
+	}
+}
+
+interface answers {
+	answer: string,
+	correct: boolean
+}
 /// /////////////// interface for auth.ts/////////////////////
 
 export interface errorMessages {
@@ -76,3 +88,5 @@ export interface quizInfo {
   timeLastEdited: number,
   description: string,
 }
+
+

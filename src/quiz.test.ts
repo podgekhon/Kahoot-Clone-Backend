@@ -1,95 +1,187 @@
 import request from 'sync-request-curl';
-import { url, port } from './config.json';
+import { port, url } from './config.json';
 
 const SERVER_URL = `${url}:${port}`;
+const TIMEOUT_MS = 100 * 1000;
 
-/*
-describe.skip('adminQuizCreate', () => {
-  let user1: authResponse;
+beforeEach(() => {
+  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
+});
+
+
+describe('adminQuizCreate', () => {
+  let user1;
+  let user1Return: any;
+  let user1token: string;
+  // register a user
   beforeEach(() => {
-    user1 = adminAuthRegister(
-      'john123@gmail.com',
-      'wordpass123',
-      'john',
-      'smith'
-    ) as authResponse;
+    user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'ericMa@unsw.edu.au',
+        password: 'EricMa1234',
+        nameFirst: 'Eric',
+        nameLast: 'Ma'
+      },
+      timeout: TIMEOUT_MS
+    });
+    user1Return = JSON.parse(user1.body.toString());
+    user1token = user1Return.token;
+
   });
   // invalid input tests
   describe('invalid inputs', () => {
-    test('invalid authUserId', () => {
-      expect(
-        adminQuizCreate(3, 'chemQuiz', 'quiz about chemistry')
-      ).toStrictEqual({ error: expect.any(String) });
+    test('invalid token', () => {
+      const result = request(
+        'POST',
+        SERVER_URL + '/v1/admin/quiz',
+        {
+          json: {
+            token: JSON.stringify('hahainvalid'),
+            name: 'Quiz1',
+            description: 'lol invalid token'
+          },
+          timeout: TIMEOUT_MS
+        }
+      )
+      expect(result.statusCode).toStrictEqual(401);
+      expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+    });
+    test('empty token', () => {
+      const result = request(
+        'POST',
+        SERVER_URL + '/v1/admin/quiz',
+        {
+          json: {
+            token: JSON.stringify(''),
+            name: 'Quiz1',
+            description: 'lol invalid token'
+          },
+          timeout: TIMEOUT_MS
+        }
+      )
+      expect(result.statusCode).toStrictEqual(401);
+      expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
     });
 
     test('name less than 3 characters', () => {
-      const quiz1 = adminQuizCreate(
-        user1.authUserId,
-        'cq',
-        'science'
-      );
-      expect(quiz1).toStrictEqual({ error: expect.any(String) });
+      const result = request(
+        'POST',
+        SERVER_URL + '/v1/admin/quiz',
+        {
+          json: {
+            token: user1token,
+            name: '1',
+            description: 'lol too short'
+          },
+          timeout: TIMEOUT_MS
+        }
+      )
+      expect(result.statusCode).toStrictEqual(400);
+      expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+
     });
 
     test('name more than 30 characters', () => {
-      const quiz1 = adminQuizCreate(
-        user1.authUserId,
-        'Lorem ipsum dolor sit amet, con',
-        'science'
-      );
-      expect(quiz1).toStrictEqual({ error: expect.any(String) });
+      const result = request(
+        'POST',
+        SERVER_URL + '/v1/admin/quiz',
+        {
+          json: {
+            token: user1token,
+            name: 'fdjskalgeiowagheowagnwageowhgiowegwaogdlsagdslagiowaghowhagowaofdsgd',
+            description: 'toooooo long'
+          },
+          timeout: TIMEOUT_MS
+        }
+      )
+      expect(result.statusCode).toStrictEqual(400);
+      expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
     });
 
     test('name contains invalid characters', () => {
-      const quiz1 = adminQuizCreate(
-        user1.authUserId,
-        'chemQuiz_!@#',
-        'science'
-      );
-
-      expect(quiz1).toStrictEqual({ error: expect.any(String) });
+      const result = request(
+        'POST',
+        SERVER_URL + '/v1/admin/quiz',
+        {
+          json: {
+            token: user1token,
+            name: '~hahha',
+            description: 'lol invalid quiz name'
+          },
+          timeout: TIMEOUT_MS
+        }
+      )
+      expect(result.statusCode).toStrictEqual(400);
+      expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
     });
 
     test('description is more than 100 characters', () => {
-      const quiz1 = adminQuizCreate(
-        user1.authUserId,
-        'chemQuiz',
-        'Lorem ipsum dolor sit amet,' +
-        'consectetuer adipiscing elit.' +
-        'Aenean commodo ligula eget dolor. Aenean mass'
-      );
-      expect(quiz1).toStrictEqual({ error: expect.any(String) });
+      const result = request(
+        'POST',
+        SERVER_URL + '/v1/admin/quiz',
+        {
+          json: {
+            token: user1token,
+            name: 'quiz1',
+            description: 'fdsajfoejgiowajiogiowagjoawoeoiwafoiwoshishabifoewajiojgeoiwagiowhauhueiwaiuguirdfsafdsa'
+          },
+          timeout: TIMEOUT_MS
+        }
+      )
+      expect(result.statusCode).toStrictEqual(400);
+      expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
     });
 
     test('duplicate quiz names owned by same user', () => {
-      adminQuizCreate(
-        user1.authUserId,
-        'chemQuiz',
-        'science'
-      );
-      const quiz2 = adminQuizCreate(
-        user1.authUserId,
-        'chemQuiz',
-        'science'
-      );
-      expect(quiz2).toStrictEqual({ error: expect.any(String) });
+      request(
+        'POST',
+        SERVER_URL + '/v1/admin/quiz',
+        {
+          json: {
+            token: user1token,
+            name: 'quiz1',
+            description: 'this is the first quiz'
+          },
+          timeout: TIMEOUT_MS
+        }
+      )
+      const result = request(
+        'POST',
+        SERVER_URL + '/v1/admin/quiz',
+        {
+          json: {
+            token: user1token,
+            name: 'quiz1',
+            description: 'this is the second quiz with name of quiz1'
+          },
+          timeout: TIMEOUT_MS
+        }
+      )
+      expect(result.statusCode).toStrictEqual(400);
+      expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
     });
   });
 
   // valid input tests
   describe('valid inputs', () => {
-    test('returns quizId', () => {
-      const newQuiz = adminQuizCreate(
-        user1.authUserId,
-        'mathsQuiz',
-        'maths'
-      ) as quizCreateResponse;
-
-      expect(newQuiz.quizId).toStrictEqual(expect.any(Number));
-    });
+    const result = request(
+      'POST',
+      SERVER_URL + '/v1/admin/quiz',
+      {
+        json: {
+          token: user1token,
+          name: 'quiz1',
+          description: 'this is quiz 1'
+        },
+        timeout: TIMEOUT_MS
+      }
+    )
+    expect(result.statusCode).toStrictEqual(200);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ quizId: expect.any(Number) });
   });
 });
 
+/*
 describe.skip('adminQuizNameUpdate', () => {
   // invalid input tests
   let user1: authResponse;
@@ -482,10 +574,22 @@ describe.skip('adminQuizInfo Function Tests', () => {
     // Tests error when querying an invalid quiz ID
     const result = adminQuizInfo(authUserId, 999);
     expect(result).toEqual({ error: expect.any(String) });
-  });
-});
-*/
+    });
+    });
+    */
+
 test('test clear successfule', () => {
+  const result = request(
+    'DELETE',
+    SERVER_URL + '/v1/clear',
+    {
+      timeout: 100
+    }
+  );
+  // has correct return type
+  expect(JSON.parse(result.body.toString())).toStrictEqual({});
+  expect(result.statusCode).toStrictEqual(200);
+
   // let user : { token: string };
   // let quiz: { quizId: string };
 
@@ -512,18 +616,7 @@ test('test clear successfule', () => {
     timeout: 100,
   });
   const quiz = JSON.parse(quizsession.body as string);
-  */
-  const result = request(
-    'DELETE',
-    SERVER_URL + '/v1/clear',
-    {
-      timeout: 100
-    }
-  );
-  // has correct return type
-  expect(JSON.parse(result.body.toString())).toStrictEqual({});
-  expect(result.statusCode).toStrictEqual(200);
-  /*
+  
   // clear up everything so will return error if a get request is called
   const userListRes = request('GET', SERVER_URL + '/v1/admin/user/details', {
     qs: {
