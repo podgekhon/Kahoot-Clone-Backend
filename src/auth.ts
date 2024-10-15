@@ -90,6 +90,7 @@ export const adminAuthRegister = (
 
   const token = generateToken(authUserId);
   setData(data);
+
   return { token };
 };
 
@@ -133,7 +134,7 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   * "name" is the first and last name concatenated
   * with a single space between them.
   *
-  * @param {integer} authUserId - description of paramter
+  * @param {string} token - description of paramter
   *
   * @returns { user:
   *    {
@@ -145,9 +146,15 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   *  }
   *}
 */
-export const adminUserDetails = (authUserId: number): errorMessages | userDetails => {
+export const adminUserDetails = (token: string): errorMessages | userDetails => {
   const data = getData();
-  // Find the user by authUserId
+  // get userId
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+
   const user = data.users.find((user) => user.userId === authUserId);
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
@@ -168,7 +175,7 @@ export const adminUserDetails = (authUserId: number): errorMessages | userDetail
  * Given an admin user's authUserId and a set of properties,
  * update the properties of this logged in admin user.
  *
- * @param {integer} authUserId - authUserId
+ * @param {string} token - token of a logged in user
  * @param {string} email - email
  * @param {string} nameFirst - First name
  * @param {string} nameLast - Last name
@@ -176,12 +183,19 @@ export const adminUserDetails = (authUserId: number): errorMessages | userDetail
  * @return {} no return;
 */
 export const adminUserDetailsUpdate = (
-  authUserId: number,
+  token: string,
   email: string,
   nameFirst: string,
   nameLast: string
 ): errorMessages | emptyReturn => {
   const data = getData();
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+
   // Check if authUserId is valid
   const currentUser = data.users.find(user => user.userId === authUserId);
   if (!currentUser) {
@@ -225,18 +239,25 @@ export const adminUserDetailsUpdate = (
   * Given details relating to a password change,
   * update the password of a logged in user.
   *
-  * @param {integer} authUserId - description of paramter
+  * @param {string} token - description of paramter
   * @param {string} oldPassword - oldPassword
   * @param {string} newPassword - newPassword
   * ...
   * @return {} no return;
 */
 export const adminUserPasswordUpdate = (
-  authUserId: number,
+  token: string,
   oldPassword: string,
   newPassword: string
 ): errorMessages | emptyReturn => {
   const data = getData();
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+
   const user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {

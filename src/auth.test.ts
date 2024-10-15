@@ -1,15 +1,3 @@
-// import {
-//   adminAuthRegister,
-//   adminAuthLogin,
-//   adminUserDetails,
-//   adminUserDetailsUpdate,
-//   adminUserPasswordUpdate,
-//   authResponse,
-//   errorMessages,
-//   userDetails,
-//   tokenReturn
-// } from './auth';
-
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
 
