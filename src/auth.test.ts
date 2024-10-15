@@ -460,9 +460,9 @@ describe('adminAuthRegister', () => {
 
 /// //////-----adminUserPasswordUpdate-----//////////
 describe('test for adminUserPasswordUpdate', () => {
-  let user1Return: any;
-  let user1token: string;
   let user1;
+  let user1Return;
+  let user1token: string;
   beforeEach(() => {
     user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
       json: {
