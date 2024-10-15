@@ -1,26 +1,20 @@
 import { getData, setData } from './dataStore';
 import {
   validateToken,
-  generateToken, 
-  isUserValid, 
+  isUserValid,
   isStringValid,
   isNameLengthValid,
   isNameTaken,
   isValidQuiz
-} from './helperfunction'
+} from './helperfunction';
 
-import { 
+import {
   emptyReturn,
   errorMessages,
   quizList,
   quizCreateResponse,
   quizInfo,
-  quiz,
-  user,
-  dataStore as data
 } from './interface';
-
-
 
 /**
   * Provide a list of all quizzes that are owned by
@@ -149,13 +143,13 @@ export const adminQuizRemove = (
   quizId: number
 ): errorMessages | emptyReturn => {
   const data = getData();
-    // get userId from token
-    const tokenValidation = validateToken(token);
-    if ('error' in tokenValidation) {
-      return { error: tokenValidation.error };
-    }
-    const authUserId = tokenValidation.authUserId;
-  
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+
   const error = isValidQuiz(authUserId, quizId, data);
   if (error) {
     return error;
@@ -211,7 +205,6 @@ export const adminQuizInfo = (token: string, quizId: number): errorMessages | qu
     description: quiz.description,
   };
 };
-
 
 /**
   * Update the name of the relevant quiz
@@ -294,7 +287,7 @@ export const adminQuizDescriptionUpdate = (
     return { error: tokenValidation.error };
   }
   const authUserId = tokenValidation.authUserId;
-  
+
   // error checkings for invalid userId, quizId
   const error = isValidQuiz(authUserId, quizId, data);
   if (error) {
@@ -311,7 +304,7 @@ export const adminQuizDescriptionUpdate = (
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
   validQuizId.description = description;
   validQuizId.timeLastEdited = Math.floor(Date.now());
-  
+
   setData(data);
   return { };
 };

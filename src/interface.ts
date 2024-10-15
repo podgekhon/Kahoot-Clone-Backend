@@ -1,11 +1,11 @@
-//////////////// interface for dataStore /////////////////
+/// ///////////// interface for dataStore /////////////////
 export interface dataStore {
     users: user[],
     quizzes: quiz[],
     sessions: token[];
   }
-  
-  export interface user {
+
+export interface user {
     userId: number,
     nameFirst: string,
     nameLast: string,
@@ -16,8 +16,8 @@ export interface dataStore {
     oldPasswords: string[],
     currentPassword: string,
   }
-  
-  export interface quiz {
+
+export interface quiz {
     quizId: number,
     ownerId: number,
     name: string,
@@ -29,38 +29,35 @@ export interface dataStore {
     timeCreated: number,
     timeLastEdited: number,
   }
-  
-  export interface token {
+
+export interface token {
     sessionId: number;
     userId: number;
   }
 
-
-
-////////////////// interface for auth.ts/////////////////////
+/// /////////////// interface for auth.ts/////////////////////
 
 export interface errorMessages {
   error: string,
 }
-  
+
 export interface tokenReturn {
   token: string,
 }
 
 export interface userDetails {
-	user:
-	{
+user: {
 		userId: number,
 		name: string,
 		email: string,
 		numSuccessfulLogins: number,
 		numFailedPasswordsSinceLastLogin: number,
-	}
+ 	}
 }
 
 export interface emptyReturn {}
 
-////////////// interface for quiz.ts //////////////////
+/// /////////// interface for quiz.ts //////////////////
 export interface quizList {
   quizzes: {
     quizId: number,
@@ -68,11 +65,9 @@ export interface quizList {
   }[]
 }
 
-
 export interface quizCreateResponse {
   quizId: number,
 }
-
 
 export interface quizInfo {
   quizId: number,

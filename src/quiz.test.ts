@@ -514,9 +514,9 @@ test('test clear successfule', () => {
   const quiz = JSON.parse(quizsession.body as string);
   */
   const result = request(
-    'DELETE', 
-    SERVER_URL + '/v1/clear', 
-    { 
+    'DELETE',
+    SERVER_URL + '/v1/clear',
+    {
       timeout: 100
     }
   );
@@ -547,4 +547,3 @@ test('test clear successfule', () => {
   expect(JSON.parse(quizRes.body.toString())).toStrictEqual({ error: expect.any(String) });
   */
 });
-

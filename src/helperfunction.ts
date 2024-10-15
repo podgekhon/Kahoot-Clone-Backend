@@ -1,12 +1,10 @@
-import { getData, setData } from './dataStore'
+import { getData, setData } from './dataStore';
 
 import {
-	token,
-	errorMessages,
-	user,
-	quiz,
-	dataStore as data
-} from './interface'
+  token,
+  errorMessages,
+  dataStore as data
+} from './interface';
 
 /**
   * Validates the session token and returns the associated authUserId if valid.
@@ -17,18 +15,17 @@ import {
   * containing authUserId if valid, or an error message if invalid
   */
 export function validateToken(token: string): { authUserId: number } | { error: string } {
-	const decodedToken = JSON.parse(decodeURIComponent(token));
+  const decodedToken = JSON.parse(decodeURIComponent(token));
 
-	const data = getData();
-	const session = data.sessions.find(s => s.sessionId === decodedToken.sessionId);
+  const data = getData();
+  const session = data.sessions.find(s => s.sessionId === decodedToken.sessionId);
 
-	if (session) {
-		return { authUserId: session.userId };
-	}
+  if (session) {
+    return { authUserId: session.userId };
+  }
 
-	return { error: 'Invalid token: session does not exist.' };
+  return { error: 'Invalid token: session does not exist.' };
 }
-
 
 let lastSessionId = 0;
 /**
@@ -51,9 +48,9 @@ export function generateToken(userId: number): string {
   return encodeURIComponent(JSON.stringify({ sessionId }));
 }
 
-//////////////////////////////////////////////////////////////////
-///////////////// helper functions for auth.ts ///////////////////
-//////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////
+/// ////////////// helper functions for auth.ts ///////////////////
+/// ///////////////////////////////////////////////////////////////
 
 /**
  *
@@ -65,7 +62,6 @@ export const isEmailUsed = (email: string): boolean => {
   return data.users.some(user => user.email === email);
 };
 
-
 /**
  *
  * @param {string} name - user's firstname or lastname
@@ -75,7 +71,6 @@ export const isNameValid = (name: string): boolean => {
   const namePattern = /^[a-zA-z'-\s]+$/;
   return namePattern.test(name) && name.length >= 2 && name.length <= 20;
 };
-
 
 /**
  * Validates a password based on length, letter, and number criteria.
@@ -104,9 +99,9 @@ export const isValidPassword = (password: string): { valid?: boolean; error?: st
   return { valid: true };
 };
 
-//////////////////////////////////////////////////////////////////
-///////////////// helper functions for quiz.ts ///////////////////
-//////////////////////////////////////////////////////////////////
+/// ///////////////////////////////////////////////////////////////
+/// ////////////// helper functions for quiz.ts ///////////////////
+/// ///////////////////////////////////////////////////////////////
 /**
  * Checks if the provided user ID refers to a valid user.
  *
@@ -127,7 +122,6 @@ export const isUserValid = (authUserId: number): boolean => {
   return false;
 };
 
-
 /**
   * checks if string contains invalid characters
   *
@@ -144,7 +138,6 @@ export const isStringValid = (string: string): boolean => {
 
   return true;
 };
-
 
 // helper function: checks for valid name length
 // function will return false if name length is < 3 or > 30
@@ -189,7 +182,6 @@ export const isNameTaken = (authUserId: number, name: string): boolean => {
   });
 };
 
-
 /**
  * Validates if a quiz is associated with a valid user and is owned by that user.
  *
@@ -200,7 +192,11 @@ export const isNameTaken = (authUserId: number, name: string): boolean => {
  *                         or null if the quiz and user are valid.
  *
  */
-export const isValidQuiz = (authUserId: number, quizId: number, data: data): errorMessages | null => {
+export const isValidQuiz = (
+  authUserId: number,
+  quizId: number,
+  data: data
+): errorMessages | null => {
   const validUserId = data.users.find(user => user.userId === authUserId);
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
 

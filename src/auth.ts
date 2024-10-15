@@ -3,7 +3,6 @@
 /// //////////// UNCOMMENT THIS LINE BELOW //////////////
 // import { TokenType } from 'yaml/dist/parse/cst.js';
 import { getData, setData } from './dataStore';
-import { token } from './interface';
 import {
   errorMessages,
   tokenReturn,
@@ -23,10 +22,6 @@ import validator from 'validator';
 /// //------ASSUMPTIONS----//////
 // assume functions are case sensitive
 // assume white space is kept
-
-// Global variable to keep track of the last used session ID
-let lastSessionId = 0;
-
 
 /**
  * Register a user with an email, password, and names,
@@ -75,7 +70,7 @@ export const adminAuthRegister = (
 
   // 7. Register the user and update the data
   const authUserId = data.users.length + 1;
-  
+
   data.users.push({
     userId: authUserId,
     email: email,
@@ -93,9 +88,6 @@ export const adminAuthRegister = (
 
   return { token };
 };
-
-
-
 
 /**
   * Given a registered user's email and password returns their authUserId value.

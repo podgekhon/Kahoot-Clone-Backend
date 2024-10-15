@@ -8,7 +8,6 @@ let data: dataStore = {
   sessions: []
 };
 
-
 // YOU MAY MODIFY THIS OBJECT ABOVE
 
 // YOU SHOULDNT NEED TO MODIFY THE FUNCTIONS BELOW IN ITERATION 1
