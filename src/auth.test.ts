@@ -41,7 +41,7 @@ const invalidPasswords = [
 ];
 
 /// //////////-----adminAuthRegister------///////////
-describe.only('adminAuthRegister', () => {
+describe('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
     // let user1: authResponse | errorMessages;
     let user1Return: string;
@@ -458,75 +458,160 @@ describe.only('adminAuthRegister', () => {
 //   });
 // });
 
-// /// //////-----adminUserPasswordUpdate-----//////////
-// describe('test for adminUserPasswordUpdate', () => {
-//   let user1: authResponse | errorMessages | tokenReturn;
-//   beforeEach(() => {
-//     user1 = adminAuthRegister(
-//       'XiaoyuanMa@unsw.edu.au',
-//       '1234abcd',
-//       'Xiaoyuan',
-//       'Ma'
-//     );
-//   });
-//   // authUserId is not valid user
-//   test('invalid authUserId', () => {
-//     const result = adminUserPasswordUpdate(12345, '1234abcd', 'abcd1234');
-//     expect(result).toStrictEqual({ error: expect.any(String) });
-//   });
-//   // Old password is not the correct old password
-//   test('old password is wrong', () => {
-//     const result = adminUserPasswordUpdate(
-//       (user1 as authResponse).authUserId,
-//       'wrongpassword',
-//       'abcd1234'
-//     );
-//     expect(result).toStrictEqual({ error: expect.any(String) });
-//   });
-//   // Old password and new password match exactly
-//   test('new password is same as the old one', () => {
-//     const result = adminUserPasswordUpdate(
-//       (user1 as authResponse).authUserId,
-//       '1234abcd',
-//       '1234abcd'
-//     );
-//     expect(result).toStrictEqual({ error: expect.any(String) });
-//   });
-//   // New password has already been used before by this user
-//   test('new password has been used before', () => {
-//     adminUserPasswordUpdate(
-//       (user1 as authResponse).authUserId,
-//       '1234abcd',
-//       'newpassword1'
-//     );
-//     const result2 = adminUserPasswordUpdate(
-//       (user1 as authResponse).authUserId,
-//       'newpassword1',
-//       '1234abcd'
-//     );
-//     expect(result2).toStrictEqual({ error: expect.any(String) });
-//   });
-//   // test for invalid passwords(too short, no characters/numbers)
-//   test('invalid new passwords', () => {
-//     invalidPasswords.forEach(({ password }) => {
-//       const result = adminUserPasswordUpdate(
-//         (user1 as authResponse).authUserId,
-//         '1234abcd',
-//         password
-//       );
-//       expect(result).toStrictEqual({ error: expect.any(String) });
-//     });
-//   });
-//   // correct return type
-//   test('Correct return type', () => {
-//     const result = adminUserPasswordUpdate(
-//       (user1 as authResponse).authUserId,
-//       '1234abcd',
-//       'abcd1234'
-//     );
-//     expect(result).toStrictEqual({});
-//   });
-// });
+/// //////-----adminUserPasswordUpdate-----//////////
+describe('test for adminUserPasswordUpdate', () => {
+  let user1Return: any;
+  let user1token: string;
+  let user1;
+  beforeEach(() => {
+    user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'ericMa@unsw.edu.au',
+        password: 'EricMa1234',
+        nameFirst: 'Eric',
+        nameLast: 'Ma'
+      },
+      timeout: TIMEOUT_MS
+    });
+    user1Return = JSON.parse(user1.body.toString());
+    user1token = user1Return.token;
+  });
+
+  // authUserId is not valid user
+  test('invalid token', () => {
+    const result = request(
+      'PUT',
+      SERVER_URL + '/v1/admin/user/password',
+      {
+        json: {
+          token: JSON.stringify('abcd'),
+          oldPassword: 'EricMa1234',
+          newPassword: '1234EricMa'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(401);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('empty token', () => {
+    const result = request(
+      'PUT',
+      SERVER_URL + '/v1/admin/user/password',
+      {
+        json: {
+          token: JSON.stringify(''),
+          oldPassword: 'EricMa1234',
+          newPassword: '1234EricMa'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(401);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  // Old password is not the correct old password
+  test('old password is wrong', () => {
+    const result = request(
+      'PUT',
+      SERVER_URL + '/v1/admin/user/password',
+      {
+        json: {
+          token: user1token,
+          oldPassword: 'wrong',
+          newPassword: '1234EricMa'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(400);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+  // Old password and new password match exactly
+  test('new password is same as the old one', () => {
+    const result = request(
+      'PUT',
+      SERVER_URL + '/v1/admin/user/password',
+      {
+        json: {
+          token: user1token,
+          oldPassword: 'EricMa1234',
+          newPassword: 'EricMa1234'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(400);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+  // New password has already been used before by this user
+  test('new password has been used before', () => {
+    request(
+      'PUT',
+      SERVER_URL + '/v1/admin/user/password',
+      {
+        json: {
+          token: user1token,
+          oldPassword: 'EricMa1234',
+          newPassword: '1234EricMa'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    const result = request(
+      'PUT',
+      SERVER_URL + '/v1/admin/user/password',
+      {
+        json: {
+          token: user1token,
+          oldPassword: '1234EricMa',
+          newPassword: 'EricMa1234'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(400);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+  // test for invalid passwords(too short, no characters/numbers)
+  test('invalid new passwords', () => {
+    invalidPasswords.forEach(({ password }) => {
+      const result = request(
+        'PUT',
+        SERVER_URL + '/v1/admin/user/password',
+        {
+          json: {
+            token: user1token,
+            oldPassword: 'EricMa1234',
+            newPassword: password
+          },
+          timeout: TIMEOUT_MS
+        }
+      );
+      expect(result.statusCode).toStrictEqual(400);
+      expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+    });
+  });
+  // correct return type
+  test('Correct return type', () => {
+    const result = request(
+      'PUT',
+      SERVER_URL + '/v1/admin/user/password',
+      {
+        json: {
+          token: user1token,
+          oldPassword: 'EricMa1234',
+          newPassword: '1234EricMa'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(200);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({});
+  });
+});
 
 // /// ////////-----adminUserDetails-----////////////
 // describe('test for adminUserDetails', () => {

@@ -10,6 +10,7 @@ import path from 'path';
 import process from 'process';
 import {
   adminAuthRegister,
+  adminUserPasswordUpdate
 } from './auth';
 /// ////////------UNCOMMENT THIS LINE BELOW--------//////////
 // import { getData } from './dataStore.js';
@@ -37,6 +38,7 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 
 import { clear } from './other';
+import { validateToken } from './helperfunction';
 
 // import { getData } from './dataStore';
 
@@ -63,7 +65,6 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// -------auth.test.ts-------//
 // adminAuthRegister
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
@@ -73,9 +74,26 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   if ('error' in result) {
     res.status(httpStatus.BAD_REQUEST).json(result);
     return;
-  } else {
-    res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   }
+  return res.json(result);
+});
+
+// adminUserPasswordUpdate\
+app.put('/v1/admin/user/password', (req: Request, res: Response) => {
+  const { token, oldPassword, newPassword } = req.body;
+  const validtoken = validateToken(token);
+  // invalid token
+  if ('error' in validtoken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'token is empty or invalid'
+    });
+  }
+
+  const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
+  if ('error' in result) {
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+
   return res.json(result);
 });
 
