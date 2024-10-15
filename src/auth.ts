@@ -2,32 +2,18 @@
 
 /// //////////// UNCOMMENT THIS LINE BELOW //////////////
 // import { TokenType } from 'yaml/dist/parse/cst.js';
-import { getData } from './dataStore.js';
+import { getData, setData, token } from './dataStore';
 import validator from 'validator';
 
 /// //------ASSUMPTIONS----//////
 // assume functions are case sensitive
 // assume white space is kept
 
-<<<<<<< HEAD
-let lastSessionId = 0;
-
-interface session {
-  sessionId: number;
-  userId: number;
-}
-
-=======
 // Global variable to keep track of the last used session ID
 let lastSessionId = 0;
 
->>>>>>> 21b647f398b2e4d4b07cd65875fe9a8953696e5e
 export interface errorMessages {
   error: string,
-}
-
-export interface authResponse {
-  authUserId: number,
 }
 
 export interface tokenReturn {
@@ -45,10 +31,6 @@ export interface userDetails {
   }
 }
 
-interface session {
-  sessionId: number;
-  userId: number;
-}
 
 interface emptyReturn {}
 /**
@@ -66,7 +48,7 @@ export const adminAuthRegister = (
   password: string,
   nameFirst: string,
   nameLast: string
-): authResponse | errorMessages | tokenReturn => {
+): errorMessages | tokenReturn => {
   const data = getData();
   // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
@@ -109,18 +91,12 @@ export const adminAuthRegister = (
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   });
-<<<<<<< HEAD
-  generateToken(authUserId);
-
-  return { authUserId };
-=======
   const token = generateToken(authUserId);
+  setData(data);
   return { token };
->>>>>>> 21b647f398b2e4d4b07cd65875fe9a8953696e5e
 };
 
 // helper functions for adminAuthRegister
-
 
 /**
   * Generates a session token for a given userId and stores the session
@@ -133,14 +109,14 @@ export const adminAuthRegister = (
 function generateToken(userId: number): string {
   const data = getData();
   const sessionId = lastSessionId++;
-  const session: session = {
+  const session: token = {
     sessionId,
     userId,
   };
   data.sessions.push(session);
+  setData(data);
   return encodeURIComponent(JSON.stringify({ sessionId }));
 }
-
 
 /**
  *
@@ -189,17 +165,6 @@ const isValidPassword = (password: string): { valid?: boolean; error?: string } 
   return { valid: true };
 };
 
-function generateToken(userId: number): string {
-  const data = getData();
-  const sessionId = lastSessionId++;
-  const session: session = {
-    sessionId,
-    userId,
-  };
-  data.sessions.push(session);
-  return encodeURIComponent(JSON.stringify({ sessionId }));
-}
-
 /**
   * Given a registered user's email and password returns their authUserId value.
   *
@@ -209,7 +174,7 @@ function generateToken(userId: number): string {
   *
   * @returns {integer} - UserId
 */
-export const adminAuthLogin = (email: string, password: string): errorMessages | authResponse => {
+export const adminAuthLogin = (email: string, password: string): errorMessages | tokenReturn => {
   const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
@@ -227,9 +192,9 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   // Reset numFailedPasswordsSinceLastLogin and increment numSuccessfulLogins
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
-  generateToken(user.userId);
+  const token = generateToken(user.userId);
 
-  return { authUserId: user.userId };
+  return { token };
 };
 
 /**
