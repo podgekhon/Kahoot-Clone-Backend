@@ -2,45 +2,27 @@
 
 /// //////////// UNCOMMENT THIS LINE BELOW //////////////
 // import { TokenType } from 'yaml/dist/parse/cst.js';
-import { getData } from './dataStore.js';
-import validator from 'validator';
+import { getData, setData } from './dataStore';
+import {
+  errorMessages,
+  tokenReturn,
+  userDetails,
+  emptyReturn
+} from './interface';
 
+import {
+  validateToken,
+  generateToken,
+  isEmailUsed,
+  isNameValid,
+  isValidPassword
+} from './helperfunction';
+
+import validator from 'validator';
 /// //------ASSUMPTIONS----//////
 // assume functions are case sensitive
 // assume white space is kept
 
-// Global variable to keep track of the last used session ID
-let lastSessionId = 0;
-
-export interface errorMessages {
-  error: string,
-}
-
-export interface authResponse {
-  authUserId: number,
-}
-
-export interface tokenReturn {
-  token: string,
-}
-
-export interface userDetails {
-  user:
-  {
-    userId: number,
-    name: string,
-    email: string,
-    numSuccessfulLogins: number,
-    numFailedPasswordsSinceLastLogin: number,
-  }
-}
-
-interface session {
-  sessionId: number;
-  userId: number;
-}
-
-interface emptyReturn {}
 /**
  * Register a user with an email, password, and names,
  * then returns their authUserId value.
@@ -56,7 +38,7 @@ export const adminAuthRegister = (
   password: string,
   nameFirst: string,
   nameLast: string
-): authResponse | errorMessages | tokenReturn => {
+): errorMessages | tokenReturn => {
   const data = getData();
   // Check if Email address is used by another user.
   if (isEmailUsed(email)) {
@@ -88,6 +70,7 @@ export const adminAuthRegister = (
 
   // 7. Register the user and update the data
   const authUserId = data.users.length + 1;
+
   data.users.push({
     userId: authUserId,
     email: email,
@@ -99,69 +82,12 @@ export const adminAuthRegister = (
     numSuccessfulLogins: 1,
     numFailedPasswordsSinceLastLogin: 0,
   });
+
   const token = generateToken(authUserId);
+  setData(data);
+
   return { token };
 };
-
-// helper functions for adminAuthRegister
-
-/**
- *
- * @param {string} email - email use to register
- * @returns {boolean} - return true if valid
- */
-const isEmailUsed = (email: string): boolean => {
-  const data = getData();
-  return data.users.some(user => user.email === email);
-};
-
-/**
- *
- * @param {string} name - user's firstname or lastname
- * @returns {boolean} - return true if name is valid
- */
-const isNameValid = (name: string): boolean => {
-  const namePattern = /^[a-zA-z'-\s]+$/;
-  return namePattern.test(name) && name.length >= 2 && name.length <= 20;
-};
-
-/**
- * Validates a password based on length, letter, and number criteria.
- *
- * @param {string} password - The password to be validated.
- * @returns {object} An object with an error message if invalid, or
- * { valid: true } if the password is valid.
- *
- */
-const isValidPassword = (password: string): { valid?: boolean; error?: string } => {
-  // Check if password length is at least 8 characters
-  if (password.length < 8) {
-    return { error: 'Password is less than 8 characters.' };
-  }
-
-  // Check if password contains at least one letter
-  const containsLetter = /[a-zA-Z]/.test(password);
-  // Check if password contains at least one number
-  const containsNumber = /\d/.test(password);
-  if (!containsLetter || !containsNumber) {
-    return {
-      error: 'Password must contain at least one letter and one number.'
-    };
-  }
-
-  return { valid: true };
-};
-
-function generateToken(userId: number): string {
-  const data = getData();
-  const sessionId = lastSessionId++;
-  const session: session = {
-    sessionId,
-    userId,
-  };
-  data.sessions.push(session);
-  return encodeURIComponent(JSON.stringify({ sessionId }));
-}
 
 /**
   * Given a registered user's email and password returns their authUserId value.
@@ -172,7 +98,7 @@ function generateToken(userId: number): string {
   *
   * @returns {integer} - UserId
 */
-export const adminAuthLogin = (email: string, password: string): errorMessages | authResponse => {
+export const adminAuthLogin = (email: string, password: string): errorMessages | tokenReturn => {
   const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
@@ -190,8 +116,9 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   // Reset numFailedPasswordsSinceLastLogin and increment numSuccessfulLogins
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
-
-  return { authUserId: user.userId };
+  const token = generateToken(user.userId);
+  setData(data);
+  return { token };
 };
 
 /**
@@ -199,7 +126,7 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   * "name" is the first and last name concatenated
   * with a single space between them.
   *
-  * @param {integer} authUserId - description of paramter
+  * @param {string} token - description of paramter
   *
   * @returns { user:
   *    {
@@ -211,9 +138,15 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   *  }
   *}
 */
-export const adminUserDetails = (authUserId: number): errorMessages | userDetails => {
+export const adminUserDetails = (token: string): errorMessages | userDetails => {
   const data = getData();
-  // Find the user by authUserId
+  // get userId
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+
   const user = data.users.find((user) => user.userId === authUserId);
   if (!user) {
     return { error: 'AuthUserId is not a valid user.' };
@@ -234,7 +167,7 @@ export const adminUserDetails = (authUserId: number): errorMessages | userDetail
  * Given an admin user's authUserId and a set of properties,
  * update the properties of this logged in admin user.
  *
- * @param {integer} authUserId - authUserId
+ * @param {string} token - token of a logged in user
  * @param {string} email - email
  * @param {string} nameFirst - First name
  * @param {string} nameLast - Last name
@@ -242,12 +175,19 @@ export const adminUserDetails = (authUserId: number): errorMessages | userDetail
  * @return {} no return;
 */
 export const adminUserDetailsUpdate = (
-  authUserId: number,
+  token: string,
   email: string,
   nameFirst: string,
   nameLast: string
 ): errorMessages | emptyReturn => {
   const data = getData();
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+
   // Check if authUserId is valid
   const currentUser = data.users.find(user => user.userId === authUserId);
   if (!currentUser) {
@@ -283,7 +223,7 @@ export const adminUserDetailsUpdate = (
   currentUser.email = email;
   currentUser.nameFirst = nameFirst;
   currentUser.nameLast = nameLast;
-
+  setData(data);
   return {};
 };
 
@@ -291,18 +231,25 @@ export const adminUserDetailsUpdate = (
   * Given details relating to a password change,
   * update the password of a logged in user.
   *
-  * @param {integer} authUserId - description of paramter
+  * @param {string} token - description of paramter
   * @param {string} oldPassword - oldPassword
   * @param {string} newPassword - newPassword
   * ...
   * @return {} no return;
 */
 export const adminUserPasswordUpdate = (
-  authUserId: number,
+  token: string,
   oldPassword: string,
   newPassword: string
 ): errorMessages | emptyReturn => {
   const data = getData();
+  // get userId from token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+
   const user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {
@@ -333,5 +280,6 @@ export const adminUserPasswordUpdate = (
   // Add the current password to oldPasswords array
   user.oldPasswords.push(user.currentPassword);
   user.currentPassword = newPassword;
+  setData(data);
   return {};
 };

@@ -15,14 +15,6 @@ import {
 // import { getData } from './dataStore.js';
 // import { adminQuizDescriptionUpdate } from './quiz';
 
-enum httpStatus {
-  UNAUTHORIZED = 401,
-  BAD_REQUEST = 400,
-  FORBIDDEN = 403,
-  SUCCESSFUL_REQUEST = 200,
-}
-import { clear } from './other';
-
 // Set up web app
 const app = express();
 // Use middleware that allows us to access the JSON body of requests
@@ -43,6 +35,17 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================
+
+import { clear } from './other';
+
+// import { getData } from './dataStore';
+
+enum httpStatus {
+  UNAUTHORIZED = 401,
+  BAD_REQUEST = 400,
+  FORBIDDEN = 403,
+  SUCCESSFUL_REQUEST = 200
+}
 
 // Example get request
 app.get('/echo', (req: Request, res: Response) => {
@@ -69,6 +72,7 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
 
   if ('error' in result) {
     res.status(httpStatus.BAD_REQUEST).json(result);
+    return;
   } else {
     res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   }

@@ -1,5 +1,8 @@
+import fs from 'fs';
+import { dataStore } from './interface';
+
 // YOU MAY MODIFY THIS OBJECT BELOW
-const data = {
+let data: dataStore = {
   users: [],
   quizzes: [],
   sessions: []
@@ -25,4 +28,10 @@ function getData() {
   return data;
 }
 
-export { getData };
+function setData(newData: dataStore) {
+  const updateData = JSON.stringify(newData);
+  fs.writeFileSync('./dataStore.json', updateData);
+  data = newData;
+}
+
+export { getData, setData };
