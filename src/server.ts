@@ -8,10 +8,6 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
-import {
-  adminAuthRegister,
-  adminUserPasswordUpdate
-} from './auth';
 /// ////////------UNCOMMENT THIS LINE BELOW--------//////////
 // import { getData } from './dataStore.js';
 // import { adminQuizDescriptionUpdate } from './quiz';
@@ -36,7 +32,11 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 //  ================= WORK IS DONE BELOW THIS LINE ===================
 // ====================================================================
-
+import {
+  adminAuthRegister,
+  adminUserPasswordUpdate
+} from './auth';
+import { adminQuizCreate } from './quiz';
 import { clear } from './other';
 import { validateToken } from './helperfunction';
 
@@ -94,6 +94,24 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
 
+  return res.json(result);
+});
+
+// quizCreate
+app.post('/v1/admin/quiz', (req: Request, res: Response) => {
+  const { token, name, description } = req.body;
+  const validtoken = validateToken(token);
+  // invalid token
+  if ('error' in validtoken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'token is empty or invalid'
+    });
+  }
+
+  const result = adminQuizCreate(token, name, description);
+  if ('error' in result) {
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
   return res.json(result);
 });
 

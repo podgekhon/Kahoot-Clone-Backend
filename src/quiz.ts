@@ -117,10 +117,7 @@ export const adminQuizCreate = (
     ownerId: authUserId,
     name: name,
     description: description,
-    quiz: {
-      question: '',
-      answers: [] as string[],
-    },
+    question: {},
     timeCreated: Math.floor(Date.now()),
     timeLastEdited: Math.floor(Date.now()),
   };
