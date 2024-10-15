@@ -39,7 +39,10 @@ import {
   adminUserDetails,
   adminUserDetailsUpdate
 } from './auth';
-import { adminQuizCreate } from './quiz';
+import { 
+  adminQuizCreate,
+  adminQuizRemove
+} from './quiz';
 import { clear } from './other';
 import { validateToken } from './helperfunction';
 
@@ -179,6 +182,24 @@ app.put('/v1/admin/user/details', (req, res) => {
     return res.status(400).json({ error: "Unknown Type: string - error" });
   }
   return res.status(200).json({});
+});
+
+// delete Quiz
+app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const { token } = req.query;
+  const { quizid } = req.params;
+
+  const result = validateToken(token as string);
+  if ('error' in result) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+  }
+
+  const removeResult = adminQuizRemove(token as string, Number(quizid));
+  if ('error' in removeResult) {
+    return res.status(httpStatus.FORBIDDEN).json({ error: 'Unknown Type: string - error' });
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
 // ====================================================================
