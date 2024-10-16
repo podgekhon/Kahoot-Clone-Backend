@@ -120,46 +120,50 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 
 
 // quiznameupdate
-app.put('/v1/admin/quiz/name', (req: Request, res: Response) => {
-  const { token, quizId, name } = req.body;
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token, name } = req.body;
   console.log(`HI token = ${token}`);
   // Validate the token
   const validToken = validateToken(token);
-  console.log(`HI 2 validToken = ${validToken}`);
+  // console.log(`HI 2 validToken = ${validToken}`);
   if ('error' in validToken) {
-    console.log(`HI 3 token = ${token}`);
+    // console.log(`HI 3 token = ${token}`);
     return res.status(httpStatus.UNAUTHORIZED).json({
       error: 'Token is empty or invalid',
     });
   }
 
-  const result = adminQuizNameUpdate(token, quizId, name);
+
+  const result = adminQuizNameUpdate(token, parseInt(quizid), name);
+  if ('Quiz ID does not refer to a valid quiz.' in result || 'Quiz ID does not refer to a quiz that this user owns.' in result) {
+    return res.status(httpStatus.UNAUTHORIZED).json(result);
+  }
   if ('error' in result) {
     return res.status(httpStatus.BAD_REQUEST).json(result);
   } else {
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   }
-  return res.json(result);
 });
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================
 
-// app.use((req: Request, res: Response) => {
-//   const error = `
-//     Route not found - This could be because:
-//       0. You have defined routes below (not above) this middleware in server.ts
-//       1. You have not implemented the route ${req.method} ${req.path}
-//       2. There is a typo in either your test or server, e.g. /posts/list in one
-//          and, incorrectly, /post/list in the other
-//       3. You are using ts-node (instead of ts-node-dev) to start your server and
-//          have forgotten to manually restart to load the new changes
-//       4. You've forgotten a leading slash (/), e.g. you have posts/list instead
-//          of /posts/list in your server.ts or test file
-//   `;
-//   res.status(404).json({ error });
-// });
+app.use((req: Request, res: Response) => {
+  const error = `
+    Route not found - This could be because:
+      0. You have defined routes below (not above) this middleware in server.ts
+      1. You have not implemented the route ${req.method} ${req.path}
+      2. There is a typo in either your test or server, e.g. /posts/list in one
+         and, incorrectly, /post/list in the other
+      3. You are using ts-node (instead of ts-node-dev) to start your server and
+         have forgotten to manually restart to load the new changes
+      4. You've forgotten a leading slash (/), e.g. you have posts/list instead
+         of /posts/list in your server.ts or test file
+  `;
+  res.status(404).json({ error });
+});
 
 // start server
 const server = app.listen(PORT, HOST, () => {

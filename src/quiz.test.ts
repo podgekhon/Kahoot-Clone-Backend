@@ -20,37 +20,37 @@ beforeEach(() => {
 //   let user1Return;
 //   let user1token: string;
 //   // register a user
-//   beforeEach(() => {
-//     user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
-//       json: {
-//         email: 'ericMa@unsw.edu.au',
-//         password: 'EricMa1234',
-//         nameFirst: 'Eric',
-//         nameLast: 'Ma'
-//       },
-//       timeout: TIMEOUT_MS
-//     });
-//     user1Return = JSON.parse(user1.body.toString());
-//     user1token = user1Return.token;
-//   });
-//   test('invalid token', () => {
-//     const result = request(
-//       'POST',
-//       SERVER_URL + '/v1/admin/quiz',
-//       {
-//         json: {
-//           token: JSON.stringify('hahainvalid'),
-//           name: 'Quiz1',
-//           description: 'lol invalid token'
-//         },
-//         timeout: TIMEOUT_MS
-//       }
-//     );
-//     expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
-//     expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
-//   });
-//   test('empty token', () => {
-//     const result = request(
+  // beforeEach(() => {
+  //   user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+  //     json: {
+  //       email: 'ericMa@unsw.edu.au',
+  //       password: 'EricMa1234',
+  //       nameFirst: 'Eric',
+  //       nameLast: 'Ma'
+  //     },
+  //     timeout: TIMEOUT_MS
+  //   });
+  //   user1Return = JSON.parse(user1.body.toString());
+  //   user1token = user1Return.token;
+  // });
+  // test('invalid token', () => {
+  //   const result = request(
+  //     'POST',
+  //     SERVER_URL + '/v1/admin/quiz',
+  //     {
+  //       json: {
+  //         token: JSON.stringify('hahainvalid'),
+  //         name: 'Quiz1',
+  //         description: 'lol invalid token'
+  //       },
+  //       timeout: TIMEOUT_MS
+  //     }
+  //   );
+  //   expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+  //   expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  // });
+  // test('empty token', () => {
+  //   const result = request(
 //       'POST',
 //       SERVER_URL + '/v1/admin/quiz',
 //       {
@@ -228,13 +228,13 @@ describe('adminQuizNameUpdate', () => {
   });
 
   describe('invalid inputs', () => {
-    test.only('invalid token', () => {
+    test('invalid token', () => {
 
-      console.log(`quizId = ${quiz1Id}`);
+      // console.log(`quizId = ${quiz1Id}`);
 
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/name`,
+        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/name`,
         {
           json: {
             token: 'abcd',
@@ -242,7 +242,7 @@ describe('adminQuizNameUpdate', () => {
           }
         }
       );
-      console.log(`result = ${JSON.parse(result.body.toString())}`);
+      // console.log(`result = ${JSON.parse(result.body.toString())}`);
       expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
       expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
     });
@@ -265,7 +265,7 @@ describe('adminQuizNameUpdate', () => {
     test('invalid quizId', () => {
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${quiz1Id + 1}/name`,
+        SERVER_URL + `/v1/admin/quiz/${10}/name`,
         {
           json: {
             token: user1token,
@@ -295,11 +295,11 @@ describe('adminQuizNameUpdate', () => {
   
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/name`,
+        SERVER_URL + `/v1/admin/quiz/${''}/name`,
         {
           json: {
             token: user2token,
-            name: 'newQuizName'
+            name: 'newQuizName',
           }
         }
       );
@@ -354,7 +354,7 @@ describe('adminQuizNameUpdate', () => {
     });
 
     test('duplicate quiz names owned by same user', () => {
-      request(
+      const quiz2 = request(
         'POST',
         SERVER_URL + '/v1/admin/quiz',
         {
@@ -366,14 +366,16 @@ describe('adminQuizNameUpdate', () => {
           timeout: TIMEOUT_MS
         }
       );
+      const quiz2Id = JSON.parse(quiz2.body.toString()).quizId;
+
   
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/name`,
+        SERVER_URL + `/v1/admin/quiz/${quiz2Id}/name`,
         {
           json: {
             token: user1token,
-            name: 'quiz2'
+            name: 'quiz1'
           }
         }
       );
@@ -382,6 +384,32 @@ describe('adminQuizNameUpdate', () => {
 
     });
   });
+
+//   test('duplicate quiz names owned by same user', () => {
+//     const user1 = adminAuthRegister(
+//       'john123@gmail.com',
+//       'wordpass123',
+//       'john',
+//       'smith'
+//     ) as authResponse;
+//     adminQuizCreate(
+//       user1.authUserId,
+//       'chemQuiz',
+//       'science'
+//     );
+//     const quiz2 = adminQuizCreate(
+//       user1.authUserId,
+//       'mathQuiz',
+//       'science'
+//     ) as quizCreateResponse;
+
+//     expect(adminQuizNameUpdate(
+//       user1.authUserId,
+//       quiz2.quizId,
+//       'chemQuiz'
+//     )).toStrictEqual({ error: expect.any(String) });
+//   });
+// });
 
   // valid input test
  
@@ -392,6 +420,7 @@ describe('adminQuizNameUpdate', () => {
       {
         json: {
           token: user1token,
+          quizId: quiz1Id,
           name: 'quiz2'
         }
       }
