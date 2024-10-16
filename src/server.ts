@@ -43,7 +43,8 @@ import {
   adminQuizCreate,
   adminQuizRemove,
   adminQuizList,
-  adminTrashList
+  adminTrashList,
+  adminQuizDescriptionUpdate
 } from './quiz';
 import { clear } from './other';
 import { validateToken } from './helperfunction';
@@ -98,12 +99,7 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
-// ------clear---------/ //
-app.delete('/v1/clear', (req: Request, res: Response) => {
-  const result = clear();
-  return res.json(result);
-});
-// adminUserPasswordUpdate\
+// adminUserPasswordUpdate
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
   const validtoken = validateToken(token);
@@ -122,26 +118,7 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// adminUserPasswordUpdate\
-app.put('/v1/admin/user/password', (req: Request, res: Response) => {
-  const { token, oldPassword, newPassword } = req.body;
-  const validtoken = validateToken(token);
-  // invalid token
-  if ('error' in validtoken) {
-    return res.status(httpStatus.UNAUTHORIZED).json({
-      error: 'token is empty or invalid'
-    });
-  }
-
-  const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
-  if ('error' in result) {
-    return res.status(httpStatus.BAD_REQUEST).json(result);
-  }
-
-  return res.json(result);
-});
-
-// quizCreate
+// adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
   const validtoken = validateToken(token);
@@ -159,6 +136,43 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// adminQuizDescriptionUpdate
+app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token, description } = req.body;
+
+  const result = adminQuizDescriptionUpdate(
+    token,
+    parseInt(quizid),
+    description
+  );
+
+  if ('error' in result) {
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid ' +
+               '(does not refer to valid logged in ' +
+               'user session)'
+      });
+    }
+    if (result.error === 'INVALID_QUIZ') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error:
+        'Valid token is provided, but user is not an owner of this quiz, ' +
+        'or quiz doesn\'t exist.'
+      });
+    }
+    if (result.error === 'DESCRIPTION_TOO_LONG') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Description is more than 100 characters in length.'
+      });
+    }
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
+// adminUserDetails
 app.get('/v1/admin/user/details', (req, res) => {
   const { token } = req.query;
 
@@ -170,7 +184,7 @@ app.get('/v1/admin/user/details', (req, res) => {
   return res.status(200).json(result);
 });
 
-// put user details
+// adminUserDetailsUpdate
 app.put('/v1/admin/user/details', (req, res) => {
   const { token, email, nameFirst, nameLast } = req.body;
   const result = validateToken(token);
@@ -229,7 +243,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
-})
+});
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

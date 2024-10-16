@@ -643,7 +643,7 @@ describe('HTTP tests for quiz description update', () => {
 
   test('returns error when description is longer than 100 characters', () => {
     // Attempt to update with a description longer than 100 characters
-    const longDescription = 'ABC'.repeat(100); 
+    const longDescription = 'ABC'.repeat(100);
     const resUpdateQuizDescription = request(
       'PUT',
       `${url}:${port}/v1/admin/quiz/${quiz.quizId}/description`,
@@ -662,7 +662,6 @@ describe('HTTP tests for quiz description update', () => {
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 });
-
 
 /*
 describe.skip('adminQuizNameUpdate', () => {
