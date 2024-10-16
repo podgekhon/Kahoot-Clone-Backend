@@ -41,7 +41,8 @@ import {
 } from './auth';
 import { 
   adminQuizCreate,
-  adminQuizRemove
+  adminQuizRemove,
+  adminTrashList
 } from './quiz';
 import { clear } from './other';
 import { validateToken } from './helperfunction';
@@ -157,31 +158,32 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-
+// get user details
 app.get('/v1/admin/user/details', (req, res) => {
   const { token } = req.query;
   const result = validateToken(token as string);
   if ('error' in result) {
-    return res.status(401).json({error: 'Unknown Type: string - error'});
+    return res.status(httpStatus.UNAUTHORIZED).json({error: 'Unknown Type: string - error'});
   }
   const userDetails = adminUserDetails(token as string);
   if ('error' in userDetails) {
-    return res.status(401).json({ error: "Unknown Type: string - error" });
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: "Unknown Type: string - error" });
   }
-  return res.status(200).json(userDetails);
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(userDetails);
 });
 
+// put user details
 app.put('/v1/admin/user/details', (req, res) => {
   const { token, email, nameFirst, nameLast } = req.body;
   const result = validateToken(token);
   if ('error' in result) {
-    return res.status(401).json({error: 'Unknown Type: string - error'});
+    return res.status(httpStatus.UNAUTHORIZED).json({error: 'Unknown Type: string - error'});
   }
   const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
   if ('error' in updateResult) {
-    return res.status(400).json({ error: "Unknown Type: string - error" });
+    return res.status(httpStatus.BAD_REQUEST).json({ error: "Unknown Type: string - error" });
   }
-  return res.status(200).json({});
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
 // delete Quiz
@@ -201,6 +203,24 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
+
+// get trash list
+app.get('/v1/admin/quiz/trash', (req, res) => {
+  const { token } = req.query;
+  const result = validateToken(token as string);
+
+  if ('error' in result) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+  }
+
+  const quizzes = adminTrashList(token as string);
+  if ('error' in quizzes) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizzes);
+});
+
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
