@@ -279,7 +279,6 @@ describe('adminAuthLogin', () => {
       SERVER_URL + '/v1/admin/auth/login',
       {
         json: {
-          // token: user.token,
           email: 'XiaoyuanMa@unsw.edu.au',
           password: '1234abcd'
         },
@@ -710,90 +709,171 @@ describe('test for adminUserPasswordUpdate', () => {
   });
 });
 
-
-// tests for adminUserDetail
-describe('adminUserDetail', () => {
-  let admin: any;
-  let adminToken: string;
+/// ////////-----adminUserDetails-----////////////
+describe('test for adminUserDetails', () => {
+  let user: { token: string };
 
   beforeEach(() => {
-    const response = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+    const resRegister = request('POST', `${url}:${port}/v1/admin/auth/register`, {
       json: {
-        email: 'admin@unsw.edu.au',
-        password: 'AdminPass1234',
-        nameFirst: 'Admin',
-        nameLast: 'User'
+        email: 'test@gmail.com',
+        password: 'validPassword5',
+        nameFirst: 'Patrick',
+        nameLast: 'Chen',
       },
-      timeout: TIMEOUT_MS
+      timeout: 100,
     });
-    admin = JSON.parse(response.body.toString());
-    adminToken = admin.token;
+    user = JSON.parse(resRegister.body as string);
   });
 
-  test('Get user details successfully', () => {
-    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=${adminToken}`, {
-      json: { token: adminToken },
-      timeout: TIMEOUT_MS
+  test('successfully returns details of a valid user', () => {
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: user.token,
+        },
+        timeout: 100,
+      }
+    );
+    const result = JSON.parse(resDetails.body as string);
+
+    expect(result).toStrictEqual({
+      user: {
+        userId: expect.any(Number),
+        name: 'Patrick Chen',
+        email: 'test@gmail.com',
+        numSuccessfulLogins: 1,
+        numFailedPasswordsSinceLastLogin: 0,
+      }
     });
-    const userDetails = JSON.parse(userDetailsResponse.body.toString());
-    expect(userDetailsResponse.statusCode).toStrictEqual(200);
-    expect(userDetails.user).toHaveProperty('email', 'admin@unsw.edu.au');
-    expect(userDetails.user).toHaveProperty('name', 'Admin User');
-    expect(userDetails.user).toHaveProperty('numFailedPasswordsSinceLastLogin', 0);
-    expect(userDetails.user).toHaveProperty('numSuccessfulLogins', 1);
   });
 
-  test('Get user details with invalid format token', () => {
-    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=12345`, {
-      json: { token: 12345 },
-      timeout: TIMEOUT_MS
-    });
-    expect(userDetailsResponse.statusCode).toStrictEqual(401);
+  test('returns error when token is not valid', () => {
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: 'invalidToken',
+        },
+        timeout: 100,
+      }
+    );
+    const result = JSON.parse(resDetails.body as string);
+
+    expect(result).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Get user details with valid token but missing fields in response', () => {
-    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=${adminToken}`, {
-      json: { token: adminToken },
-      timeout: TIMEOUT_MS
-    });
-    const userDetails = JSON.parse(userDetailsResponse.body.toString());
-    expect(userDetailsResponse.statusCode).toStrictEqual(200);
-    expect(userDetails.user).toHaveProperty('email');
-    expect(userDetails.user).toHaveProperty('name');
-  });
-
-  test('Get user details with token from different user', () => {
-    const newAdminResponse = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+  test('numSuccessfulLogins increments after successful logins', () => {
+    // Simulate multiple successful logins
+    request('POST', `${url}:${port}/v1/admin/auth/login`, {
       json: {
-        email: 'newadmin@unsw.edu.au',
-        password: 'NewAdminPass1234',
-        nameFirst: 'New',
-        nameLast: 'Admin'
+        email: 'test@gmail.com',
+        password: 'validPassword5',
       },
-      timeout: TIMEOUT_MS
+      timeout: 100,
     });
-    const newAdmin = JSON.parse(newAdminResponse.body.toString());
-    const newAdminToken = newAdmin.token;
+    request('POST', `${url}:${port}/v1/admin/auth/login`, {
+      json: {
+        email: 'test@gmail.com',
+        password: 'validPassword5',
+      },
+      timeout: 100,
+    });
 
-    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=${newAdminToken}`, {
-      json: { token: newAdminToken },
-      timeout: TIMEOUT_MS
-    });
-    const userDetails = JSON.parse(userDetailsResponse.body.toString());
-    expect(userDetailsResponse.statusCode).toStrictEqual(200);
-    expect(userDetails.user).toHaveProperty('email', 'newadmin@unsw.edu.au');
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: user.token,
+        },
+        timeout: 100,
+      }
+    );
+    const result = JSON.parse(resDetails.body as string);
+
+    // Check if the number of successful logins is correct (1 registration + 2 logins)
+    expect(result.user.numSuccessfulLogins).toBe(3);
   });
 
-  test('Get user details with token that was generated from an earlier session', () => {
-    const earlierToken = adminToken; 
-    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=${earlierToken}`, {
-      json: { token: earlierToken },
-      timeout: TIMEOUT_MS
+  test('numFailedPasswordsSinceLastLogin increments on failed login attempts', () => {
+    // Simulate failed login attempts
+    request('POST', `${url}:${port}/v1/admin/auth/login`, {
+      json: {
+        email: 'test@gmail.com',
+        password: 'wrongPassword',
+      },
+      timeout: 100,
     });
-    expect(userDetailsResponse.statusCode).toStrictEqual(200);
+    request('POST', `${url}:${port}/v1/admin/auth/login`, {
+      json: {
+        email: 'test@gmail.com',
+        password: 'wrongPassword',
+      },
+      timeout: 100,
+    });
+
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: user.token,
+        },
+        timeout: 100,
+      }
+    );
+    const result = JSON.parse(resDetails.body as string);
+
+    // Check if the number of failed login attempts is correct (2 failed attempts)
+    expect(result.user.numFailedPasswordsSinceLastLogin).toBe(2);
+  });
+
+  test('numFailedPasswordsSinceLastLogin resets after a successful login', () => {
+    // Simulate failed login attempts
+    request('POST', `${url}:${port}/v1/admin/auth/login`, {
+      json: {
+        email: 'test@gmail.com',
+        password: 'wrongPassword',
+      },
+      timeout: 100,
+    });
+    request('POST', `${url}:${port}/v1/admin/auth/login`, {
+      json: {
+        email: 'test@gmail.com',
+        password: 'wrongPassword',
+      },
+      timeout: 100,
+    });
+
+    // Simulate a successful login
+    request('POST', `${url}:${port}/v1/admin/auth/login`, {
+      json: {
+        email: 'test@gmail.com',
+        password: 'validPassword5',
+      },
+      timeout: 100,
+    });
+
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: user.token,
+        },
+        timeout: 100,
+      }
+    );
+    const result = JSON.parse(resDetails.body as string);
+
+    // Check if the failed attempts reset to 0 after a successful login
+    expect(result.user.numFailedPasswordsSinceLastLogin).toBe(0);
   });
 });
-
 
 // tests for adminUserDetailsUpdate
 describe('adminUserDetailsUpdate', () => {

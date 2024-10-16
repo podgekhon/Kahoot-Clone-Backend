@@ -157,7 +157,7 @@ export const adminQuizRemove = (
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   const removedQuiz = data.quizzes.splice(quizIndex, 1)[0];
   data.trash.push(removedQuiz);
-  
+
   setData(data);
   return {};
 };
