@@ -33,7 +33,10 @@ const HOST: string = process.env.IP || '127.0.0.1';
 // ====================================================================
 import {
   adminAuthRegister,
-  adminUserPasswordUpdate
+  adminUserPasswordUpdate,
+  adminAuthLogin,
+  adminUserDetails,
+  adminUserDetailsUpdate
 } from './auth';
 import { adminQuizCreate, adminQuizNameUpdate, isErrorMessages} from './quiz';
 import { clear } from './other';
@@ -78,6 +81,42 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// adminAuthLogin
+app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  const result = adminAuthLogin(email, password);
+
+  if ('error' in result) {
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+});
+
+// ------clear---------/ //
+app.delete('/v1/clear', (req: Request, res: Response) => {
+  const result = clear();
+  return res.json(result);
+});
+// adminUserPasswordUpdate\
+app.put('/v1/admin/user/password', (req: Request, res: Response) => {
+  const { token, oldPassword, newPassword } = req.body;
+  const validtoken = validateToken(token);
+  // invalid token
+  if ('error' in validtoken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'token is empty or invalid'
+    });
+  }
+
+  const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
+  if ('error' in result) {
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+
+  return res.json(result);
+});
+
 // adminUserPasswordUpdate\
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
@@ -117,7 +156,6 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 });
 
 
-
 // quiznameupdate
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const { quizid } = req.params;
@@ -146,6 +184,19 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
+
+app.get('/v1/admin/user/details', (req, res) => {
+  const { token } = req.body;
+  const result = validateToken(token);
+  if ('error' in result) {
+    return res.status(401).json({error: 'Unknown Type: string - error'});
+  }
+  const userDetails = adminUserDetails(token);
+  if ('error' in userDetails) {
+    return res.status(401).json({ error: "Unknown Type: string - error" });
+  }
+  return res.status(200).json(userDetails);
+});
 
 
 // ====================================================================
