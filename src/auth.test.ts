@@ -268,7 +268,7 @@ describe('adminAuthRegister', () => {
 });
 
 /// ////////-----adminAuthLogin-----////////////
-describe('test for adminAuthLogin', () => {
+describe('adminAuthLogin', () => {
   let user: { token: string };
   let userId: { authUserId: number };
 

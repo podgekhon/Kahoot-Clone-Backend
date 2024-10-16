@@ -178,6 +178,115 @@ describe('adminQuizCreate', () => {
   });
 });
 
+/// ////////-----adminQuizList-----////////////
+describe('adminQuizList', () => {
+  let user: { token: string};
+  let quizList: string; // this might change
+  let userToken: string;
+
+  beforeEach(() => {
+    const resRegister = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/register',
+      {
+        json: {
+          email: 'test@gmail.com',
+          password: 'validPassword5',
+          nameFirst: 'Patrick',
+          nameLast: 'Chen'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    user = JSON.parse(resRegister.body.toString());
+    expect(resRegister.statusCode).toStrictEqual(200);
+    userToken = user.token;
+  });
+
+  test('returns an empty list when user has no quizzes', () => {
+    const resAdminQuizlist = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list', {
+        qs: {
+          token: userToken,
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+
+    quizList = JSON.parse(resAdminQuizlist.body.toString());
+    expect(resAdminQuizlist.statusCode).toStrictEqual(200);
+    expect(quizList).toStrictEqual({ quizzes: [] });
+  });
+
+  test.skip('returns a list of quizzes owned by the user', () => {
+    request(
+      'PUT',
+      SERVER_URL + '/v1/admin/quiz',
+      {
+        json: {
+          token: userToken,
+          name: 'Math Quiz',
+          description: 'this is a math quiz'
+        }
+      }
+    );
+
+    request(
+      'PUT',
+      SERVER_URL + '/v1/admin/quiz',
+      {
+        json: {
+          token: userToken,
+          name: 'English Quiz',
+          description: 'this is an English quiz'
+        }
+      }
+    );
+
+    const resAdminQuizlist = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list', {
+        qs: {
+          token: userToken,
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+
+    quizList = JSON.parse(resAdminQuizlist.body.toString());
+    expect(resAdminQuizlist.statusCode).toStrictEqual(200);
+    expect(quizList).toStrictEqual({
+      quizzes: [
+        {
+          quizId: expect.any(Number),
+          name: 'Math Quiz'
+        },
+        {
+          quizId: expect.any(Number),
+          name: 'English Quiz'
+        },
+      ]
+    });
+  });
+
+  test('returns an error when authUserId is not valid', () => {
+    const invalidTokenId = 3564743;
+    const resAdminQuizlist = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list', {
+        qs: {
+          token: invalidTokenId,
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(resAdminQuizlist.statusCode).toStrictEqual(401);
+    const quizList = JSON.parse(resAdminQuizlist.body.toString());
+    expect(quizList).toStrictEqual({ error: expect.any(String) });
+  });
+});
+
 describe('adminQuizRemove', () => {
   let quiz: any;
   let adminToken: string;

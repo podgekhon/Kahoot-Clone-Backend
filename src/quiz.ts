@@ -32,6 +32,7 @@ import {
 export const adminQuizList = (token: string): errorMessages| quizList => {
   const data = getData();
   const tokenValidation = validateToken(token);
+
   if ('error' in tokenValidation) {
     return { error: tokenValidation.error };
   }
