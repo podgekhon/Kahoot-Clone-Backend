@@ -226,7 +226,7 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
-})
+});
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
