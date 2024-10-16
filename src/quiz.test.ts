@@ -206,25 +206,37 @@ describe('adminQuizRemove', () => {
   });
 
   test('Successfully delete quiz', () => {
-    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`, {
-      timeout: TIMEOUT_MS
-    });
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
     expect(deleteResponse.statusCode).toEqual(200);
     expect(JSON.parse(deleteResponse.body.toString())).toEqual({});
   });
 
   test('Attempt to delete non-existent quiz', () => {
-    const deleteResponse = request('DELETE', SERVER_URL + '/v1/admin/quiz/9999?token=' + adminToken, {
-      timeout: TIMEOUT_MS
-    });
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + '/v1/admin/quiz/9999?token=' + adminToken,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
     expect(deleteResponse.statusCode).toEqual(403);
     expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
   });
 
   test('Attempt to delete quiz with invalid quiz ID format', () => {
-    const deleteResponse = request('DELETE', SERVER_URL + '/v1/admin/quiz/invalidID?token=' + adminToken, {
-      timeout: TIMEOUT_MS
-    });
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + '/v1/admin/quiz/invalidID?token=' + adminToken,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
     expect(deleteResponse.statusCode).toEqual(403);
     expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
   });
@@ -234,9 +246,13 @@ describe('adminQuizRemove', () => {
       timeout: TIMEOUT_MS
     });
 
-    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`, {
-      timeout: TIMEOUT_MS
-    });
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
     expect(deleteResponse.statusCode).toEqual(403);
     expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
   });
@@ -253,9 +269,13 @@ describe('adminQuizRemove', () => {
     });
     const otherToken = JSON.parse(registerOtherResponse.body.toString()).token;
 
-    const deleteResponse = request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${otherToken}`, {
-      timeout: TIMEOUT_MS
-    });
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${otherToken}`,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
     expect(deleteResponse.statusCode).toEqual(403);
     expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
   });
@@ -301,23 +321,25 @@ describe('adminTrashList', () => {
   });
 
   test('Get trash list with valid token but missing fields in response', () => {
-    
     request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizId}`, {
       json: { token: adminToken },
       timeout: TIMEOUT_MS
     });
 
-    const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash?token=${adminToken}`, {
-      json: { token: adminToken },
-      timeout: TIMEOUT_MS
-    });
+    const trashListResponse = request(
+      'GET',
+      `${SERVER_URL}/v1/admin/quiz/trash?token=${adminToken}`,
+      {
+        json: { token: adminToken },
+        timeout: TIMEOUT_MS,
+      }
+    );
     const trashList = JSON.parse(trashListResponse.body.toString());
     expect(trashListResponse.statusCode).toStrictEqual(200);
     expect(trashList).toHaveProperty('quizzes');
   });
 
   test('Get trash list with token from different user', () => {
-    
     const newAdminResponse = request('POST', SERVER_URL + '/v1/admin/auth/register', {
       json: {
         email: 'newadmin@unsw.edu.au',
@@ -330,10 +352,14 @@ describe('adminTrashList', () => {
     const newAdmin = JSON.parse(newAdminResponse.body.toString());
     const newAdminToken = newAdmin.token;
 
-    const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash?token=${newAdminToken}`, {
-      json: { token: newAdminToken },
-      timeout: TIMEOUT_MS
-    });
+    const trashListResponse = request(
+      'GET',
+      `${SERVER_URL}/v1/admin/quiz/trash?token=${newAdminToken}`,
+      {
+        json: { token: newAdminToken },
+        timeout: TIMEOUT_MS,
+      }
+    );
     const trashList = JSON.parse(trashListResponse.body.toString());
     expect(trashListResponse.statusCode).toStrictEqual(200);
     expect(trashList).toHaveProperty('quizzes');
@@ -341,10 +367,14 @@ describe('adminTrashList', () => {
 
   test('Get trash list with token that was generated from an earlier session', () => {
     const earlierToken = adminToken;
-    const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash?token=${earlierToken}`, {
-      json: { token: earlierToken },
-      timeout: TIMEOUT_MS
-    });
+    const trashListResponse = request(
+      'GET',
+      `${SERVER_URL}/v1/admin/quiz/trash?token=${earlierToken}`,
+      {
+        json: { token: earlierToken },
+        timeout: TIMEOUT_MS,
+      }
+    );
     expect(trashListResponse.statusCode).toStrictEqual(200);
   });
 });

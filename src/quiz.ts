@@ -156,7 +156,7 @@ export const adminQuizRemove = (
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   const removedQuiz = data.quizzes.splice(quizIndex, 1)[0];
   data.trash.push(removedQuiz);
-  
+
   setData(data);
   return {};
 };
@@ -308,16 +308,14 @@ export const adminQuizDescriptionUpdate = (
   return { };
 };
 
-
-
 export const adminTrashList = (token: string): errorMessages | quizList => {
   const data = getData();
-  
+
   const tokenValidation = validateToken(token);
   if ('error' in tokenValidation) {
     return { error: tokenValidation.error };
   }
-  
+
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find(user => user.userId === authUserId);
