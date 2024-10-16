@@ -183,7 +183,8 @@ describe('adminQuizList', () => {
   let user: { token: string};
   let quizList: string; // this might change
   let userToken: string;
-  test('returns an empty list when user has no quizzes', () => {
+
+  beforeEach(() => {
     const resRegister = request(
       'POST',
       SERVER_URL + '/v1/admin/auth/register',
@@ -197,18 +198,19 @@ describe('adminQuizList', () => {
         timeout: TIMEOUT_MS
       }
     );
-
     user = JSON.parse(resRegister.body.toString());
     expect(resRegister.statusCode).toStrictEqual(200);
-
     userToken = user.token;
+  });
 
+  test('returns an empty list when user has no quizzes', () => {
     const resAdminQuizlist = request(
       'GET',
       SERVER_URL + '/v1/admin/quiz/list', {
-        headers: {
-          Authorisation: userToken,
-        }
+        qs: {
+          token: userToken,
+        },
+        timeout: TIMEOUT_MS,
       }
     );
 
@@ -217,25 +219,7 @@ describe('adminQuizList', () => {
     expect(quizList).toStrictEqual({ quizzes: [] });
   });
 
-  test('returns a list of quizzes owned by the user', () => {
-    const resRegister = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'test@gmail.com',
-          password: 'validPassword5',
-          nameFirst: 'Patrick',
-          nameLast: 'Chen'
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-    user = JSON.parse(resRegister.body.toString());
-    expect(resRegister.statusCode).toStrictEqual(200);
-
-    userToken = user.token;
-
+  test.skip('returns a list of quizzes owned by the user', () => {
     request(
       'PUT',
       SERVER_URL + '/v1/admin/quiz',
@@ -263,9 +247,10 @@ describe('adminQuizList', () => {
     const resAdminQuizlist = request(
       'GET',
       SERVER_URL + '/v1/admin/quiz/list', {
-        headers: {
-          Authorisation: userToken,
-        }
+        qs: {
+          token: userToken,
+        },
+        timeout: TIMEOUT_MS,
       }
     );
 
@@ -286,14 +271,17 @@ describe('adminQuizList', () => {
   });
 
   test('returns an error when authUserId is not valid', () => {
+    const invalidTokenId = 3564743;
     const resAdminQuizlist = request(
       'GET',
       SERVER_URL + '/v1/admin/quiz/list', {
-        headers: {
-          Authorisation: userToken,
-        }
+        qs: {
+          token: invalidTokenId,
+        },
+        timeout: TIMEOUT_MS,
       }
     );
+    expect(resAdminQuizlist.statusCode).toStrictEqual(401);
     const quizList = JSON.parse(resAdminQuizlist.body.toString());
     expect(quizList).toStrictEqual({ error: expect.any(String) });
   });

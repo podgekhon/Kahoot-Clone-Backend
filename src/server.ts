@@ -42,6 +42,7 @@ import {
 import { 
   adminQuizCreate,
   adminQuizRemove,
+  adminQuizList,
   adminTrashList
 } from './quiz';
 import { clear } from './other';
@@ -205,7 +206,7 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 });
 
 // get trash list
-app.get('/v1/admin/quiz/trash', (req, res) => {
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const { token } = req.query;
   const result = validateToken(token as string);
 
@@ -220,6 +221,18 @@ app.get('/v1/admin/quiz/trash', (req, res) => {
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizzes);
 });
+
+// adminQuizList
+app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+  const { token } = req.query;
+  const quizList = adminQuizList(token as string);
+
+  if ('error' in quizList) {
+    return res.status(httpStatus.UNAUTHORIZED).json(quizList);
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+})
 
 
 // ====================================================================
