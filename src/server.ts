@@ -38,10 +38,10 @@ import {
   adminUserDetails,
   adminUserDetailsUpdate
 } from './auth';
-import { adminQuizCreate, adminQuizNameUpdate, isErrorMessages} from './quiz';
+import { adminQuizCreate, adminQuizNameUpdate} from './quiz';
 import { clear } from './other';
-import { validateToken } from './helperfunction';
-// import {errorMessages} from './interface';
+import { validateToken, isErrorMessages } from './helperfunction';
+import {errorMessages, emptyReturn} from './interface';
 // import { getData } from './dataStore';
 
 export enum httpStatus {
@@ -160,12 +160,9 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, name } = req.body;
-  console.log(`HI token = ${token}`);
   // Validate the token
   const validToken = validateToken(token);
-  console.log(`HI 2 validToken = ${validToken}`);
   if ('error' in validToken) {
-    console.log(`HI 3 token = ${token}`);
     return res.status(httpStatus.UNAUTHORIZED).json({
       error: 'Token is empty or invalid',
     });

@@ -192,12 +192,6 @@ beforeEach(() => {
 
 
 
-
-
-beforeEach(() => {
-  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS })
-})
-
 describe('adminQuizNameUpdate', () => {
   // invalid input tests
   let user1
@@ -215,7 +209,6 @@ describe('adminQuizNameUpdate', () => {
       timeout: TIMEOUT_MS,
     })
     user1token = JSON.parse(user1.body.toString()).token
-    console.log(`user1token from before = ${user1token}`)
 
     quiz1 = request('POST', SERVER_URL + '/v1/admin/quiz', {
       json: {
@@ -226,7 +219,6 @@ describe('adminQuizNameUpdate', () => {
       timeout: TIMEOUT_MS,
     })
     quiz1Id = JSON.parse(quiz1.body.toString()).quizId
-    console.log(`quizId from before = ${quiz1Id}`)
   })
 
   test('invalid token', () => {
@@ -264,7 +256,6 @@ describe('adminQuizNameUpdate', () => {
   })
 
   test('invalid quizId', () => {
-    console.log(`HIIII 2`)
     const result = request('PUT', SERVER_URL + `/v1/admin/quiz/${10}/name`, {
       json: {
         token: user1token,

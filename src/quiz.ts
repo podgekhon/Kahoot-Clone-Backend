@@ -5,7 +5,7 @@ import {
   isStringValid,
   isNameLengthValid,
   isNameTaken,
-  isValidQuiz
+  isValidQuiz,
 } from './helperfunction';
 
 import {
@@ -262,6 +262,8 @@ export const adminQuizNameUpdate = (
   setData(data);
   return { };
 };
+
+
 
 /**
   * Update the description of the relevant quiz
