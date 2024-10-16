@@ -38,7 +38,16 @@ import {
   adminUserDetails,
   adminUserDetailsUpdate
 } from './auth';
-import { adminQuizCreate, adminQuizNameUpdate} from './quiz';
+
+import {
+  adminQuizCreate,
+  adminQuizRemove,
+  adminQuizList,
+  adminTrashList,
+  adminQuizDescriptionUpdate,
+  adminQuizNameUpdate
+} from './quiz';
+
 import { clear } from './other';
 import { validateToken, isErrorMessages } from './helperfunction';
 import {errorMessages, emptyReturn} from './interface';
@@ -93,12 +102,7 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
-// ------clear---------/ //
-app.delete('/v1/clear', (req: Request, res: Response) => {
-  const result = clear();
-  return res.json(result);
-});
-// adminUserPasswordUpdate\
+// adminUserPasswordUpdate
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
   const validtoken = validateToken(token);
@@ -117,26 +121,7 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-// adminUserPasswordUpdate\
-app.put('/v1/admin/user/password', (req: Request, res: Response) => {
-  const { token, oldPassword, newPassword } = req.body;
-  const validtoken = validateToken(token);
-  // invalid token
-  if ('error' in validtoken) {
-    return res.status(httpStatus.UNAUTHORIZED).json({
-      error: 'token is empty or invalid'
-    });
-  }
-
-  const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
-  if ('error' in result) {
-    return res.status(httpStatus.BAD_REQUEST).json(result);
-  }
-
-  return res.json(result);
-});
-
-// quizCreate
+// adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   console.log(`What the`);
   const { token, name, description } = req.body;
@@ -156,7 +141,7 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 });
 
 
-// quiznameupdate
+// adminQuizNameUpdate
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, name } = req.body;
@@ -181,20 +166,114 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
+// adminQuizDescriptionUpdate
+app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token, description } = req.body;
 
-app.get('/v1/admin/user/details', (req, res) => {
-  const { token } = req.body;
-  const result = validateToken(token);
+  const result = adminQuizDescriptionUpdate(
+    token,
+    parseInt(quizid),
+    description
+  );
+
   if ('error' in result) {
-    return res.status(401).json({error: 'Unknown Type: string - error'});
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid ' +
+               '(does not refer to valid logged in ' +
+               'user session)'
+      });
+    }
+    if (result.error === 'INVALID_QUIZ') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error:
+        'Valid token is provided, but user is not an owner of this quiz, ' +
+        'or quiz doesn\'t exist.'
+      });
+    }
+    if (result.error === 'DESCRIPTION_TOO_LONG') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Description is more than 100 characters in length.'
+      });
+    }
   }
-  const userDetails = adminUserDetails(token);
-  if ('error' in userDetails) {
-    return res.status(401).json({ error: "Unknown Type: string - error" });
-  }
-  return res.status(200).json(userDetails);
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
+// adminUserDetails
+app.get('/v1/admin/user/details', (req, res) => {
+  const { token } = req.query;
+
+  const result = adminUserDetails(token as string);
+  if ('error' in result) {
+    return res.status(401).json({ error: result.error });
+  }
+
+  return res.status(200).json(result);
+});
+
+// adminUserDetailsUpdate
+app.put('/v1/admin/user/details', (req, res) => {
+  const { token, email, nameFirst, nameLast } = req.body;
+  const result = validateToken(token);
+  if ('error' in result) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+  }
+  const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+  if ('error' in updateResult) {
+    return res.status(httpStatus.BAD_REQUEST).json({ error: 'Unknown Type: string - error' });
+  }
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
+// delete Quiz
+app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const { token } = req.query;
+  const { quizid } = req.params;
+
+  const result = validateToken(token as string);
+  if ('error' in result) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+  }
+
+  const removeResult = adminQuizRemove(token as string, Number(quizid));
+  if ('error' in removeResult) {
+    return res.status(httpStatus.FORBIDDEN).json({ error: 'Unknown Type: string - error' });
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
+// get trash list
+app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+  const { token } = req.query;
+  const result = validateToken(token as string);
+
+  if ('error' in result) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+  }
+
+  const quizzes = adminTrashList(token as string);
+  if ('error' in quizzes) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizzes);
+});
+
+// adminQuizList
+app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+  const { token } = req.query;
+  const quizList = adminQuizList(token as string);
+
+  if ('error' in quizList) {
+    return res.status(httpStatus.UNAUTHORIZED).json(quizList);
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+});
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

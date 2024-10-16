@@ -403,6 +403,491 @@ describe('adminQuizNameUpdate', () => {
 
 
 
+/*
+/// ////////-----adminQuizList-----////////////
+describe('adminQuizList', () => {
+  let user: { token: string};
+  let quizList: string; // this might change
+  let userToken: string;
+
+  beforeEach(() => {
+    const resRegister = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/register',
+      {
+        json: {
+          email: 'test@gmail.com',
+          password: 'validPassword5',
+          nameFirst: 'Patrick',
+          nameLast: 'Chen'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    user = JSON.parse(resRegister.body.toString());
+    expect(resRegister.statusCode).toStrictEqual(200);
+    userToken = user.token;
+  });
+
+  test('returns an empty list when user has no quizzes', () => {
+    const resAdminQuizlist = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list', {
+        qs: {
+          token: userToken,
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+
+    quizList = JSON.parse(resAdminQuizlist.body.toString());
+    expect(resAdminQuizlist.statusCode).toStrictEqual(200);
+    expect(quizList).toStrictEqual({ quizzes: [] });
+  });
+
+  test.skip('returns a list of quizzes owned by the user', () => {
+    request(
+      'PUT',
+      SERVER_URL + '/v1/admin/quiz',
+      {
+        json: {
+          token: userToken,
+          name: 'Math Quiz',
+          description: 'this is a math quiz'
+        }
+      }
+    );
+
+    request(
+      'PUT',
+      SERVER_URL + '/v1/admin/quiz',
+      {
+        json: {
+          token: userToken,
+          name: 'English Quiz',
+          description: 'this is an English quiz'
+        }
+      }
+    );
+
+    const resAdminQuizlist = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list', {
+        qs: {
+          token: userToken,
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+
+    quizList = JSON.parse(resAdminQuizlist.body.toString());
+    expect(resAdminQuizlist.statusCode).toStrictEqual(200);
+    expect(quizList).toStrictEqual({
+      quizzes: [
+        {
+          quizId: expect.any(Number),
+          name: 'Math Quiz'
+        },
+        {
+          quizId: expect.any(Number),
+          name: 'English Quiz'
+        },
+      ]
+    });
+  });
+
+  test('returns an error when authUserId is not valid', () => {
+    const invalidTokenId = 3564743;
+    const resAdminQuizlist = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list', {
+        qs: {
+          token: invalidTokenId,
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(resAdminQuizlist.statusCode).toStrictEqual(401);
+    const quizList = JSON.parse(resAdminQuizlist.body.toString());
+    expect(quizList).toStrictEqual({ error: expect.any(String) });
+  });
+});
+
+describe('adminQuizRemove', () => {
+  let quiz: any;
+  let adminToken: string;
+
+  beforeEach(() => {
+    const registerResponse = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'admin@unsw.edu.au',
+        password: 'AdminPass1234',
+        nameFirst: 'Admin',
+        nameLast: 'User'
+      },
+      timeout: TIMEOUT_MS
+    });
+    adminToken = JSON.parse(registerResponse.body.toString()).token;
+
+    const createQuizResponse = request('POST', SERVER_URL + '/v1/admin/quiz', {
+      json: {
+        token: adminToken,
+        name: 'Test Quiz',
+        description: 'This is a test quiz'
+      },
+      timeout: TIMEOUT_MS
+    });
+    quiz = JSON.parse(createQuizResponse.body.toString());
+  });
+
+  test('Successfully delete quiz', () => {
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(deleteResponse.statusCode).toEqual(200);
+    expect(JSON.parse(deleteResponse.body.toString())).toEqual({});
+  });
+
+  test('Attempt to delete non-existent quiz', () => {
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + '/v1/admin/quiz/9999?token=' + adminToken,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(deleteResponse.statusCode).toEqual(403);
+    expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
+  });
+
+  test('Attempt to delete quiz with invalid quiz ID format', () => {
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + '/v1/admin/quiz/invalidID?token=' + adminToken,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(deleteResponse.statusCode).toEqual(403);
+    expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
+  });
+
+  test('Attempt to delete already deleted quiz', () => {
+    request('DELETE', SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`, {
+      timeout: TIMEOUT_MS
+    });
+
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(deleteResponse.statusCode).toEqual(403);
+    expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
+  });
+
+  test('Attempt to delete quiz by non-admin user', () => {
+    const registerOtherResponse = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'otheruser@unsw.edu.au',
+        password: 'OtherPass1234',
+        nameFirst: 'Other',
+        nameLast: 'User'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const otherToken = JSON.parse(registerOtherResponse.body.toString()).token;
+
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${otherToken}`,
+      {
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(deleteResponse.statusCode).toEqual(403);
+    expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
+  });
+});
+
+// tests for trash list
+describe('adminTrashList', () => {
+  let admin: any;
+  let adminToken: string;
+  let quizId: number;
+
+  beforeEach(() => {
+    const response = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'admin@unsw.edu.au',
+        password: 'AdminPass1234',
+        nameFirst: 'Admin',
+        nameLast: 'User'
+      },
+      timeout: TIMEOUT_MS
+    });
+    admin = JSON.parse(response.body as string);
+    adminToken = admin.token;
+
+    const quizResponse = request('POST', `${SERVER_URL}/v1/admin/quiz`, {
+      json: {
+        token: adminToken,
+        name: 'Sample Quiz',
+        description: 'This is a sample quiz.'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const quiz = JSON.parse(quizResponse.body as string);
+    quizId = quiz.quizId;
+  });
+
+  test('Get trash list with invalid format token', () => {
+    const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash?token=12345`, {
+      json: { token: 12345 },
+      timeout: TIMEOUT_MS
+    });
+    expect(trashListResponse.statusCode).toStrictEqual(401);
+  });
+
+  test('Get trash list with valid token but missing fields in response', () => {
+    request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizId}`, {
+      json: { token: adminToken },
+      timeout: TIMEOUT_MS
+    });
+
+    const trashListResponse = request(
+      'GET',
+      `${SERVER_URL}/v1/admin/quiz/trash?token=${adminToken}`,
+      {
+        json: { token: adminToken },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    const trashList = JSON.parse(trashListResponse.body.toString());
+    expect(trashListResponse.statusCode).toStrictEqual(200);
+    expect(trashList).toHaveProperty('quizzes');
+  });
+
+  test('Get trash list with token from different user', () => {
+    const newAdminResponse = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'newadmin@unsw.edu.au',
+        password: 'NewAdminPass1234',
+        nameFirst: 'New',
+        nameLast: 'Admin'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const newAdmin = JSON.parse(newAdminResponse.body.toString());
+    const newAdminToken = newAdmin.token;
+
+    const trashListResponse = request(
+      'GET',
+      `${SERVER_URL}/v1/admin/quiz/trash?token=${newAdminToken}`,
+      {
+        json: { token: newAdminToken },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    const trashList = JSON.parse(trashListResponse.body.toString());
+    expect(trashListResponse.statusCode).toStrictEqual(200);
+    expect(trashList).toHaveProperty('quizzes');
+  });
+
+  test('Get trash list with token that was generated from an earlier session', () => {
+    const earlierToken = adminToken;
+    const trashListResponse = request(
+      'GET',
+      `${SERVER_URL}/v1/admin/quiz/trash?token=${earlierToken}`,
+      {
+        json: { token: earlierToken },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(trashListResponse.statusCode).toStrictEqual(200);
+  });
+});
+
+describe('HTTP tests for quiz description update', () => {
+  let user: { token: string };
+  let quiz: { quizId: string };
+
+  beforeEach(() => {
+    // Register a user
+    const resRegister = request(
+      'POST',
+      `${url}:${port}/v1/admin/auth/register`,
+      {
+        json: {
+          email: 'test@gmail.com',
+          password: 'validPassword5',
+          nameFirst: 'Patrick',
+          nameLast: 'Chen',
+        },
+        timeout: 100,
+      }
+    );
+    user = JSON.parse(resRegister.body as string);
+
+    // Create a quiz
+    const resCreateQuiz = request(
+      'POST',
+      `${url}:${port}/v1/admin/quiz`,
+      {
+        json: {
+          token: user.token,
+          name: 'validQuizName',
+          description: 'validQuizDescription',
+        },
+        timeout: 100,
+      }
+    );
+    quiz = JSON.parse(resCreateQuiz.body as string);
+  });
+
+  test('successfully updates the quiz description', () => {
+    // Update the quiz description
+    const resUpdateQuizDescription = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/description`,
+      {
+        json: {
+          token: user.token,
+          description: 'Updated description',
+        },
+        timeout: 100,
+      }
+    );
+
+    // Check the status code and response (200 OK)
+    expect(resUpdateQuizDescription.statusCode).toStrictEqual(200);
+    const bodyObj = JSON.parse(resUpdateQuizDescription.body as string);
+    expect(bodyObj).toStrictEqual({});
+  });
+
+  test('successfully updates quiz description with an empty string', () => {
+    // Update the quiz description with an empty string
+    const resUpdateQuizDescription = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/description`,
+      {
+        json: {
+          token: user.token,
+          description: '',
+        },
+        timeout: 100,
+      }
+    );
+
+    // Check the status code and the response
+    expect(resUpdateQuizDescription.statusCode).toStrictEqual(200);
+    const bodyObj = JSON.parse(resUpdateQuizDescription.body as string);
+    expect(bodyObj).toStrictEqual({});
+  });
+
+  test('returns error when token is not valid', () => {
+    // Attempt to update with an invalid token
+    const resUpdateQuizDescription = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/description`,
+      {
+        json: {
+          token: -1,
+          description: 'New description',
+        },
+        timeout: 100,
+      }
+    );
+
+    // Check for 401 error (invalid token)
+    expect(resUpdateQuizDescription.statusCode).toStrictEqual(401);
+    const bodyObj = JSON.parse(resUpdateQuizDescription.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when quizId is not valid', () => {
+    // Attempt to update with an invalid quizId
+    const resUpdateQuizDescription = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/999/description`,
+      {
+        json: {
+          token: user.token,
+          description: 'New description',
+        },
+        timeout: 100,
+      }
+    );
+
+    // Check for 403 error (invalid quizId)
+    expect(resUpdateQuizDescription.statusCode).toStrictEqual(403);
+    const bodyObj = JSON.parse(resUpdateQuizDescription.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when user does not own the quiz', () => {
+    // Register a second user
+    const resRegisterUser2 = request(
+      'POST',
+      `${url}:${port}/v1/admin/auth/register`,
+      {
+        json: {
+          email: 'user2@gmail.com',
+          password: 'validPassword2',
+          nameFirst: 'User',
+          nameLast: 'Two',
+        },
+        timeout: 100,
+      }
+    );
+    const user2 = JSON.parse(resRegisterUser2.body as string);
+
+    // User 2 tries to update User 1's quiz description
+    const resUpdateQuizDescription = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/description`,
+      {
+        json: {
+          token: user2.token,
+          description: 'New description',
+        },
+        timeout: 100,
+      }
+    );
+
+    // Check for 403 error (user not an owner of quiz)
+    expect(resUpdateQuizDescription.statusCode).toStrictEqual(403);
+    const bodyObj = JSON.parse(resUpdateQuizDescription.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when description is longer than 100 characters', () => {
+    // Attempt to update with a description longer than 100 characters
+    const longDescription = 'ABC'.repeat(100);
+    const resUpdateQuizDescription = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/description`,
+      {
+        json: {
+          token: user.token,
+          description: longDescription,
+        },
+        timeout: 100,
+      }
+    );
+
+    // Check for 400 error (description too long)
+    expect(resUpdateQuizDescription.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuizDescription.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+});
 
 /*
 
