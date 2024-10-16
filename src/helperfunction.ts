@@ -221,7 +221,6 @@ export const isValidQuiz = (
   return null;
 };
 
-
 export function isErrorMessages(result: errorMessages | emptyReturn): result is errorMessages {
   return (result as errorMessages).error !== undefined;
 }

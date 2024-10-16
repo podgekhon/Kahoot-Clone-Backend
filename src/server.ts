@@ -50,7 +50,6 @@ import {
 
 import { clear } from './other';
 import { validateToken, isErrorMessages } from './helperfunction';
-import {errorMessages, emptyReturn} from './interface';
 // import { getData } from './dataStore';
 
 export enum httpStatus {
@@ -78,7 +77,7 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 
 // adminAuthRegister
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
-  console.log(`What the hell`);
+  console.log('What the hell');
   const { email, password, nameFirst, nameLast } = req.body;
 
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
@@ -123,7 +122,7 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  console.log(`What the`);
+  console.log('What the');
   const { token, name, description } = req.body;
   const validtoken = validateToken(token);
   // invalid token
@@ -140,7 +139,6 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   return res.json(result);
 });
 
-
 // adminQuizNameUpdate
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const { quizid } = req.params;
@@ -153,16 +151,14 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
     });
   }
 
-
   const result = adminQuizNameUpdate(token, parseInt(quizid), name);
-  if (isErrorMessages(result) && 
-    (result.error === 'Quiz ID does not refer to a valid quiz.' || 
+  if (isErrorMessages(result) &&
+    (result.error === 'Quiz ID does not refer to a valid quiz.' ||
      result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
-      return res.status(httpStatus.FORBIDDEN).json(result);
-  }
-  else if ('error' in result) {
+    return res.status(httpStatus.FORBIDDEN).json(result);
+  } else if ('error' in result) {
     return res.status(httpStatus.BAD_REQUEST).json(result);
-  } 
+  }
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 

@@ -266,8 +266,6 @@ export const adminQuizNameUpdate = (
   return { };
 };
 
-
-
 /**
   * Update the description of the relevant quiz
   *
