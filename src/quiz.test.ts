@@ -219,9 +219,9 @@ describe('adminQuizList', () => {
     expect(quizList).toStrictEqual({ quizzes: [] });
   });
 
-  test.skip('returns a list of quizzes owned by the user', () => {
+  test('returns a list of quizzes owned by the user', () => {
     request(
-      'PUT',
+      'POST',
       SERVER_URL + '/v1/admin/quiz',
       {
         json: {
@@ -233,7 +233,7 @@ describe('adminQuizList', () => {
     );
 
     request(
-      'PUT',
+      'POST',
       SERVER_URL + '/v1/admin/quiz',
       {
         json: {
