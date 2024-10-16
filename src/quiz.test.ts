@@ -227,7 +227,7 @@ describe('adminQuizNameUpdate', () => {
     console.log(`quizId from before = ${quiz1Id}`);
   });
 
-  describe('invalid inputs', () => {
+  // describe('invalid inputs', () => {
     test('invalid token', () => {
 
       // console.log(`quizId = ${quiz1Id}`);
@@ -238,6 +238,7 @@ describe('adminQuizNameUpdate', () => {
         {
           json: {
             token: 'abcd',
+            quizid: quiz1Id,
             name: 'newQuizName'
           }
         }
@@ -250,10 +251,11 @@ describe('adminQuizNameUpdate', () => {
     test('empty token', () => {
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/name`,
+        SERVER_URL + `/v1/admin/quiz/{quizid}/name`,
         {
           json: {
             token: JSON.stringify(''),
+            quizid: quiz1Id,
             name: 'newQuizName'
           }
         }
@@ -263,16 +265,19 @@ describe('adminQuizNameUpdate', () => {
     });
 
     test('invalid quizId', () => {
+      console.log(`user1token = ${user1token}`);
       const result = request(
         'PUT',
         SERVER_URL + `/v1/admin/quiz/${10}/name`,
         {
           json: {
             token: user1token,
+            quizid: 10,
             name: 'newQuizName'
           }
         }
       );
+      console.log(`HIIII 2`);
       expect(result.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
       expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
     });
@@ -295,10 +300,11 @@ describe('adminQuizNameUpdate', () => {
   
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${''}/name`,
+        SERVER_URL + `/v1/admin/quiz/{quizid}/name`,
         {
           json: {
             token: user2token,
+            quizid: quiz1Id,
             name: 'newQuizName',
           }
         }
@@ -310,10 +316,11 @@ describe('adminQuizNameUpdate', () => {
     test('name contains invalid characters', () => {
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/name`,
+        SERVER_URL + `/v1/admin/quiz/{quizid}/name`,
         {
           json: {
             token: user1token,
+            quizid: quiz1Id,
             name: 'newQuizName~!'
           }
         }
@@ -325,10 +332,11 @@ describe('adminQuizNameUpdate', () => {
     test('name less than 3 characters', () => {
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/name`,
+        SERVER_URL + `/v1/admin/quiz/{quizid}/name`,
         {
           json: {
             token: user1token,
+            quizid: quiz1Id,
             name: '1'
           }
         }
@@ -340,10 +348,11 @@ describe('adminQuizNameUpdate', () => {
     test('name more than 30 characters', () => {
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/name`,
+        SERVER_URL + `/v1/admin/quiz/{quizid}/name`,
         {
           json: {
             token: user1token,
+            quizid: quiz1Id,
             name: 'fdsafdsgesagewagawggdsa' +
             'fdsafdsagsagewagafdsafdsafdsafdsafdsafsafdgregrehes'
           }
@@ -371,10 +380,11 @@ describe('adminQuizNameUpdate', () => {
   
       const result = request(
         'PUT',
-        SERVER_URL + `/v1/admin/quiz/${quiz2Id}/name`,
+        SERVER_URL + `/v1/admin/quiz/{quizid}/name`,
         {
           json: {
             token: user1token,
+            quizid: quiz2Id,
             name: 'quiz1'
           }
         }
@@ -383,7 +393,7 @@ describe('adminQuizNameUpdate', () => {
       expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
 
     });
-  });
+  // });
 
 //   test('duplicate quiz names owned by same user', () => {
 //     const user1 = adminAuthRegister(
@@ -416,7 +426,7 @@ describe('adminQuizNameUpdate', () => {
   test('has correct return type', () => {
     const result = request(
       'PUT',
-      SERVER_URL + `/v1/admin/quiz/${quiz1Id}/name`,
+      SERVER_URL + `/v1/admin/quiz/{quizid}/name`,
       {
         json: {
           token: user1token,
