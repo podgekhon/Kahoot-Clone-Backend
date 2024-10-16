@@ -10,7 +10,6 @@ import path from 'path';
 import process from 'process';
 /// ////////------UNCOMMENT THIS LINE BELOW--------//////////
 // import { getData } from './dataStore.js';
-// import { adminQuizDescriptionUpdate } from './quiz';
 
 // Set up web app
 const app = express();
@@ -36,10 +35,10 @@ import {
   adminAuthRegister,
   adminUserPasswordUpdate
 } from './auth';
-import { adminQuizCreate, adminQuizNameUpdate} from './quiz';
+import { adminQuizCreate, adminQuizNameUpdate, isErrorMessages} from './quiz';
 import { clear } from './other';
 import { validateToken } from './helperfunction';
-
+// import {errorMessages} from './interface';
 // import { getData } from './dataStore';
 
 export enum httpStatus {
@@ -126,9 +125,9 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   console.log(`HI token = ${token}`);
   // Validate the token
   const validToken = validateToken(token);
-  // console.log(`HI 2 validToken = ${validToken}`);
+  console.log(`HI 2 validToken = ${validToken}`);
   if ('error' in validToken) {
-    // console.log(`HI 3 token = ${token}`);
+    console.log(`HI 3 token = ${token}`);
     return res.status(httpStatus.UNAUTHORIZED).json({
       error: 'Token is empty or invalid',
     });
@@ -136,15 +135,18 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
 
 
   const result = adminQuizNameUpdate(token, parseInt(quizid), name);
-  if ('Quiz ID does not refer to a valid quiz.' in result || 'Quiz ID does not refer to a quiz that this user owns.' in result) {
-    return res.status(httpStatus.UNAUTHORIZED).json(result);
+  if (isErrorMessages(result) && 
+    (result.error === 'Quiz ID does not refer to a valid quiz.' || 
+     result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
+      return res.status(httpStatus.FORBIDDEN).json(result);
   }
-  if ('error' in result) {
+  else if ('error' in result) {
     return res.status(httpStatus.BAD_REQUEST).json(result);
-  } else {
-    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-  }
+  } 
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
+
+
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
