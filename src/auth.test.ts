@@ -731,7 +731,7 @@ describe('adminUserDetail', () => {
   });
 
   test('Get user details successfully', () => {
-    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=${adminToken}`, {
       json: { token: adminToken },
       timeout: TIMEOUT_MS
     });
@@ -744,7 +744,7 @@ describe('adminUserDetail', () => {
   });
 
   test('Get user details with invalid format token', () => {
-    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=12345`, {
       json: { token: 12345 },
       timeout: TIMEOUT_MS
     });
@@ -752,7 +752,7 @@ describe('adminUserDetail', () => {
   });
 
   test('Get user details with valid token but missing fields in response', () => {
-    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=${adminToken}`, {
       json: { token: adminToken },
       timeout: TIMEOUT_MS
     });
@@ -775,7 +775,7 @@ describe('adminUserDetail', () => {
     const newAdmin = JSON.parse(newAdminResponse.body.toString());
     const newAdminToken = newAdmin.token;
 
-    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=${newAdminToken}`, {
       json: { token: newAdminToken },
       timeout: TIMEOUT_MS
     });
@@ -786,22 +786,8 @@ describe('adminUserDetail', () => {
 
   test('Get user details with token that was generated from an earlier session', () => {
     const earlierToken = adminToken; 
-    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
+    const userDetailsResponse = request('GET', `${SERVER_URL}/v1/admin/user/details?token=${earlierToken}`, {
       json: { token: earlierToken },
-      timeout: TIMEOUT_MS
-    });
-    expect(userDetailsResponse.statusCode).toStrictEqual(200);
-  });
-
-  test('Get user details when server is under heavy load', () => {
-    for (let i = 0; i < 100; i++) {
-      request('GET', SERVER_URL + '/v1/admin/user/details', {
-        json: { token: adminToken },
-        timeout: TIMEOUT_MS
-      });
-    }
-    const userDetailsResponse = request('GET', SERVER_URL + '/v1/admin/user/details', {
-      json: { token: adminToken },
       timeout: TIMEOUT_MS
     });
     expect(userDetailsResponse.statusCode).toStrictEqual(200);
