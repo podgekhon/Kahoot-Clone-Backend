@@ -15,7 +15,14 @@ import {
   * containing authUserId if valid, or an error message if invalid
   */
 export function validateToken(token: string): { authUserId: number } | { error: string } {
-  const decodedToken = JSON.parse(decodeURIComponent(token));
+  let decodedToken;
+  try {
+    // Try to decode and parse the token as a valid JSON string
+    decodedToken = JSON.parse(decodeURIComponent(token));
+  } catch (error) {
+    // If parsing fails, return an error message
+    return { error: 'Invalid token format.' };
+  }
 
   const data = getData();
   const session = data.sessions.find(s => s.sessionId === decodedToken.sessionId);
