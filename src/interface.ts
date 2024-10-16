@@ -3,6 +3,7 @@ export interface dataStore {
     users: user[],
     quizzes: quiz[],
     sessions: token[];
+    trash: quiz[];
   }
 
 export interface user {

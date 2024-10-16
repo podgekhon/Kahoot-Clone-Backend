@@ -5,7 +5,8 @@ import { dataStore } from './interface';
 let data: dataStore = {
   users: [],
   quizzes: [],
-  sessions: []
+  sessions: [],
+  trash: []
 };
 
 // YOU MAY MODIFY THIS OBJECT ABOVE
