@@ -178,6 +178,154 @@ describe('adminQuizCreate', () => {
   });
 });
 
+// describe.skip('adminQuizList', () => {
+//   test('returns a list of quizzes owned by the user', () => {
+//     // Register and login a user, then create quizzes
+//     adminAuthRegister(
+//       'test@gmail.com',
+//       'validPassword5',
+//       'Patrick',
+//       'Chen'
+//     );
+//     const loggedInUser = adminAuthLogin(
+//       'test@gmail.com',
+//       'validPassword5'
+//     ) as authResponse;
+//     const quiz1 = adminQuizCreate(
+//       loggedInUser.authUserId,
+//       'Math Quiz',
+//       '12345'
+//     ) as quizCreateResponse;
+//     const quiz2 = adminQuizCreate(
+//       loggedInUser.authUserId,
+//       'English Quiz',
+//       'ABCDEF'
+//     ) as quizCreateResponse;
+//     // Get the list of quizzes for this user
+//     const result = adminQuizList(loggedInUser.authUserId);
+//     // Expect an array of quizzes owned by the user
+//     expect(result).toStrictEqual({
+//       quizzes: [
+//         { quizId: quiz1.quizId, name: 'Math Quiz' },
+//         { quizId: quiz2.quizId, name: 'English Quiz' },
+//       ],
+//     });
+//   });
+
+//   test('returns an error when authUserId is not valid', () => {
+//     // Pass an arbitrary and invalid authUserId
+//     const result = adminQuizList(999);
+//     expect(result).toStrictEqual({ error: expect.any(String) });
+//   });
+// });
+/// ////////-----adminQuizList-----////////////
+describe('adminQuizList', () => {
+  let user: { token: string};
+  let quizList: string; // this might change
+  let userToken: string;
+  test('returns an empty list when user has no quizzes', () => {
+    const resRegister = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/register',
+      {
+        json: {
+          email: 'test@gmail.com',
+          password: 'validPassword5',
+          nameFirst: 'Patrick',
+          nameLast: 'Chen'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+
+    user = JSON.parse(resRegister.body.toString());
+    expect(resRegister.statusCode).toStrictEqual(200);
+
+    userToken = user.token;
+
+    const resAdminQuizlist = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list', {
+        headers: {
+          Authorisation: userToken,
+        }
+      }
+    );
+
+    quizList = JSON.parse(resAdminQuizlist.body.toString());
+    expect(resAdminQuizlist.statusCode).toStrictEqual(200);
+    expect(quizList).toStrictEqual({ quizzes: [] });
+  });
+
+  test('returns a list of quizzes owned by the user', () => {
+    const resRegister = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/register',
+      {
+        json: {
+          email: 'test@gmail.com',
+          password: 'validPassword5',
+          nameFirst: 'Patrick',
+          nameLast: 'Chen'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    user = JSON.parse(resRegister.body.toString());
+    expect(resRegister.statusCode).toStrictEqual(200);
+
+    userToken = user.token;
+
+    request(
+      'PUT',
+      SERVER_URL + '/v1/admin/quiz',
+      {
+        json: {
+          token: userToken,
+          name: 'Math Quiz',
+          description: 'this is a math quiz'
+        }
+      }
+    );
+
+    request(
+      'PUT',
+      SERVER_URL + '/v1/admin/quiz',
+      {
+        json: {
+          token: userToken,
+          name: 'English Quiz',
+          description: 'this is an English quiz'
+        }
+      }
+    );
+
+    const resAdminQuizlist = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list', {
+        headers: {
+          Authorisation: userToken,
+        }
+      }
+    );
+
+    quizList = JSON.parse(resAdminQuizlist.body.toString());
+    expect(resAdminQuizlist.statusCode).toStrictEqual(200);
+    expect(quizList).toStrictEqual({
+      quizzes: [
+        {
+          quizId: expect.any(Number),
+          name: 'Math Quiz'
+        },
+        {
+          quizId: expect.any(Number),
+          name: 'English Quiz'
+        },
+      ]
+    });
+  });
+});
+
 /*
 describe.skip('adminQuizNameUpdate', () => {
   // invalid input tests
