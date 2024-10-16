@@ -714,7 +714,6 @@ describe('test for adminUserDetails', () => {
   let user: { token: string };
 
   beforeEach(() => {
-    // Register a user
     const resRegister = request('POST', `${url}:${port}/v1/admin/auth/register`, {
       json: {
         email: 'test@gmail.com',
@@ -740,7 +739,6 @@ describe('test for adminUserDetails', () => {
     );
     const result = JSON.parse(resDetails.body as string);
 
-    // Validate that the correct user details are returned
     expect(result).toStrictEqual({
       user: {
         userId: expect.any(Number),
