@@ -735,7 +735,7 @@ describe('test for adminUserDetails', () => {
         qs: {
           token: user.token,
         },
-        timeout: 100,  
+        timeout: 100,
       }
     );
     const result = JSON.parse(resDetails.body as string);
@@ -760,7 +760,7 @@ describe('test for adminUserDetails', () => {
         qs: {
           token: 'invalidToken',
         },
-        timeout: 100,  
+        timeout: 100,
       }
     );
     const result = JSON.parse(resDetails.body as string);
@@ -792,7 +792,7 @@ describe('test for adminUserDetails', () => {
         qs: {
           token: user.token,
         },
-        timeout: 100,  
+        timeout: 100,
       }
     );
     const result = JSON.parse(resDetails.body as string);
@@ -825,7 +825,7 @@ describe('test for adminUserDetails', () => {
         qs: {
           token: user.token,
         },
-        timeout: 100,  
+        timeout: 100,
       }
     );
     const result = JSON.parse(resDetails.body as string);
@@ -867,7 +867,7 @@ describe('test for adminUserDetails', () => {
         qs: {
           token: user.token,
         },
-        timeout: 100,  
+        timeout: 100,
       }
     );
     const result = JSON.parse(resDetails.body as string);
