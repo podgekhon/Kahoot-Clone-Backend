@@ -279,7 +279,6 @@ describe('test for adminAuthLogin', () => {
       SERVER_URL + '/v1/admin/auth/login',
       {
         json: {
-          // token: user.token,
           email: 'XiaoyuanMa@unsw.edu.au',
           password: '1234abcd'
         },
@@ -729,9 +728,16 @@ describe('test for adminUserDetails', () => {
   });
 
   test('successfully returns details of a valid user', () => {
-    const resDetails = request('GET', `${url}:${port}/v1/admin/user/details?token=${user.token}`, {
-      timeout: 100,
-    });
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: user.token,
+        },
+        timeout: 100,  
+      }
+    );
     const result = JSON.parse(resDetails.body as string);
 
     // Validate that the correct user details are returned
@@ -747,9 +753,16 @@ describe('test for adminUserDetails', () => {
   });
 
   test('returns error when token is not valid', () => {
-    const resDetails = request('GET', `${url}:${port}/v1/admin/user/details?token=invalidToken`, {
-      timeout: 100,
-    });
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: 'invalidToken',
+        },
+        timeout: 100,  
+      }
+    );
     const result = JSON.parse(resDetails.body as string);
 
     expect(result).toStrictEqual({ error: expect.any(String) });
@@ -772,9 +785,16 @@ describe('test for adminUserDetails', () => {
       timeout: 100,
     });
 
-    const resDetails = request('GET', `${url}:${port}/v1/admin/user/details?token=${user.token}`, {
-      timeout: 100,
-    });
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: user.token,
+        },
+        timeout: 100,  
+      }
+    );
     const result = JSON.parse(resDetails.body as string);
 
     // Check if the number of successful logins is correct (1 registration + 2 logins)
@@ -798,9 +818,16 @@ describe('test for adminUserDetails', () => {
       timeout: 100,
     });
 
-    const resDetails = request('GET', `${url}:${port}/v1/admin/user/details?token=${user.token}`, {
-      timeout: 100,
-    });
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: user.token,
+        },
+        timeout: 100,  
+      }
+    );
     const result = JSON.parse(resDetails.body as string);
 
     // Check if the number of failed login attempts is correct (2 failed attempts)
@@ -833,9 +860,16 @@ describe('test for adminUserDetails', () => {
       timeout: 100,
     });
 
-    const resDetails = request('GET', `${url}:${port}/v1/admin/user/details?token=${user.token}`, {
-      timeout: 100,
-    });
+    const resDetails = request(
+      'GET',
+      `${url}:${port}/v1/admin/user/details`,
+      {
+        qs: {
+          token: user.token,
+        },
+        timeout: 100,  
+      }
+    );
     const result = JSON.parse(resDetails.body as string);
 
     // Check if the failed attempts reset to 0 after a successful login
