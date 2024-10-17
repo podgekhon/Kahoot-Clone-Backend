@@ -246,15 +246,13 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const { token } = req.query;
   const quizTrashList = adminTrashList(token as string);
-  
+
   if ('error' in quizTrashList) {
     return res.status(httpStatus.UNAUTHORIZED).json(quizTrashList);
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizTrashList);
 });
-
-
 
 // adminQuizList
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
