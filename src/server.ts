@@ -245,19 +245,16 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 // get trash list
 app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const { token } = req.query;
-  const result = validateToken(token as string);
-
-  if ('error' in result) {
-    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+  const quizTrashList = adminTrashList(token as string);
+  
+  if ('error' in quizTrashList) {
+    return res.status(httpStatus.UNAUTHORIZED).json(quizTrashList);
   }
 
-  const quizzes = adminTrashList(token as string);
-  if ('error' in quizzes) {
-    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
-  }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizzes);
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizTrashList);
 });
+
+
 
 // adminQuizList
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
