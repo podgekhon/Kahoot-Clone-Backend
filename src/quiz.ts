@@ -5,7 +5,7 @@ import {
   isStringValid,
   isNameLengthValid,
   isNameTaken,
-  isValidQuiz
+  isValidQuiz,
 } from './helperfunction';
 
 import {

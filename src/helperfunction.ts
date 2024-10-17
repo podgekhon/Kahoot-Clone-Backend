@@ -3,6 +3,7 @@ import { getData, setData } from './dataStore';
 import {
   token,
   errorMessages,
+  emptyReturn,
   dataStore as data
 } from './interface';
 
@@ -219,3 +220,7 @@ export const isValidQuiz = (
   }
   return null;
 };
+
+export function isErrorMessages(result: errorMessages | emptyReturn): result is errorMessages {
+  return (result as errorMessages).error !== undefined;
+}

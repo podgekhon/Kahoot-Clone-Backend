@@ -10,7 +10,6 @@ import path from 'path';
 import process from 'process';
 /// ////////------UNCOMMENT THIS LINE BELOW--------//////////
 // import { getData } from './dataStore.js';
-// import { adminQuizDescriptionUpdate } from './quiz';
 
 // Set up web app
 const app = express();
@@ -39,19 +38,21 @@ import {
   adminUserDetails,
   adminUserDetailsUpdate
 } from './auth';
+
 import {
   adminQuizCreate,
   adminQuizRemove,
   adminQuizList,
   adminTrashList,
-  adminQuizDescriptionUpdate
+  adminQuizDescriptionUpdate,
+  adminQuizNameUpdate
 } from './quiz';
-import { clear } from './other';
-import { validateToken } from './helperfunction';
 
+import { clear } from './other';
+import { validateToken, isErrorMessages } from './helperfunction';
 // import { getData } from './dataStore';
 
-enum httpStatus {
+export enum httpStatus {
   UNAUTHORIZED = 401,
   BAD_REQUEST = 400,
   FORBIDDEN = 403,
@@ -76,6 +77,7 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 
 // adminAuthRegister
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
+  console.log('What the hell');
   const { email, password, nameFirst, nameLast } = req.body;
 
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
@@ -120,6 +122,7 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
+  console.log('What the');
   const { token, name, description } = req.body;
   const validtoken = validateToken(token);
   // invalid token
@@ -134,6 +137,29 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
   return res.json(result);
+});
+
+// adminQuizNameUpdate
+app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token, name } = req.body;
+  // Validate the token
+  const validToken = validateToken(token);
+  if ('error' in validToken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'Token is empty or invalid',
+    });
+  }
+
+  const result = adminQuizNameUpdate(token, parseInt(quizid), name);
+  if (isErrorMessages(result) &&
+    (result.error === 'Quiz ID does not refer to a valid quiz.' ||
+     result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
+    return res.status(httpStatus.FORBIDDEN).json(result);
+  } else if ('error' in result) {
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizDescriptionUpdate
