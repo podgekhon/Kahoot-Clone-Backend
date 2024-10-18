@@ -4,6 +4,9 @@ import {
   token,
   errorMessages,
   emptyReturn,
+  question,
+  quiz,
+  answerOption,
   dataStore as data
 } from './interface';
 
@@ -233,6 +236,82 @@ export const isValidQuiz = (
     // quiz id does not refer to it's owner
     return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
   }
+  return null;
+};
+
+/**
+ * Validates the question details for a quiz.
+ *
+ * @param {object} questionBody - the body of the question
+ * @param {object} quiz - the quiz object containing questions
+ * @returns {object} - an object with an error message if invalid,
+ * or null if the question details are valid.
+ *
+ */
+export const isValidQuestion = (
+  questionBody: question,
+  quiz: quiz
+): errorMessages | null => {
+  const { question, timeLimit, points, answerOptions } = questionBody;
+
+  if (question.length < 5 || question.length > 50) {
+    return { error: 'INVALID_QUESTION_LENGTH' };
+  }
+
+  if (answerOptions.length < 2 || answerOptions.length > 6) {
+    return { error: 'INVALID_ANSWER_COUNT' };
+  }
+
+  if (timeLimit <= 0) {
+    return { error: 'INVALID_TIME_LIMIT' };
+  }
+
+  // Validate if the total quiz time limit is not exceeded
+  // We need to add timeLimit to the reduce method because the
+  // new question hasn't been added to the questions array yet.
+  if (quiz.questions.reduce((sum, q) => sum + q.timeLimit, 0) + timeLimit > 180) {
+    return { error: 'EXCEEDED_TOTAL_TIME_LIMIT' };
+  }
+
+  if (points < 1 || points > 10) {
+    return { error: 'INVALID_POINTS' };
+  }
+
+  return null;
+};
+
+/**
+ * Validates the answer options for a quiz question.
+ *
+ *
+ * @param {Array} answerOptions - the array of answer options to validate
+ * @returns {errorMessages | null} - an object with an error message if
+ * validation fails, or null if the answers are valid.
+ *
+ */
+export const validateAnswers = (
+  answerOptions: answerOption[]
+): errorMessages | null => {
+  const answerSet = new Set();
+  let hasCorrectAnswer = false;
+
+  for (const answerOption of answerOptions) {
+    if (answerOption.answer.length < 1 || answerOption.answer.length > 30) {
+      return { error: 'INVALID_ANSWER_LENGTH' };
+    }
+    if (answerSet.has(answerOption.answer)) {
+      return { error: 'DUPLICATE_ANSWERS' };
+    }
+    answerSet.add(answerOption.answer);
+    if (answerOption.correct) {
+      hasCorrectAnswer = true;
+    }
+  }
+
+  if (!hasCorrectAnswer) {
+    return { error: 'NO_CORRECT_ANSWER' };
+  }
+
   return null;
 };
 
