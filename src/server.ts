@@ -45,7 +45,8 @@ import {
   adminQuizList,
   adminTrashList,
   adminQuizDescriptionUpdate,
-  adminQuizNameUpdate
+  adminQuizNameUpdate,
+  adminQuizRestore
 } from './quiz';
 
 import { clear } from './other';
@@ -77,7 +78,6 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 
 // adminAuthRegister
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
-  console.log('What the hell');
   const { email, password, nameFirst, nameLast } = req.body;
 
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
@@ -122,7 +122,6 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  console.log('What the');
   const { token, name, description } = req.body;
   const validtoken = validateToken(token);
   // invalid token
@@ -264,6 +263,31 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+});
+
+// adminQuizRestore
+app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const quizId = parseInt(req.params.quizId as string);
+  const validtoken = validateToken(token);
+  // invalid token
+  if ('error' in validtoken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'token is empty or invalid'
+    });
+  }
+
+  const result = adminQuizRestore(quizId, token);
+  if ('error' in result) {
+    if (
+      result.error === 'user is not the owner of this quiz' ||
+      result.error === 'quiz doesnt exist'
+    ) {
+      return res.status(httpStatus.FORBIDDEN).json(result);
+    }
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+  return res.json(result);
 });
 
 // ====================================================================
