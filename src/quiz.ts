@@ -5,7 +5,7 @@ import {
   isStringValid,
   isNameLengthValid,
   isNameTaken,
-  isValidQuiz
+  isValidQuiz,
 } from './helperfunction';
 
 import {
@@ -32,6 +32,7 @@ import {
 export const adminQuizList = (token: string): errorMessages| quizList => {
   const data = getData();
   const tokenValidation = validateToken(token);
+
   if ('error' in tokenValidation) {
     return { error: tokenValidation.error };
   }
@@ -156,7 +157,7 @@ export const adminQuizRemove = (
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   const removedQuiz = data.quizzes.splice(quizIndex, 1)[0];
   data.trash.push(removedQuiz);
-  
+
   setData(data);
   return {};
 };
@@ -283,22 +284,23 @@ export const adminQuizDescriptionUpdate = (
   // get userId from token
   const tokenValidation = validateToken(token);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    return { error: 'INVALID_TOKEN' };
   }
   const authUserId = tokenValidation.authUserId;
 
   // error checkings for invalid userId, quizId
   const error = isValidQuiz(authUserId, quizId, data);
   if (error) {
-    return error;
+    return { error: 'INVALID_QUIZ' };
   }
-  // new description should be less then 100 characters
+
+  // new description should be less than 100 characters
   if (description.length > 100) {
     return {
-      error: 'Description too long!' +
-      ' (has to be less then 100 characters)'
+      error: 'DESCRIPTION_TOO_LONG',
     };
   }
+
   // update description and timeLastEdited
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
   validQuizId.description = description;
@@ -308,16 +310,14 @@ export const adminQuizDescriptionUpdate = (
   return { };
 };
 
-
-
 export const adminTrashList = (token: string): errorMessages | quizList => {
   const data = getData();
-  
+
   const tokenValidation = validateToken(token);
   if ('error' in tokenValidation) {
     return { error: tokenValidation.error };
   }
-  
+
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find(user => user.userId === authUserId);
