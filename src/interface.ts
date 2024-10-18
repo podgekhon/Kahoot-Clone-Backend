@@ -61,12 +61,12 @@ export interface tokenReturn {
 }
 
 export interface userDetails {
-user: {
-userId: number,
-name: string,
-email: string,
-numSuccessfulLogins: number,
-numFailedPasswordsSinceLastLogin: number,
+  user: {
+  userId: number,
+  name: string,
+  email: string,
+  numSuccessfulLogins: number,
+  numFailedPasswordsSinceLastLogin: number,
 }
 }
 

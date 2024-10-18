@@ -7,6 +7,8 @@ import {
   isNameLengthValid,
   isNameTaken,
   isValidQuiz,
+  isValidQuestion,
+  validateAnswers,
   random
 } from './helperfunction';
 
@@ -18,7 +20,8 @@ import {
   quizQuestionCreateResponse,
   quizInfo,
   quiz,
-  question
+  question,
+  answerOption
 } from './interface';
 
 /**
@@ -157,41 +160,15 @@ export const adminQuizQuestionCreate = (
     return { error: 'INVALID_OWNER' };
   }
 
-  const { question, timeLimit, points, answerOptions } = questionBody;
-  if (question.length < 5 || question.length > 50) {
-    return { error: 'INVALID_QUESTION_LENGTH' };
-  }
-  if (answerOptions.length < 2 || answerOptions.length > 6) {
-    return { error: 'INVALID_ANSWER_COUNT' };
-  }
-  if (timeLimit <= 0) {
-    return { error: 'INVALID_TIME_LIMIT' };
-  }
-  // We need to add timeLimit to the reduce method because the
-  // new question hasn't been added to the questions array yet.
-  if (quiz.questions.reduce((sum, q) => sum + q.timeLimit, 0) + timeLimit > 180) {
-    return { error: 'EXCEEDED_TOTAL_TIME_LIMIT' };
-  }
-  if (points < 1 || points > 10) {
-    return { error: 'INVALID_POINTS' };
+  const validationError = isValidQuestion(questionBody, quiz);
+  if (validationError) {
+    return validationError;
   }
 
-  const answerSet = new Set();
-  let hasCorrectAnswer = false;
-  for (const answerOption of answerOptions) {
-    if (answerOption.answer.length < 1 || answerOption.answer.length > 30) {
-      return { error: 'INVALID_ANSWER_LENGTH' };
-    }
-    if (answerSet.has(answerOption.answer)) {
-      return { error: 'DUPLICATE_ANSWERS' };
-    }
-    answerSet.add(answerOption.answer);
-    if (answerOption.correct) {
-      hasCorrectAnswer = true;
-    }
-  }
-  if (!hasCorrectAnswer) {
-    return { error: 'NO_CORRECT_ANSWER' };
+  const { answerOptions } = questionBody;
+  const answerValidationError = validateAnswers(answerOptions);
+  if (answerValidationError) {
+    return answerValidationError;
   }
 
   const newQuestion: question = {
@@ -199,7 +176,7 @@ export const adminQuizQuestionCreate = (
     question: questionBody.question,
     timeLimit: questionBody.timeLimit,
     points: questionBody.points,
-    answerOptions: questionBody.answerOptions.map((answer: any) => ({
+    answerOptions: questionBody.answerOptions.map((answer: answerOption) => ({
       answerId: Math.floor(Math.random() * 1000000),
       answer: answer.answer,
       colour: generateRandomColour(),
@@ -208,11 +185,71 @@ export const adminQuizQuestionCreate = (
   };
 
   quiz.questions.push(newQuestion);
-  quiz.timeLastEdited = Date.now();
+  quiz.timeLastEdited = quiz.timeCreated;
 
   setData(data);
 
   return { questionId: newQuestion.questionId };
+};
+
+export const adminQuizQuestionUpdate = (
+  quizId: number,
+  questionId: number,
+  updatedQuestionBody: question,
+  token: string
+): emptyReturn | errorMessages => {
+  const data = getData();
+
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: 'INVALID_TOKEN' };
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const quiz = data.quizzes.find((q: quiz) => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'INVALID_QUIZ' };
+  }
+
+  if (quiz.ownerId !== authUserId) {
+    return { error: 'INVALID_OWNER' };
+  }
+
+  const questionToUpdate = quiz.questions.find((q: question) => q.questionId === questionId);
+  if (!questionToUpdate) {
+    return { error: 'INVALID_QUESTION_ID' };
+  }
+
+  const validationError = isValidQuestion(updatedQuestionBody, quiz);
+  if (validationError) {
+    return validationError;
+  }
+
+  const { answerOptions } = updatedQuestionBody;
+  const answerValidationError = validateAnswers(answerOptions);
+  if (answerValidationError) {
+    return answerValidationError;
+  }
+
+  // Update question details
+  questionToUpdate.question = updatedQuestionBody.question;
+  questionToUpdate.timeLimit = updatedQuestionBody.timeLimit;
+  questionToUpdate.points = updatedQuestionBody.points;
+  questionToUpdate.answerOptions = updatedQuestionBody.answerOptions.map(
+    (answer: answerOption) => (
+      {
+        answerId: Math.floor(Math.random() * 1000000),
+        answer: answer.answer,
+        colour: generateRandomColour(),
+        correct: answer.correct
+      }
+    )
+  );
+
+  quiz.timeLastEdited = Math.floor(Date.now());
+  setData(data);
+
+  return { };
 };
 
 /**
