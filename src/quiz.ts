@@ -7,6 +7,7 @@ import {
   isNameLengthValid,
   isNameTaken,
   isValidQuiz,
+  random
 } from './helperfunction';
 
 import {
@@ -118,7 +119,7 @@ export const adminQuizCreate = (
 
   // push new quiz object into db & return quizId
   const newQuiz: quiz = {
-    quizId: data.quizzes.length,
+    quizId: random(500),
     ownerId: authUserId,
     name: name,
     description: description,
@@ -241,8 +242,10 @@ export const adminQuizRemove = (
 
   // remove the correct quiz
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
-  const removedQuiz = data.quizzes.splice(quizIndex, 1)[0];
-  data.trash.push(removedQuiz);
+  const removeQuiz = data.quizzes[quizIndex];
+  removeQuiz.timeLastEdited = Math.floor(Date.now());
+  data.trash.push(removeQuiz);
+  data.quizzes.splice(quizIndex, 1);
 
   setData(data);
   return {};
@@ -396,6 +399,12 @@ export const adminQuizDescriptionUpdate = (
   return { };
 };
 
+/**
+ * view the quiz trash
+ *
+ * @param {string } token - user token
+ * @returns {quizList}  - list of quizzes
+ */
 export const adminTrashList = (token: string): errorMessages | quizList => {
   const data = getData();
 
@@ -419,4 +428,55 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
     }));
 
   return { quizzes: userTrashQuizzes };
+};
+
+/**
+ * restore a quiz from trash
+ *
+ * @param {number} quizId - quizId
+ * @param {string} token - user token
+ */
+
+export const adminQuizRestore = (quizId: number, token: string) => {
+  const data = getData();
+
+  const tokenValidation = validateToken(token);
+  // invalid token
+  if ('error' in tokenValidation) {
+    return { error: 'INVALID_TOKEN' };
+  }
+
+  const authUserId = tokenValidation.authUserId;
+  // find quiz in trash
+  const quiz = data.trash.find(q => q.quizId === quizId);
+  const quizIsActive = data.quizzes.find(q => q.quizId === quizId);
+  if (quiz) {
+    // not owned by user
+    if (quiz.ownerId !== authUserId) {
+      return { error: 'user is not the owner of this quiz' };
+    }
+  }
+  // if quiz is not in the trash
+  if (!quiz) {
+    // quiz doesnt exist
+    if (!quizIsActive) {
+      return { error: 'quiz doesnt exist' };
+    }
+    return { error: 'quizId refer to a quiz not currently in the trash' };
+  }
+
+  const activeQuiz = data.quizzes.find(q => q.name === quiz.name);
+  // quiz name used
+  if (activeQuiz) {
+    return { error: 'quiz name used by active quiz' };
+  }
+  // restore the quiz
+  quiz.timeLastEdited = Math.floor(Date.now());
+  data.quizzes.push(quiz);
+  // delete the quiz in trash
+  const quizIndex = data.trash.findIndex(q => q.quizId === quizId);
+  data.trash.splice(quizIndex, 1);
+
+  setData(data);
+  return {};
 };

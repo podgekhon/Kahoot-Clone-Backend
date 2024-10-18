@@ -14,6 +14,7 @@ export const clear = () => {
 
   // Reset the quizzes array
   data.quizzes = [];
-
+  data.sessions = [];
+  data.trash = [];
   return {};
 };

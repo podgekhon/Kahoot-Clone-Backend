@@ -239,3 +239,7 @@ export const isValidQuiz = (
 export function isErrorMessages(result: errorMessages | emptyReturn): result is errorMessages {
   return (result as errorMessages).error !== undefined;
 }
+
+export function random(max: number): number {
+  return Math.floor(Math.random() * (max + 1)); // 包括 max
+}
