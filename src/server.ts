@@ -97,11 +97,6 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
-// ------clear---------/ //
-app.delete('/v1/clear', (req: Request, res: Response) => {
-  const result = clear();
-  return res.json(result);
-});
 // adminUserPasswordUpdate\
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
