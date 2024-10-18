@@ -8,6 +8,21 @@ import {
 } from './interface';
 
 /**
+ * Generates a random hexadecimal color code.
+ *
+ * @returns {string} - A string representing a random hexadecimal color code,
+ * starting with # followed by six hexadecimal digits.
+ */
+export function generateRandomColour(): string {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+/**
   * Validates the session token and returns the associated authUserId if valid.
   *
   * @param {string} token - the token to validate
