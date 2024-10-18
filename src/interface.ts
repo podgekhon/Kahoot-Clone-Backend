@@ -39,7 +39,7 @@ export interface quiz {
   name: string;
   description: string;
   numQuestions: number;
-  questions: question[];  
+  questions: question[];
   timeCreated: number;
   timeLastEdited: number;
   timeLimit: number;

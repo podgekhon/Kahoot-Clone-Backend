@@ -45,7 +45,8 @@ import {
   adminQuizList,
   adminTrashList,
   adminQuizDescriptionUpdate,
-  adminQuizNameUpdate
+  adminQuizNameUpdate,
+  adminQuizQuestionCreate
 } from './quiz';
 
 import { clear } from './other';
@@ -196,6 +197,90 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
+// adminQuizQuestionCreate
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token, questionBody } = req.body;
+
+  const result = adminQuizQuestionCreate(
+    parseInt(quizid),
+    questionBody,
+    token
+  );
+
+  if ('error' in result) {
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid ' +
+               '(does not refer to valid logged in ' +
+               'user session)'
+      });
+    }
+
+    if (result.error === 'INVALID_QUIZ') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but quiz doesn\'t exist.'
+      });
+    }
+
+    if (result.error === 'INVALID_OWNER') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but user is not an owner of this quiz'
+      });
+    }
+
+    if (result.error === 'INVALID_QUESTION_LENGTH') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Question length must be between 5 and 50 characters.'
+      });
+    }
+
+    if (result.error === 'INVALID_ANSWER_COUNT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'There must be between 2 and 6 answer options.'
+      });
+    }
+
+    if (result.error === 'INVALID_TIME_LIMIT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'The question timeLimit is not a positive number.'
+      });
+    }
+
+    if (result.error === 'EXCEEDED_TOTAL_TIME_LIMIT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'The sum of the question timeLimits in the quiz exceeds 3 minutes.'
+      });
+    }
+
+    if (result.error === 'INVALID_POINTS') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Points must be between 1 and 10.'
+      });
+    }
+
+    if (result.error === 'INVALID_ANSWER_LENGTH') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Each answer must be between 1 and 30 characters.'
+      });
+    }
+
+    if (result.error === 'DUPLICATE_ANSWERS') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Duplicate answer options are not allowed.'
+      });
+    }
+
+    if (result.error === 'NO_CORRECT_ANSWER') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'There must be at least one correct answer.'
+      });
+    }
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminUserDetails

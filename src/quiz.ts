@@ -135,11 +135,11 @@ export const adminQuizCreate = (
 };
 
 export const adminQuizQuestionCreate = (
-  quizId: number, 
-  questionBody: question, 
+  quizId: number,
+  questionBody: question,
   token: string
 ): quizQuestionCreateResponse | errorMessages => {
-  let data = getData();
+  const data = getData();
 
   const tokenValidation = validateToken(token);
   if ('error' in tokenValidation) {
@@ -166,7 +166,7 @@ export const adminQuizQuestionCreate = (
   if (timeLimit <= 0) {
     return { error: 'INVALID_TIME_LIMIT' };
   }
-  // We need to add timeLimit to the reduce method because the 
+  // We need to add timeLimit to the reduce method because the
   // new question hasn't been added to the questions array yet.
   if (quiz.questions.reduce((sum, q) => sum + q.timeLimit, 0) + timeLimit > 180) {
     return { error: 'EXCEEDED_TOTAL_TIME_LIMIT' };
@@ -194,12 +194,12 @@ export const adminQuizQuestionCreate = (
   }
 
   const newQuestion: question = {
-    questionId: Math.floor(Math.random() * 1000000),  
+    questionId: Math.floor(Math.random() * 1000000),
     question: questionBody.question,
     timeLimit: questionBody.timeLimit,
     points: questionBody.points,
     answerOptions: questionBody.answerOptions.map((answer: any) => ({
-      answerId: Math.floor(Math.random() * 1000000),  
+      answerId: Math.floor(Math.random() * 1000000),
       answer: answer.answer,
       colour: generateRandomColour(),
       correct: answer.correct
@@ -212,7 +212,7 @@ export const adminQuizQuestionCreate = (
   setData(data);
 
   return { questionId: newQuestion.questionId };
-}
+};
 
 /**
   * Given a particular quiz, permanently remove the quiz.
