@@ -45,7 +45,8 @@ import {
   adminQuizList,
   adminTrashList,
   adminQuizDescriptionUpdate,
-  adminQuizNameUpdate
+  adminQuizNameUpdate,
+  adminTrashEmpty
 } from './quiz';
 
 import { clear } from './other';
@@ -122,20 +123,26 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  console.log('What the');
+  console.log('LOLOL 1');
   const { token, name, description } = req.body;
   const validtoken = validateToken(token);
   // invalid token
   if ('error' in validtoken) {
+    console.log('LOLOL 2');
     return res.status(httpStatus.UNAUTHORIZED).json({
       error: 'token is empty or invalid'
     });
   }
 
+  console.log('LOLOL 3');
+
   const result = adminQuizCreate(token, name, description);
   if ('error' in result) {
+    console.log('LOLOL 4');
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
+
+  console.log('LOLOL 5');
   return res.json(result);
 });
 
@@ -228,17 +235,20 @@ app.put('/v1/admin/user/details', (req, res) => {
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { token } = req.query;
   const { quizid } = req.params;
-
+  console.log(`trash quiz 1: quizid = ${quizid}`);
+  console.log(`trash quiz 1: token = ${token}`);
   const result = validateToken(token as string);
   if ('error' in result) {
+    console.log(`trash quiz 2: quizid = ${quizid}`);
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
   }
 
   const removeResult = adminQuizRemove(token as string, Number(quizid));
   if ('error' in removeResult) {
+    console.log(`trash quiz 3: quizid = ${quizid}`);
     return res.status(httpStatus.FORBIDDEN).json({ error: 'Unknown Type: string - error' });
   }
-
+  console.log(`trash quiz 4: quizid = ${quizid}`);
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
@@ -264,6 +274,29 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+});
+
+// Empty trash
+app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
+  const { token, quizIds } = req.body; // Use req.body to get the token
+  console.log(`token JJJJJ = ${token}`);
+  console.log(`quizIds JJJJJJ = ${quizIds}`);
+  // Call the adminTrashEmpty function to process the request
+  const result = adminTrashEmpty(token as string, quizIds);
+  if (isErrorMessages(result) &&
+    (result.error === 'Quiz ID does not refer to a valid quiz.' ||
+     result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
+    return res.status(httpStatus.UNAUTHORIZED).json(result);
+  }
+  else if (isErrorMessages(result) &&
+    (result.error === 'Quiz ID is not in the trash.')) {
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  } else if (isErrorMessages(result) &&
+  (result.error === 'Quiz ID does not belong to the current user.')) {
+  return res.status(httpStatus.FORBIDDEN).json(result);
+  }
+  // Return a successful response if everything is okay
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
 // ====================================================================

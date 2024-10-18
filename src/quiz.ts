@@ -334,3 +334,32 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
 
   return { quizzes: userTrashQuizzes };
 };
+
+export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
+  // Validate inputs
+  const data = getData();
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+
+  const authUserId = tokenValidation.authUserId;
+  // Check if all quizIds are in the trash
+  // compares quizIds from trash with passed in quizIds
+  for (const quizId of quizIds) {
+    const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
+    if (!quizInTrash) {
+      console.log(`quiz.ts: quizInTrash = ${quizInTrash}`)
+      return { error: `Quiz ID is not in the trash.` };
+    }
+    // check passed in quizIds with quizIds corresponding to token
+    if (quizInTrash.ownerId !== authUserId) {
+      return { error: `Quiz ID does not belong to the current user.` };
+    }
+  }
+  data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
+  setData(data);
+  return {};
+  }
+
+
