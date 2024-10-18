@@ -157,6 +157,7 @@ export const adminQuizRemove = (
   // remove the correct quiz
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   const removeQuiz = data.quizzes[quizIndex];
+  removeQuiz.timeLastEdited = Math.floor(Date.now());
   data.trash.push(removeQuiz);
   data.quizzes.splice(quizIndex, 1);
 
@@ -384,6 +385,7 @@ export const adminQuizRestore = (quizId: number, token: string) => {
     return { error: 'quiz name used by active quiz' };
   }
   // restore the quiz
+  quiz.timeLastEdited = Math.floor(Date.now());
   data.quizzes.push(quiz);
   // delete the quiz in trash
   const quizIndex = data.trash.findIndex(q => q.quizId === quizId);
