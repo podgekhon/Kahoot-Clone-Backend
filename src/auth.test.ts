@@ -779,3 +779,96 @@ describe('adminUserDetailsUpdate', () => {
     expect(updateResult).toStrictEqual({ error: expect.any(String) });
   });
 });
+
+// adminUserLogout
+describe('POST /v1/admin/auth/logout', () => {
+  let user1;
+  let user1Return;
+  let user1token: string;
+
+  beforeEach(() => {
+    user1 = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'ericMa@unsw.edu.au',
+        password: 'EricMa1234',
+        nameFirst: 'Eric',
+        nameLast: 'Ma'
+      },
+      timeout: TIMEOUT_MS
+    });
+    user1Return = JSON.parse(user1.body.toString());
+    user1token = user1Return.token;
+  });
+
+  test('invalid token', () => {
+    const result = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/logout',
+      {
+        json: {
+          token: JSON.stringify('invalidToken'),
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(401);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('empty token', () => {
+    const result = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/logout',
+      {
+        json: {
+          token: JSON.stringify(''),
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(401);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('valid token', () => {
+    const result = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/logout',
+      {
+        json: {
+          token: user1token,
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result.statusCode).toStrictEqual(200);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({});
+  });
+
+  test('logout and reuse token', () => {
+    const result1 = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/logout',
+      {
+        json: {
+          token: user1token,
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result1.statusCode).toStrictEqual(200);
+
+    const result2 = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/logout',
+      {
+        json: {
+          token: user1token,
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(result2.statusCode).toStrictEqual(401);
+    expect(JSON.parse(result2.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+});

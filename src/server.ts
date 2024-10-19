@@ -36,7 +36,8 @@ import {
   adminUserPasswordUpdate,
   adminAuthLogin,
   adminUserDetails,
-  adminUserDetailsUpdate
+  adminUserDetailsUpdate,
+  adminAuthLogout
 } from './auth';
 
 import {
@@ -465,6 +466,26 @@ app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
   return res.json(result);
+});
+
+// adminAuthLogout
+app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const validToken = validateToken(token);
+  if ('error' in validToken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'Token is empty or invalid'
+    });
+  }
+  const result = adminAuthLogout(token);
+  if ('error' in result) {
+    if (result.error === 'Session not found.') {
+      return res.status(httpStatus.FORBIDDEN).json(result);
+    }
+
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
 // ====================================================================

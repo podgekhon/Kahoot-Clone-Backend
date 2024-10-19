@@ -283,3 +283,32 @@ export const adminUserPasswordUpdate = (
   setData(data);
   return {};
 };
+
+/**
+  * Given userID,
+  * logout and delete token.
+  *
+  * @param {string} token - description of paramter
+  * ...
+  * @return {} no return;
+*/
+export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
+  const validation = validateToken(token);
+
+  if ('error' in validation) {
+    return { error: validation.error };
+  }
+
+  const data = getData();
+  const sessionIndex = data.sessions.findIndex(
+    (session) => session.userId === validation.authUserId);
+
+  if (sessionIndex === -1) {
+    return { error: 'Session not found.' };
+  }
+
+  data.sessions.splice(sessionIndex, 1);
+  setData(data);
+
+  return { };
+};
