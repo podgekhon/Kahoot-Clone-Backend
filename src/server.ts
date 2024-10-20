@@ -518,22 +518,21 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
-
 // adminQuizQuestionRemove
 app.delete('/v1/admin/quiz/:quizId/question/:questionId', (req: Request, res: Response) => {
   const { token } = req.body;
   const quizId = parseInt(req.params.quizId as string);
   const questionId = parseInt(req.params.questionId as string);
-  
+
   const result = adminQuizQuestionRemove(quizId, questionId, token);
-  
+
   if ('error' in result) {
     if (
       result.error === 'user is not the owner of this quiz' ||
       result.error === 'quiz or question doesn\'t exist'
     ) {
       return res.status(httpStatus.FORBIDDEN).json(result);
-    } else if (result.error == 'token is empty or invalid') {
+    } else if (result.error === 'token is empty or invalid') {
       return res.status(httpStatus.UNAUTHORIZED).json(result);
     } else {
       return res.status(httpStatus.BAD_REQUEST).json(result);

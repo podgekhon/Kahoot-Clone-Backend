@@ -518,7 +518,6 @@ export const adminQuizRestore = (quizId: number, token: string) => {
   return {};
 };
 
-
 export const adminQuizQuestionRemove = (
   quizId: number,
   questionId: number,

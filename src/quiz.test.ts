@@ -2553,8 +2553,7 @@ describe('test for quiz restore', () => {
   });
 });
 
-
-describe.only ('Tests for adminQuizQuestionRemove', () => {
+describe('Tests for adminQuizQuestionRemove', () => {
   let user: { token: string };
   let quiz: { quizId: string };
   let questionId: string;
@@ -2629,15 +2628,15 @@ describe.only ('Tests for adminQuizQuestionRemove', () => {
         timeout: 100,
       }
     );
-  
+
     expect(resRemoveQuestion.statusCode).toStrictEqual(200);
     const bodyObj = JSON.parse(resRemoveQuestion.body as string);
     expect(bodyObj).toStrictEqual({});
   });
-  
+
   test('returns error when question does not exist', () => {
     const invalidQuestionId = 'invalidQuestionId';
-  
+
     const resRemoveQuestion = request(
       'DELETE',
       `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${invalidQuestionId}`,
@@ -2646,12 +2645,12 @@ describe.only ('Tests for adminQuizQuestionRemove', () => {
         timeout: 100,
       }
     );
-  
+
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     const bodyObj = JSON.parse(resRemoveQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('returns error when user is not the quiz owner', () => {
     // Register a second user
     const resRegisterUser2 = request(
@@ -2668,7 +2667,7 @@ describe.only ('Tests for adminQuizQuestionRemove', () => {
       }
     );
     const user2 = JSON.parse(resRegisterUser2.body as string);
-  
+
     const resRemoveQuestion = request(
       'DELETE',
       `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
@@ -2677,12 +2676,12 @@ describe.only ('Tests for adminQuizQuestionRemove', () => {
         timeout: 100,
       }
     );
-  
+
     expect(resRemoveQuestion.statusCode).toStrictEqual(403);
     const bodyObj = JSON.parse(resRemoveQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('returns error when token is missing', () => {
     const resRemoveQuestion = request(
       'DELETE',
@@ -2692,15 +2691,15 @@ describe.only ('Tests for adminQuizQuestionRemove', () => {
         timeout: 100,
       }
     );
-  
+
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
     const bodyObj = JSON.parse(resRemoveQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
-  
+
   test('returns error when quiz ID is invalid', () => {
     const invalidQuizId = 'invalidQuizId';
-  
+
     const resRemoveQuestion = request(
       'DELETE',
       `${url}:${port}/v1/admin/quiz/${invalidQuizId}/question/${questionId}`,
@@ -2709,11 +2708,11 @@ describe.only ('Tests for adminQuizQuestionRemove', () => {
         timeout: 100,
       }
     );
-  
+
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     const bodyObj = JSON.parse(resRemoveQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
-  });  
+  });
   test('Remove question when question ID is invalid', () => {
     const result = request(
       'DELETE',
@@ -2886,7 +2885,6 @@ describe.only ('Tests for adminQuizQuestionRemove', () => {
         }
       ]
     });
-
 
     const resRemoveQuestion = request(
       'DELETE',
