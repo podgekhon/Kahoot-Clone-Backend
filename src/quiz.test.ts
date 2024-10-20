@@ -2601,7 +2601,10 @@ describe('Tests for adminTrashEmpty', () => {
     quizId = quizResponse.quizId;
 
     // Simulate moving the quiz to trash
-    request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizId}?token=${admin.token}`, {
+    request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizId}`, {
+      qs: {
+        token: admin.token
+      },
       timeout: TIMEOUT_MS,
     });
   });
@@ -2769,10 +2772,12 @@ describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
       console.log(`TEST BEFORE EACH: token = ${admin.token}`);
       console.log(`TEST BEFORE EACH: quizResponse.quizId = ${quizResponse.quizId}`);
       // Simulate moving the quiz to trash
+
       request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizResponse.quizId}`, {
-        json: { token: admin.token },
+        qs: { token: admin.token },
         timeout: TIMEOUT_MS,
       });
+      console.log(`TEST BEFORE EACH: token 2 = ${admin.token}`);
     }
   });
 
@@ -2780,24 +2785,32 @@ describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
     console.log(`  TEST: quizIds = ${quizIds} `);
     console.log(`TEST IN TEST: token = ${admin.token}`);
 
-    const emptyResponse = request(
-      'DELETE',
-      `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-      {
-        json: {
-          token: admin.token,
-          quizIds: quizIds, // Passing all quiz IDs in the trash
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
     const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash`, {
       qs: { token: admin.token },
       timeout: TIMEOUT_MS
     });
     
     console.log(`trashlist = ${trashListResponse.body}`);
+
+    const emptyResponse = request(
+      'DELETE',
+      `${SERVER_URL}/v1/admin/quiz/trash/empty`,
+      {
+        qs: {
+          token: admin.token,
+          quizIds: quizIds, 
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+
+
+    const trashListResponse2 = request('GET', `${SERVER_URL}/v1/admin/quiz/trash`, {
+      qs: { token: admin.token },
+      timeout: TIMEOUT_MS
+    });
+    
+    console.log(`trashlist 2 = ${trashListResponse2.body}`);
 
     expect(emptyResponse.statusCode).toStrictEqual(200);
     expect(emptyResponse.body).toStrictEqual({});
