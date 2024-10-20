@@ -94,4 +94,7 @@ export interface quizInfo {
   timeCreated: number,
   timeLastEdited: number,
   description: string,
+  numQuestions: number,
+  questions: question[],
+  timeLimit: number
 }
