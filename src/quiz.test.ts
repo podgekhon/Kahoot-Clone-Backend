@@ -3909,7 +3909,7 @@ describe('Test for adminQuizTransfer', () => {
           email: 'user3@gmail.com',
           password: 'validPassword3',
           nameFirst: 'User',
-          nameLast: 'THree',
+          nameLast: 'Three',
         },
         timeout: 100,
       }
