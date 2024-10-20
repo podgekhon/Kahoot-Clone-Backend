@@ -50,7 +50,8 @@ import {
   adminQuizRestore,
   adminQuizQuestionCreate,
   adminQuizQuestionUpdate,
-  adminQuizInfo
+  adminQuizInfo,
+  adminQuizTransfer
 } from './quiz';
 
 import { clear } from './other';
@@ -513,6 +514,45 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
     }
 
     return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
+// adminQuizTransfer
+app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token, userEmail } = req.body;
+
+  const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
+
+  if ('error' in result) {
+    if (result.error === 'Invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid '
+      });
+    }
+
+    if (result.error === 'email is not registered') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'email is not registered'
+      });
+    }
+    if (result.error === 'user currently owns this quiz') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'user currently owns this quiz'
+      });
+    }
+    if (result.error === 'user already has a quiz with the same name') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'user already has a quiz with the same name'
+      });
+    }
+
+    if (result.error === 'you do not own this quiz') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but user is not an owner of this quiz'
+      });
+    }
   }
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });

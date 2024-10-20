@@ -2619,7 +2619,7 @@ describe('Test fo adminQuizTransfer', () => {
 
     const resCreateQuiz = request(
       'POST',
-      SERVER_URL + '/v1/admin/auth/quiz',
+      SERVER_URL + '/v1/admin/quiz',
       {
         json: {
           token: user2Token,
@@ -2661,11 +2661,27 @@ describe('Test fo adminQuizTransfer', () => {
 
     expect(resUser2QuizTransfer.statusCode).toStrictEqual(200);
     User2QuizList = JSON.parse(resUser2QuizList.body.toString());
+
     expect(User2QuizList).toStrictEqual({
       quizzes: []
     });
 
-    expect(User1QuizList).toStrictEqual({
+    const resAfterTransferUser1QuizList = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list',
+      {
+        qs: {
+          token: user1Token,
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+
+    const afterTransferUser1Quizlist = JSON.parse(
+      resAfterTransferUser1QuizList.body.toString()
+    );
+
+    expect(afterTransferUser1Quizlist).toStrictEqual({
       quizzes: [
         {
           quizId: quizId,
@@ -2677,12 +2693,10 @@ describe('Test fo adminQuizTransfer', () => {
     expect(quizTransfer).toStrictEqual({});
   });
 
-  // test for:
-  // if receiver already has a quiz with the same name
   test('returns error receiver is not a real user', () => {
     const resCreateQuiz = request(
       'POST',
-      SERVER_URL + '/v1/admin/auth/quiz',
+      SERVER_URL + '/v1/admin/quiz',
       {
         json: {
           token: user1Token,
@@ -2718,7 +2732,7 @@ describe('Test fo adminQuizTransfer', () => {
   test('returns error if user sends to themself', () => {
     const resCreateQuiz = request(
       'POST',
-      SERVER_URL + '/v1/admin/auth/quiz',
+      `${url}:${port}/v1/admin/quiz`,
       {
         json: {
           token: user1Token,
@@ -2754,7 +2768,7 @@ describe('Test fo adminQuizTransfer', () => {
   test('returns error if receiver has a quiz with same name', () => {
     const resCreateQuiz = request(
       'POST',
-      SERVER_URL + '/v1/admin/auth/quiz',
+      SERVER_URL + '/v1/admin/quiz',
       {
         json: {
           token: user1Token,
@@ -2785,7 +2799,7 @@ describe('Test fo adminQuizTransfer', () => {
 
     const resUser2CreateQuiz = request(
       'POST',
-      SERVER_URL + '/v1/admin/auth/quiz',
+      SERVER_URL + '/v1/admin/quiz',
       {
         json: {
           token: user2Token,
@@ -2838,7 +2852,7 @@ describe('Test fo adminQuizTransfer', () => {
 
     const resCreateQuiz = request(
       'POST',
-      SERVER_URL + '/v1/admin/auth/quiz',
+      SERVER_URL + '/v1/admin/quiz',
       {
         json: {
           token: user2Token,
@@ -2872,7 +2886,7 @@ describe('Test fo adminQuizTransfer', () => {
   test('return error if user is not an owner of this quiz', () => {
     const resUser1CreateQuiz = request(
       'POST',
-      SERVER_URL + '/v1/admin/auth/quiz',
+      SERVER_URL + '/v1/admin/quiz',
       {
         json: {
           token: user1Token,
@@ -2900,6 +2914,20 @@ describe('Test fo adminQuizTransfer', () => {
       }
     );
 
+    request(
+      'POST',
+      `${url}:${port}/v1/admin/auth/register`,
+      {
+        json: {
+          email: 'user3@gmail.com',
+          password: 'validPassword3',
+          nameFirst: 'User',
+          nameLast: 'THree',
+        },
+        timeout: 100,
+      }
+    );
+
     user2 = JSON.parse(resRegisterUser2.body.toString());
     expect(resRegisterUser2.statusCode).toStrictEqual(200);
     const user2Token = user2.token;
@@ -2910,7 +2938,7 @@ describe('Test fo adminQuizTransfer', () => {
       {
         json: {
           token: user2Token,
-          userEmail: 'user1@gmail.com',
+          userEmail: 'user3@gmail.com',
         },
         timeout: TIMEOUT_MS
       }

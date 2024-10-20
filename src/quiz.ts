@@ -517,3 +517,43 @@ export const adminQuizRestore = (quizId: number, token: string) => {
   setData(data);
   return {};
 };
+
+export const adminQuizTransfer = (quizId: number, token: string, userEmail: string) => {
+  const data = getData();
+  const receiver = data.users.find((user) => user.email === userEmail);
+  const tokenValidation = validateToken(token);
+  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  if ('error' in tokenValidation) {
+    return { error: 'Invalid token' };
+  }
+  const senderId = tokenValidation.authUserId;
+
+  // checks if receiver is a real user
+  if (!receiver) {
+    return { error: 'email is not registered' };
+  }
+  const receiverId = receiver.userId;
+
+  // chekcs if userEmail is the current logged in user
+  if (senderId === receiverId) {
+    return { error: 'user currently owns this quiz' };
+  }
+
+  // if receiver already has quiz with same name
+  if (isNameTaken(receiverId, transferredQuiz.name)) {
+    return {
+      error: 'user already has a quiz with the same name'
+    };
+  }
+
+  // if sender does not own quiz
+  if (senderId !== transferredQuiz.ownerId) {
+    return { error: 'you do not own this quiz' };
+  }
+
+  // update new owner
+  transferredQuiz.ownerId = receiverId;
+
+  return {};
+};
