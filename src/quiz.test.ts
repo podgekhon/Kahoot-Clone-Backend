@@ -11,7 +11,10 @@ export enum httpStatus {
   SUCCESSFUL_REQUEST = 200,
 }
 
-import { quizQuestionCreateResponse } from './interface';
+import {
+  quizQuestionCreateResponse,
+  question
+} from './interface';
 
 beforeEach(() => {
   request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
@@ -888,7 +891,6 @@ describe('HTTP tests for quiz description update', () => {
       }
     );
 
-    // Check the status code and response (200 OK)
     expect(resUpdateQuizDescription.statusCode).toStrictEqual(200);
     const bodyObj = JSON.parse(resUpdateQuizDescription.body as string);
     expect(bodyObj).toStrictEqual({});
@@ -947,7 +949,6 @@ describe('HTTP tests for quiz description update', () => {
       }
     );
 
-    // Check for 403 error (invalid quizId)
     expect(resUpdateQuizDescription.statusCode).toStrictEqual(403);
     const bodyObj = JSON.parse(resUpdateQuizDescription.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
@@ -1078,9 +1079,6 @@ describe('HTTP tests for quiz question create', () => {
     expect(resCreateQuestion.statusCode).toStrictEqual(200);
     const bodyObj = JSON.parse(resCreateQuestion.body as string);
     expect(bodyObj).toHaveProperty('questionId');
-
-    // Commented out because quizInfo route has not been implemented yet
-    /*
     const createdQuestionId = bodyObj.questionId;
 
     // Get quizInfo to verify that the question was added
@@ -1121,7 +1119,6 @@ describe('HTTP tests for quiz question create', () => {
         }),
       ]),
     });
-    */
   });
 
   test('returns error when question length is invalid', () => {
@@ -2292,6 +2289,249 @@ describe('clear test', () => {
   });
 });
 
+describe('HTTP tests for quiz question move', () => {
+  let user: { token: string };
+  let quiz: { quizId: number };
+  let question1: { questionId: number };
+  let question2: { questionId: number };
+  let question3: { questionId: number };
+
+  beforeEach(() => {
+    const resRegister = request(
+      'POST',
+      `${url}:${port}/v1/admin/auth/register`,
+      {
+        json: {
+          email: 'test@gmail.com',
+          password: 'validPassword5',
+          nameFirst: 'Patrick',
+          nameLast: 'Chen',
+        },
+        timeout: 100,
+      }
+    );
+    user = JSON.parse(resRegister.body as string);
+
+    const resCreateQuiz = request(
+      'POST',
+      `${url}:${port}/v1/admin/quiz`,
+      {
+        json: {
+          token: user.token,
+          name: 'validQuizName',
+          description: 'validQuizDescription',
+        },
+        timeout: 100,
+      }
+    );
+    quiz = JSON.parse(resCreateQuiz.body as string);
+
+    // Create three questions for the quiz
+    const createQuestion = (questionBody: any) => request(
+      'POST',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+      { json: { token: user.token, questionBody }, timeout: 100 }
+    );
+
+    const resCreateQuestion1 = createQuestion({
+      question: 'What is the capital of France?',
+      timeLimit: 10,
+      points: 5,
+      answerOptions: [
+        { answer: 'Paris', correct: true },
+        { answer: 'Sydney', correct: false },
+      ],
+    });
+    question1 = JSON.parse(resCreateQuestion1.body as string);
+
+    const resCreateQuestion2 = createQuestion({
+      question: 'What is the day today?',
+      timeLimit: 10,
+      points: 5,
+      answerOptions: [
+        { answer: 'Tuesday', correct: true },
+        { answer: 'Friday', correct: false },
+      ],
+    });
+    question2 = JSON.parse(resCreateQuestion2.body as string);
+
+    const resCreateQuestion3 = createQuestion({
+      question: 'What is the largest planet in our solar system?',
+      timeLimit: 10,
+      points: 5,
+      answerOptions: [
+        { answer: 'Jupiter', correct: true },
+        { answer: 'Mars', correct: false },
+      ],
+    });
+    question3 = JSON.parse(resCreateQuestion3.body as string);
+  });
+
+  test('successfully moves a quiz question and verifies its new position', () => {
+    // Move the second question (question2) to position 0
+    const resMoveQuestion = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${question2.questionId}/move`,
+      {
+        json: {
+          token: user.token,
+          newPosition: 0,
+        },
+        timeout: 100,
+      }
+    );
+
+    expect(resMoveQuestion.statusCode).toStrictEqual(200);
+
+    // Get quiz info to check if the question has been moved
+    const resQuizInfo = request(
+      'GET',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}`,
+      {
+        qs: { token: user.token },
+        timeout: 100,
+      }
+    );
+
+    expect(resQuizInfo.statusCode).toStrictEqual(200);
+    const quizInfo = JSON.parse(resQuizInfo.body as string);
+
+    // Check if the first question in the array is now question2
+    expect(quizInfo.questions[0].questionId).toStrictEqual(question2.questionId);
+    expect(quizInfo.questions[1].questionId).toStrictEqual(question1.questionId);
+    expect(quizInfo.questions[2].questionId).toStrictEqual(question3.questionId);
+  });
+
+  test('returns error when newPosition is out of bounds', () => {
+    const resMoveQuestion = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${question1.questionId}/move`,
+      {
+        json: {
+          token: user.token,
+          newPosition: -1,
+        },
+        timeout: 100,
+      }
+    );
+
+    expect(resMoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    const bodyObj = JSON.parse(resMoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when questionId is invalid', () => {
+    const resMoveQuestion = request(
+      'PUT',
+      // 99999 is an arbitrary questionId, hence invalid
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/99999/move`,
+      {
+        json: {
+          token: user.token,
+          newPosition: 1,
+        },
+        timeout: 100,
+      }
+    );
+
+    expect(resMoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    const bodyObj = JSON.parse(resMoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when user is not the quiz owner', () => {
+    // Register a second user
+    const resRegisterUser2 = request(
+      'POST',
+      `${url}:${port}/v1/admin/auth/register`,
+      {
+        json: {
+          email: 'user2@gmail.com',
+          password: 'validPassword2',
+          nameFirst: 'User',
+          nameLast: 'Two',
+        },
+        timeout: 100,
+      }
+    );
+    const user2 = JSON.parse(resRegisterUser2.body as string);
+
+    // User 2 tries to move the question in User 1's quiz
+    const resMoveQuestion = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${question1.questionId}/move`,
+      {
+        json: {
+          token: user2.token,
+          newPosition: 1,
+        },
+        timeout: 100,
+      }
+    );
+
+    expect(resMoveQuestion.statusCode).toStrictEqual(403);
+    const bodyObj = JSON.parse(resMoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when token is invalid', () => {
+    const resMoveQuestion = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${question1.questionId}/move`,
+      {
+        json: {
+          token: 'invalidToken',
+          newPosition: 1,
+        },
+        timeout: 100,
+      }
+    );
+
+    expect(resMoveQuestion.statusCode).toStrictEqual(401);
+    const bodyObj = JSON.parse(resMoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when newPosition is the same as current position', () => {
+    const resMoveQuestion = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${question1.questionId}/move`,
+      {
+        json: {
+          token: user.token,
+          // The original position of question1 is zero
+          newPosition: 0,
+        },
+        timeout: 100,
+      }
+    );
+
+    expect(resMoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    const bodyObj = JSON.parse(resMoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when quiz does not exist', () => {
+    const invalidQuizId = quiz.quizId + 1;
+
+    const resMoveQuestion = request(
+      'PUT',
+      `${url}:${port}/v1/admin/quiz/${invalidQuizId}/question/${question1.questionId}/move`,
+      {
+        json: {
+          token: user.token,
+          newPosition: 1,
+        },
+        timeout: 100,
+      }
+    );
+
+    expect(resMoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+    const bodyObj = JSON.parse(resMoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+});
+
 describe('test for quiz restore', () => {
   let user1;
   let quiz1;
@@ -2352,7 +2592,7 @@ describe('test for quiz restore', () => {
         timeout: TIMEOUT_MS
       }
     );
-    // quiz1 shoule be in the trash now
+    // quiz1 should be in the trash now
     expect(JSON.parse(result.body.toString())).toStrictEqual(
       {
         quizzes: [
@@ -2375,7 +2615,7 @@ describe('test for quiz restore', () => {
       }
     );
     const objBody = JSON.parse(result.body.toString());
-    // checkt status code and return type
+    // check status code and return type
     expect(result.statusCode).toStrictEqual(200);
     expect(objBody).toStrictEqual({});
     // list the trash
@@ -2553,233 +2793,506 @@ describe('test for quiz restore', () => {
   });
 });
 
-describe('Test for adminQuizTransfer', () => {
-  let user1: { token: string};
-  let user2: { token: string};
-
-  let User1QuizList: string;
-  let User2QuizList: string;
-
-  let user1Token: string;
-
+describe('test for quiz duplicate', () => {
+  let user1token: string;
+  let quiz1Id: number;
+  let question1Id: number;
+  // register a user, create a quiz, create a question
   beforeEach(() => {
-    const resRegisterUser1 = request(
+    const registerResponse = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'admin@unsw.edu.au',
+        password: 'AdminPass1234',
+        nameFirst: 'Admin',
+        nameLast: 'User'
+      },
+      timeout: TIMEOUT_MS
+    });
+    user1token = JSON.parse(registerResponse.body.toString()).token;
+    // create a quiz
+    const createQuizResponse = request('POST', SERVER_URL + '/v1/admin/quiz', {
+      json: {
+        token: user1token,
+        name: 'quiz1',
+        description: 'quiz1'
+      },
+      timeout: TIMEOUT_MS
+    });
+    quiz1Id = JSON.parse(createQuizResponse.body.toString()).quizId;
+
+    const questionBody = {
+      token: user1token,
+      questionBody: {
+        question: 'question1',
+        timeLimit: 4,
+        points: 5,
+        answerOptions: [
+          {
+            answer: 'answer1',
+            correct: true,
+          },
+          {
+            answer: 'answer2',
+            correct: false,
+          },
+        ],
+      },
+    };
+    const createQuestionRes = request(
       'POST',
-      SERVER_URL + '/v1/admin/auth/register',
+      SERVER_URL + `/v1/admin/quiz/${quiz1Id}/question`,
+      {
+        json: questionBody,
+        timeout: TIMEOUT_MS
+      }
+    );
+    question1Id = JSON.parse(createQuestionRes.body.toString()).questionId;
+  });
+
+  test('invalid token', () => {
+    const res = request(
+      'POST',
+      SERVER_URL + `/v1/admin/quiz/${quiz1Id}/question/${question1Id}/duplicate`,
       {
         json: {
-          email: 'user1@gmail.com',
-          password: 'validPassword1',
-          nameFirst: 'User',
-          nameLast: 'One'
+          token: JSON.stringify('fdsafdsa')
         },
         timeout: TIMEOUT_MS
       }
     );
-    user1 = JSON.parse(resRegisterUser1.body.toString());
-    expect(resRegisterUser1.statusCode).toStrictEqual(200);
-    user1Token = user1.token;
-
-    const resUser1QuizList = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list',
-      {
-        qs: {
-          token: user1Token,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    User1QuizList = JSON.parse(resUser1QuizList.body.toString());
-    expect(resUser1QuizList.statusCode).toStrictEqual(200);
-    expect(User1QuizList).toStrictEqual({
-      quizzes: []
-    });
+    expect(res.statusCode).toStrictEqual(401);
+    expect(JSON.parse(res.body.toString())).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Valid adminQuizTransfer', () => {
-    const resRegisterUser2 = request(
+  test('empty token', () => {
+    const res = request(
+      'POST',
+      SERVER_URL + `/v1/admin/quiz/${quiz1Id}/question/${question1Id}/duplicate`,
+      {
+        json: {
+          token: JSON.stringify('')
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(res.statusCode).toStrictEqual(401);
+    expect(JSON.parse(res.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('user is not an owner of this quiz', () => {
+    // register user2
+    const registerResponse = request('POST', SERVER_URL + '/v1/admin/auth/register', {
+      json: {
+        email: 'EricMa@unsw.edu.au',
+        password: 'AdminPass1234',
+        nameFirst: 'Eric',
+        nameLast: 'Ma'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const user2token = JSON.parse(registerResponse.body.toString()).token;
+
+    const res = request(
+      'POST',
+      SERVER_URL + `/v1/admin/quiz/${quiz1Id}/question/${question1Id}/duplicate`,
+      {
+        json: {
+          token: user2token
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(res.statusCode).toStrictEqual(403);
+    expect(JSON.parse(res.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('quiz doesnt exists', () => {
+    const res = request(
+      'POST',
+      SERVER_URL + `/v1/admin/quiz/${quiz1Id + 1}/question/${question1Id}/duplicate`,
+      {
+        json: {
+          token: user1token
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(res.statusCode).toStrictEqual(403);
+    expect(JSON.parse(res.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('question id doesnt refer to a valid question within the quiz', () => {
+    // create quiz 2
+    const createQuizResponse = request('POST', SERVER_URL + '/v1/admin/quiz', {
+      json: {
+        token: user1token,
+        name: 'Test Quiz',
+        description: 'This is a test quiz'
+      },
+      timeout: TIMEOUT_MS
+    });
+    const quiz2Id = JSON.parse(createQuizResponse.body.toString()).quizId;
+    // create question under quiz2
+    const questionBody = {
+      token: user1token,
+      questionBody: {
+        question: 'question2',
+        timeLimit: 4,
+        points: 5,
+        answerOptions: [
+          {
+            answer: 'answer1',
+            correct: true,
+          },
+          {
+            answer: 'answer2',
+            correct: false,
+          },
+        ],
+      },
+    };
+    const createQuestionRes = request(
+      'POST',
+      SERVER_URL + `/v1/admin/quiz/${quiz2Id}`,
+      {
+        json: questionBody,
+        timeout: TIMEOUT_MS
+      }
+    );
+    const question2Id = JSON.parse(createQuestionRes.body.toString()).questionId;
+    // duplicate
+    const res = request(
+      'POST',
+      SERVER_URL + `/v1/admin/quiz/${quiz1Id}/question/${question2Id}/duplicate`,
+      {
+        json: {
+          token: user1token
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(res.statusCode).toStrictEqual(400);
+    expect(JSON.parse(res.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  describe('successfully duplicate a question', () => {
+    test('success when only one question is in question list', () => {
+      // duplicate
+      const res = request(
+        'POST',
+        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/question/${question1Id}/duplicate`,
+        {
+          json: {
+            token: user1token
+          },
+          timeout: TIMEOUT_MS
+        }
+      );
+      expect(res.statusCode).toStrictEqual(200);
+      expect(JSON.parse(res.body.toString())).toStrictEqual(
+        { duplicatedquestionId: expect.any(Number) }
+      );
+      const question2Id = JSON.parse(res.body.toString()).duplicatedquestionId;
+
+      // list the info in the quiz, should be two exactly same question in the list
+      const quizInfoRes = request(
+        'GET',
+        SERVER_URL + `/v1/admin/quiz/${quiz1Id}`,
+        {
+          qs: {
+            token: user1token
+          },
+          timeout: TIMEOUT_MS
+        }
+      );
+      const quizInfo = JSON.parse(quizInfoRes.body.toString());
+      expect(quizInfo).toStrictEqual({
+        quizId: quiz1Id,
+        name: 'quiz1',
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: 'quiz1',
+        numQuestions: 2,
+        questions: [
+          {
+            questionId: question1Id,
+            question: 'question1',
+            timeLimit: 4,
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'answer1',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'answer2',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          },
+          {
+            questionId: question2Id,
+            question: 'question1',
+            timeLimit: 4,
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'answer1',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'answer2',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          }
+        ],
+        timeLimit: expect.any(Number)
+      });
+    });
+
+    test('success when multiple question exist', () => {
+      // create question 2
+      const questionBody = {
+        token: user1token,
+        questionBody: {
+          question: 'question2',
+          timeLimit: 4,
+          points: 5,
+          answerOptions: [
+            {
+              answer: 'answer1',
+              correct: true,
+            },
+            {
+              answer: 'answer2',
+              correct: false,
+            },
+          ],
+        },
+      };
+      const createQuestionRes = request(
+        'POST',
+        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/question`,
+        {
+          json: questionBody,
+          timeout: TIMEOUT_MS
+        }
+      );
+      const question2Id = JSON.parse(createQuestionRes.body.toString()).questionId;
+      // duplicate question1
+      const res = request(
+        'POST',
+        SERVER_URL + `/v1/admin/quiz/${quiz1Id}/question/${question1Id}/duplicate`,
+        {
+          json: {
+            token: user1token
+          },
+          timeout: TIMEOUT_MS
+        }
+      );
+      const duplicateId = JSON.parse(res.body.toString()).duplicatedquestionId;
+      expect(res.statusCode).toStrictEqual(200);
+      expect(JSON.parse(res.body.toString())).toStrictEqual(
+        { duplicatedquestionId: expect.any(Number) }
+      );
+
+      // list the info in the quiz, should be 3 questions in the list
+      const quizInfoRes = request(
+        'GET',
+        SERVER_URL + `/v1/admin/quiz/${quiz1Id}`,
+        {
+          qs: {
+            token: user1token
+          },
+          timeout: TIMEOUT_MS
+        }
+      );
+
+      const quizInfo = JSON.parse(quizInfoRes.body.toString());
+      expect(quizInfo).toStrictEqual({
+        quizId: quiz1Id,
+        name: 'quiz1',
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: 'quiz1',
+        numQuestions: 3,
+        questions: [
+          {
+            questionId: question1Id,
+            question: 'question1',
+            timeLimit: 4,
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'answer1',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'answer2',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          },
+          {
+            questionId: duplicateId,
+            question: 'question1',
+            timeLimit: 4,
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'answer1',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'answer2',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          },
+          {
+            questionId: question2Id,
+            question: 'question2',
+            timeLimit: 4,
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'answer1',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'answer2',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          }
+        ],
+        timeLimit: expect.any(Number)
+      });
+    });
+  });
+});
+
+describe('Tests for adminQuizQuestionRemove', () => {
+  let user: { token: string };
+  let quiz: { quizId: string };
+  let questionId: string;
+  beforeEach(() => {
+    const resRegister = request(
       'POST',
       `${url}:${port}/v1/admin/auth/register`,
       {
         json: {
-          email: 'user2@gmail.com',
-          password: 'validPassword2',
-          nameFirst: 'User',
-          nameLast: 'Two',
+          email: 'test@gmail.com',
+          password: 'validPassword5',
+          nameFirst: 'Eric',
+          nameLast: 'Yang',
         },
         timeout: 100,
       }
     );
+    user = JSON.parse(resRegister.body as string);
 
-    user2 = JSON.parse(resRegisterUser2.body.toString());
-    expect(resRegisterUser2.statusCode).toStrictEqual(200);
-    const user2Token = user2.token;
-
-    const resCreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user2Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
-
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    const resUser2QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user2Token,
-          userEmail: 'user1@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(200);
-    const quizTransfer = JSON.parse(resUser2QuizTransfer.body.toString());
-
-    const resUser2QuizList = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list',
-      {
-        qs: {
-          token: user2Token,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(200);
-    User2QuizList = JSON.parse(resUser2QuizList.body.toString());
-
-    expect(User2QuizList).toStrictEqual({
-      quizzes: []
-    });
-
-    const resAfterTransferUser1QuizList = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list',
-      {
-        qs: {
-          token: user1Token,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    const afterTransferUser1Quizlist = JSON.parse(
-      resAfterTransferUser1QuizList.body.toString()
-    );
-
-    expect(afterTransferUser1Quizlist).toStrictEqual({
-      quizzes: [
-        {
-          quizId: quizId,
-          name: 'Math Quiz',
-        }
-      ]
-    });
-
-    expect(quizTransfer).toStrictEqual({});
-  });
-
-  test('returns error receiver is not a real user', () => {
-    const resCreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user1Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
-
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
-
-    const resUser1QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user1Token,
-          userEmail: 'NotRealUser@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    const quizTransfer = JSON.parse(resUser1QuizTransfer.body.toString());
-
-    expect(resUser1QuizTransfer.statusCode).toStrictEqual(400);
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
-  });
-
-  test('returns error if user sends to themself', () => {
     const resCreateQuiz = request(
       'POST',
       `${url}:${port}/v1/admin/quiz`,
       {
         json: {
-          token: user1Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
-
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
-
-    const resUser1QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user1Token,
-          userEmail: 'user1@gmail.com',
+          token: user.token,
+          name: 'validQuizName',
+          description: 'validQuizDescription',
         },
-        timeout: TIMEOUT_MS
+        timeout: 100,
       }
     );
+    quiz = JSON.parse(resCreateQuiz.body as string);
 
-    const quizTransfer = JSON.parse(resUser1QuizTransfer.body.toString());
+    // Create a question to delete
+    const questionBody = {
+      token: user.token,
+      questionBody: {
+        question: 'Who is the Monarch of England?',
+        timeLimit: 4,
+        points: 5,
+        answerOptions: [
+          {
+            answer: 'Prince Charles',
+            correct: true,
+          },
+          {
+            answer: 'Prince William',
+            correct: false,
+          },
+        ],
+      },
+    };
 
-    expect(resUser1QuizTransfer.statusCode).toStrictEqual(400);
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
+    const resCreateQuestion = request(
+      'POST',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+      {
+        json: questionBody,
+        timeout: 100,
+      }
+    );
+    const questionResponse = JSON.parse(resCreateQuestion.body as string);
+    questionId = questionResponse.questionId;
   });
 
-  test('returns error if receiver has a quiz with same name', () => {
-    const resCreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
+  test('successfully removes a quiz question', () => {
+    const resRemoveQuestion = request(
+      'DELETE',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
       {
-        json: {
-          token: user1Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
+        json: { token: user.token },
+        timeout: 100,
       }
     );
 
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
+    expect(resRemoveQuestion.statusCode).toStrictEqual(200);
+    const bodyObj = JSON.parse(resRemoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({});
+  });
 
+  test('returns error when question does not exist', () => {
+    const invalidQuestionId = 'invalidQuestionId';
+
+    const resRemoveQuestion = request(
+      'DELETE',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${invalidQuestionId}`,
+      {
+        json: { token: user.token },
+        timeout: 100,
+      }
+    );
+
+    expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    const bodyObj = JSON.parse(resRemoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when user is not the quiz owner', () => {
+    // Register a second user
     const resRegisterUser2 = request(
       'POST',
       `${url}:${port}/v1/admin/auth/register`,
@@ -2793,159 +3306,236 @@ describe('Test for adminQuizTransfer', () => {
         timeout: 100,
       }
     );
-    user2 = JSON.parse(resRegisterUser2.body.toString());
-    expect(resRegisterUser2.statusCode).toStrictEqual(200);
-    const user2Token = user2.token;
+    const user2 = JSON.parse(resRegisterUser2.body as string);
 
-    const resUser2CreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
+    const resRemoveQuestion = request(
+      'DELETE',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
       {
-        json: {
-          token: user2Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
-
-    expect(resUser2CreateQuiz.statusCode).toStrictEqual(200);
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    const resUser2QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user2Token,
-          userEmail: 'user1@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    const quizTransfer = JSON.parse(resUser2QuizTransfer.body.toString());
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(400);
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
-  });
-
-  test('return error if token is invalid', () => {
-    const resRegisterUser2 = request(
-      'POST',
-      `${url}:${port}/v1/admin/auth/register`,
-      {
-        json: {
-          email: 'user2@gmail.com',
-          password: 'validPassword2',
-          nameFirst: 'User',
-          nameLast: 'Two',
-        },
+        json: { token: user2.token },
         timeout: 100,
       }
     );
 
-    user2 = JSON.parse(resRegisterUser2.body.toString());
-    expect(resRegisterUser2.statusCode).toStrictEqual(200);
-    const user2Token = user2.token;
-
-    const resCreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user2Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
-
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    const resUser2QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: '',
-          userEmail: 'user1@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(401);
-    const quizTransfer = JSON.parse(resUser2QuizTransfer.body.toString());
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
+    expect(resRemoveQuestion.statusCode).toStrictEqual(403);
+    const bodyObj = JSON.parse(resRemoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('return error if user is not an owner of this quiz', () => {
-    const resUser1CreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
+  test('returns error when token is missing', () => {
+    const resRemoveQuestion = request(
+      'DELETE',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
       {
-        json: {
-          token: user1Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
-
-    expect(resUser1CreateQuiz.statusCode).toStrictEqual(200);
-    const quiz = JSON.parse(resUser1CreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    const resRegisterUser2 = request(
-      'POST',
-      `${url}:${port}/v1/admin/auth/register`,
-      {
-        json: {
-          email: 'user2@gmail.com',
-          password: 'validPassword2',
-          nameFirst: 'User',
-          nameLast: 'Two',
-        },
+        json: {},
         timeout: 100,
       }
     );
 
+    expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+    const bodyObj = JSON.parse(resRemoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when quiz ID is invalid', () => {
+    const invalidQuizId = 'invalidQuizId';
+
+    const resRemoveQuestion = request(
+      'DELETE',
+      `${url}:${port}/v1/admin/quiz/${invalidQuizId}/question/${questionId}`,
+      {
+        json: { token: user.token },
+        timeout: 100,
+      }
+    );
+
+    expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+    const bodyObj = JSON.parse(resRemoveQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+  test('Remove question when question ID is invalid', () => {
+    const result = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/question/${questionId + 1}`,
+      {
+        json: { token: user.token },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(result.statusCode).toStrictEqual(400);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Remove question when user is not the owner of the quiz', () => {
+    const user2 = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/register',
+      {
+        json: {
+          email: 'XiaoyuanMa@unsw.edu.au',
+          password: 'EricMa1234',
+          nameFirst: 'Xiaoyuan',
+          nameLast: 'Ma',
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    const user2token = JSON.parse(user2.body as string);
+
+    const result = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
+      {
+        json: { token: user2token.token },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(result.statusCode).toStrictEqual(403);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Remove question when token is empty', () => {
+    const result = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
+      {
+        json: { token: '' },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(result.statusCode).toStrictEqual(401);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Remove question when token is invalid', () => {
+    const result = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
+      {
+        json: { token: 'invalidToken' },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(result.statusCode).toStrictEqual(401);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Remove question when quiz ID is invalid (quiz doesn’t exist)', () => {
+    const result = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId + 100}/question/${questionId}`,
+      {
+        json: { token: user.token },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(result.statusCode).toStrictEqual(403);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Remove question when quiz ID refers to a quiz not owned by the user', () => {
+    const user2 = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/register',
+      {
+        json: {
+          email: 'otherUser@unsw.edu.au',
+          password: 'OtherUser123',
+          nameFirst: 'Other',
+          nameLast: 'User',
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    const user2Token = JSON.parse(user2.body as string);
+
+    const result = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
+      {
+        json: { token: user2Token.token },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(result.statusCode).toStrictEqual(403);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Try removing a question that is already deleted', () => {
+    // Remove question first
     request(
-      'POST',
-      `${url}:${port}/v1/admin/auth/register`,
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
       {
-        json: {
-          email: 'user3@gmail.com',
-          password: 'validPassword3',
-          nameFirst: 'User',
-          nameLast: 'THree',
-        },
-        timeout: 100,
+        json: { token: user.token },
+        timeout: TIMEOUT_MS,
       }
     );
-
-    user2 = JSON.parse(resRegisterUser2.body.toString());
-    expect(resRegisterUser2.statusCode).toStrictEqual(200);
-    const user2Token = user2.token;
-
-    const resUser2QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
+    // Try removing again
+    const result = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
       {
-        json: {
-          token: user2Token,
-          userEmail: 'user3@gmail.com',
-        },
+        json: { token: user.token },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(result.statusCode).toStrictEqual(400);
+    expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('remove question after quiz is deleted', () => {
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}`,
+      {
+        qs: { token: user.token },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(deleteResponse.statusCode).toEqual(200);
+    // has correct return type
+    expect(JSON.parse(deleteResponse.body.toString())).toEqual({});
+    // has empty quiz list
+    const quizList = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list',
+      {
+        qs: { token: user.token },
         timeout: TIMEOUT_MS
       }
     );
+    expect(JSON.parse(quizList.body.toString())).toStrictEqual({
+      quizzes: []
+    });
+    // one quiz in the trash list
+    const trashList = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/trash',
+      {
+        qs: { token: user.token },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(JSON.parse(trashList.body.toString())).toStrictEqual({
+      quizzes: [
+        {
+          quizId: quiz.quizId,
+          name: 'validQuizName'
+        }
+      ]
+    });
 
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(403);
-    const quizTransfer = JSON.parse(resUser2QuizTransfer.body.toString());
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
+    const resRemoveQuestion = request(
+      'DELETE',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
+      {
+        json: { token: user.token },
+        timeout: 100,
+      }
+    );
+    expect(resRemoveQuestion.statusCode).toStrictEqual(403);
+    const bodyObj = JSON.parse(resRemoveQuestion.body as string);
+    expect(bodyObj.error).toStrictEqual('quiz or question doesn\'t exist');
   });
 });

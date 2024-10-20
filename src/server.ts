@@ -50,7 +50,10 @@ import {
   adminQuizRestore,
   adminQuizQuestionCreate,
   adminQuizQuestionUpdate,
+  adminQuizQuestionRemove,
   adminQuizInfo,
+  adminMoveQuizQuestion,
+  adminQuizDuplicate,
   adminQuizTransfer
 } from './quiz';
 
@@ -498,6 +501,49 @@ app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
   return res.json(result);
 });
 
+// adminQuizQuestionMove
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+  const { quizid, questionid } = req.params;
+  const { token, newPosition } = req.body;
+
+  const result = adminMoveQuizQuestion(parseInt(quizid), parseInt(questionid), token, newPosition);
+
+  if ('error' in result) {
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid (does not refer to valid logged in user session)',
+      });
+    }
+    if (result.error === 'INVALID_QUIZ') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but the quiz doesn\'t exist.',
+      });
+    }
+    if (result.error === 'INVALID_OWNER') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but user is not the owner of this quiz.',
+      });
+    }
+    if (result.error === 'INVALID_QUESTION_ID') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Question Id does not refer to a valid question within this quiz.',
+      });
+    }
+    if (result.error === 'INVALID_POSITION') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'NewPosition is less than 0 or greater than the number of questions.',
+      });
+    }
+    if (result.error === 'SAME_POSITION') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'NewPosition is the same as the current question position.',
+      });
+    }
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
 // adminAuthLogout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const { token } = req.body;
@@ -516,6 +562,56 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
+// adminQuizDuplicate
+app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const quizId = parseInt(req.params.quizId as string);
+  const questionId = parseInt(req.params.questionId as string);
+  const validToken = validateToken(token);
+
+  if ('error' in validToken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'Token is empty or invalid'
+    });
+  }
+
+  const result = adminQuizDuplicate(quizId, questionId, token);
+  if ('error' in result) {
+    if (
+      result.error === 'quiz does not exist' ||
+      result.error === 'user is not owner of this quiz'
+    ) {
+      return res.status(httpStatus.FORBIDDEN).json(result);
+    }
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+  return res.json(result);
+});
+
+// adminQuizQuestionRemove
+app.delete('/v1/admin/quiz/:quizId/question/:questionId', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const quizId = parseInt(req.params.quizId as string);
+  const questionId = parseInt(req.params.questionId as string);
+
+  const result = adminQuizQuestionRemove(quizId, questionId, token);
+
+  if ('error' in result) {
+    if (
+      result.error === 'user is not the owner of this quiz' ||
+      result.error === 'quiz or question doesn\'t exist'
+    ) {
+      return res.status(httpStatus.FORBIDDEN).json(result);
+    } else if (result.error === 'token is empty or invalid') {
+      return res.status(httpStatus.UNAUTHORIZED).json(result);
+    } else {
+      return res.status(httpStatus.BAD_REQUEST).json(result);
+    }
+  }
+
+  return res.json(result);
 });
 
 // adminQuizTransfer

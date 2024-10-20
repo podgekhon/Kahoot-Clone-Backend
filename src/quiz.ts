@@ -186,7 +186,7 @@ export const adminQuizQuestionCreate = (
 
   quiz.questions.push(newQuestion);
   quiz.timeLastEdited = quiz.timeCreated;
-  quiz.numQuestions++;
+  quiz.numQuestions += 1;
   const { timeLimit } = questionBody;
   quiz.timeLimit = quiz.timeLimit + timeLimit;
 
@@ -253,6 +253,54 @@ export const adminQuizQuestionUpdate = (
   setData(data);
 
   return { };
+};
+
+export const adminMoveQuizQuestion = (
+  quizId: number,
+  questionId: number,
+  token: string,
+  newPosition: number
+): errorMessages | emptyReturn => {
+  const data = getData();
+
+  // Validate token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: 'INVALID_TOKEN' };
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const quiz = data.quizzes.find((q: quiz) => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'INVALID_QUIZ' };
+  }
+
+  if (quiz.ownerId !== authUserId) {
+    return { error: 'INVALID_OWNER' };
+  }
+
+  const currentIndex = quiz.questions.findIndex((q) => q.questionId === questionId);
+  // findIndex returns -1 if no elements pass the test condition
+  if (currentIndex === -1) {
+    return { error: 'INVALID_QUESTION_ID' };
+  }
+
+  if (newPosition < 0 || newPosition >= quiz.numQuestions) {
+    return { error: 'INVALID_POSITION' };
+  }
+
+  if (currentIndex === newPosition) {
+    return { error: 'SAME_POSITION' };
+  }
+
+  const [questionToMove] = quiz.questions.splice(currentIndex, 1);
+  quiz.questions.splice(newPosition, 0, questionToMove);
+
+  quiz.timeLastEdited = Math.floor(Date.now());
+
+  setData(data);
+
+  return {};
 };
 
 /**
@@ -482,8 +530,8 @@ export const adminQuizRestore = (quizId: number, token: string) => {
   if ('error' in tokenValidation) {
     return { error: 'INVALID_TOKEN' };
   }
-
   const authUserId = tokenValidation.authUserId;
+
   // find quiz in trash
   const quiz = data.trash.find(q => q.quizId === quizId);
   const quizIsActive = data.quizzes.find(q => q.quizId === quizId);
@@ -516,6 +564,88 @@ export const adminQuizRestore = (quizId: number, token: string) => {
 
   setData(data);
   return {};
+};
+
+export const adminQuizQuestionRemove = (
+  quizId: number,
+  questionId: number,
+  token: string
+): emptyReturn | errorMessages => {
+  const data = getData();
+
+  // Token is empty or invalid (does not refer to valid logged in user session)
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: 'token is empty or invalid' };
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  //  Valid token is provided, but user is not an owner of this quiz or quiz doesn't exist
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'quiz or question doesn\'t exist' };
+  }
+
+  if (quiz.ownerId !== authUserId) {
+    return { error: 'user is not the owner of this quiz' };
+  }
+
+  // Question Id does not refer to a valid question within this quiz
+  const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
+  if (questionIndex === -1) {
+    return { error: 'Question Id does not refer to a valid question' };
+  }
+
+  quiz.questions.splice(questionIndex, 1);
+  quiz.numQuestions--;
+  quiz.timeLastEdited = Math.floor(Date.now());
+
+  setData(data);
+  return {};
+};
+
+/**
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
+ */
+export const adminQuizDuplicate = (quizId: number, questionId: number, token: string) => {
+  const data = getData();
+
+  const tokenValidation = validateToken(token);
+  // invalid token
+  if ('error' in tokenValidation) {
+    return { error: 'INVALID_TOKEN' };
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const validQuiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!validQuiz) {
+    return { error: 'quiz does not exist' };
+  }
+  if (validQuiz.ownerId !== authUserId) {
+    return { error: 'user is not owner of this quiz' };
+  }
+  const validQuestion = validQuiz.questions.find(q => q.questionId === questionId);
+  if (!validQuestion) {
+    return { error: 'question Id does not refer to a valid question within this quiz' };
+  }
+  // get the index of question
+  const validQuestionIndex = validQuiz.questions.findIndex(q => q.questionId === questionId);
+
+  const existingQuestionIds = validQuiz.questions.map(q => q.questionId);
+  const newQuestionId = Math.max(...existingQuestionIds) + 1;
+  // make a copy
+  const newQuestion = { ...validQuestion };
+  newQuestion.questionId = newQuestionId;
+  validQuiz.timeLastEdited = Date.now();
+
+  validQuiz.questions.splice(validQuestionIndex + 1, 0, newQuestion);
+  validQuiz.timeLastEdited = Math.floor(Date.now());
+  validQuiz.numQuestions += 1;
+  setData(data);
+  return { duplicatedquestionId: newQuestionId };
 };
 
 export const adminQuizTransfer = (quizId: number, token: string, userEmail: string) => {
