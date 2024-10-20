@@ -526,7 +526,7 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   console.log(`token JJJJJ = ${token}`);
   console.log(`quizIds JJJJJJ = ${quizIds}`);
   // Call the adminTrashEmpty function to process the request
-  const result = adminTrashEmpty(token as string, quizIds);
+  const result = adminTrashEmpty(token, quizIds);
   if (isErrorMessages(result) &&
     (result.error === 'Quiz ID does not refer to a valid quiz.' ||
      result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
@@ -538,9 +538,9 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   } else if (isErrorMessages(result) &&
   (result.error === 'Quiz ID does not belong to the current user.')) {
   return res.status(httpStatus.FORBIDDEN).json(result);
+  } else {
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   }
-  // Return a successful response if everything is okay
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // ====================================================================

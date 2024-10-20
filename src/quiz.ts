@@ -267,19 +267,25 @@ export const adminQuizRemove = (
 token: string,
 quizId: number
 ): errorMessages | emptyReturn => {
+
+console.log(`ADMIN_QUIZ_REMOVE 1`);
 const data = getData();
 // get userId from token
 const tokenValidation = validateToken(token);
 if ('error' in tokenValidation) {
+  console.log(`ADMIN_QUIZ_REMOVE 2`);
   return { error: tokenValidation.error };
 }
+console.log(`ADMIN_QUIZ_REMOVE 3`);
 const authUserId = tokenValidation.authUserId;
 
 const error = isValidQuiz(authUserId, quizId, data);
 if (error) {
+  console.log(`ADMIN_QUIZ_REMOVE 4`);
   return error;
 }
 
+console.log(`ADMIN_QUIZ_REMOVE 5`);
 // remove the correct quiz
 const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
 const removeQuiz = data.quizzes[quizIndex];
@@ -288,6 +294,7 @@ data.trash.push(removeQuiz);
 data.quizzes.splice(quizIndex, 1);
 
 setData(data);
+console.log(`ADMIN_QUIZ_REMOVE 6`);
 return {};
 };
 
@@ -537,25 +544,40 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   }
 
   const authUserId = tokenValidation.authUserId;
-  // Check if all quizIds are in the trash
-  // compares quizIds from trash with passed in quizIds
-  console.log(`TS: quizIds = ${quizIds}`);
+  const invalidQuizzes: number[] = [];
+  const unauthorizedQuizzes: number[] = [];
 
+  console.log(`TS: quizIds = ${quizIds}`);
+  
+  // Check if all quizIds are in the trash and belong to the current user
   for (const quizId of quizIds) {
     const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
+    
     if (!quizInTrash) {
-      console.log(`quiz.ts: quizInTrash = ${quizInTrash}`)
-      return { error: `Quiz ID is not in the trash.` };
-    }
-    // check passed in quizIds with quizIds corresponding to token
-    if (quizInTrash.ownerId !== authUserId) {
-      return { error: `Quiz ID does not belong to the current user.` };
+      invalidQuizzes.push(quizId);
+    } else if (quizInTrash.ownerId !== authUserId) {
+      unauthorizedQuizzes.push(quizId);
     }
   }
+
+  // If there are any invalid quizzes, return an error
+  if (invalidQuizzes.length > 0) {
+    console.log(`Invalid quiz IDs: ${invalidQuizzes}`);
+    return { error: `Quiz ID is not in the trash.` };
+  }
+
+  // If there are any unauthorized quizzes, return an error
+  if (unauthorizedQuizzes.length > 0) {
+    console.log(`Unauthorized quiz IDs: ${unauthorizedQuizzes}`);
+    return { error: `Quiz ID does not belong to the current user.` };
+  }
+
+  // Remove the valid quizzes from the trash
   data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
   setData(data);
+
   return {};
-  }
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////
