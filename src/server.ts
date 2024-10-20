@@ -296,7 +296,7 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   return res.status(httpStatus.FORBIDDEN).json(result);
   }
   // Return a successful response if everything is okay
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // ====================================================================

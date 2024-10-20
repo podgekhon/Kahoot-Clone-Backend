@@ -346,6 +346,8 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   const authUserId = tokenValidation.authUserId;
   // Check if all quizIds are in the trash
   // compares quizIds from trash with passed in quizIds
+  console.log(`TS: quizIds = ${quizIds}`);
+
   for (const quizId of quizIds) {
     const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
     if (!quizInTrash) {
