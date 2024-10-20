@@ -186,6 +186,9 @@ export const adminQuizQuestionCreate = (
 
   quiz.questions.push(newQuestion);
   quiz.timeLastEdited = quiz.timeCreated;
+  quiz.numQuestions++;
+  const { timeLimit } = questionBody;
+  quiz.timeLimit = quiz.timeLimit + timeLimit;
 
   setData(data);
 
@@ -301,25 +304,19 @@ export const adminQuizInfo = (token: string, quizId: number): errorMessages | qu
   // get userId from token
   const tokenValidation = validateToken(token);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    return { error: 'INVALID_TOKEN' };
   }
   const authUserId = tokenValidation.authUserId;
-
-  // Check if authUserId is valid
-  const user = data.users.find(user => user.userId === authUserId);
-  if (!user) {
-    return { error: 'authUserId is not a valid user.' };
-  }
 
   // Check if quizId refers to a valid quiz
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    return { error: 'quizId does not refer to a valid quiz.' };
+    return { error: 'INVALID_QUIZ' };
   }
 
   // Check if the quiz belongs to the given user
   if (quiz.ownerId !== authUserId) {
-    return { error: 'quizId does not refer to a quiz that this user owns.' };
+    return { error: 'INVALID_OWNER' };
   }
 
   // Return the quiz information
@@ -329,6 +326,9 @@ export const adminQuizInfo = (token: string, quizId: number): errorMessages | qu
     timeCreated: quiz.timeCreated,
     timeLastEdited: quiz.timeLastEdited,
     description: quiz.description,
+    numQuestions: quiz.numQuestions,
+    questions: quiz.questions,
+    timeLimit: quiz.timeLimit
   };
 };
 

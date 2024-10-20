@@ -49,7 +49,8 @@ import {
   adminQuizNameUpdate,
   adminQuizRestore,
   adminQuizQuestionCreate,
-  adminQuizQuestionUpdate
+  adminQuizQuestionUpdate,
+  adminQuizInfo
 } from './quiz';
 
 import { clear } from './other';
@@ -441,6 +442,34 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+});
+
+// adminQuizInfo
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token } = req.query;
+
+  const result = adminQuizInfo(token as string, parseInt(quizid));
+
+  if ('error' in result) {
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid (does not refer to valid logged in user session)'
+      });
+    }
+    if (result.error === 'INVALID_QUIZ') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but the quiz doesn\'t exist.'
+      });
+    }
+    if (result.error === 'INVALID_OWNER') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but user is not the owner of this quiz.'
+      });
+    }
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizRestore
