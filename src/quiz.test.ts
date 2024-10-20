@@ -839,7 +839,7 @@ describe('adminTrashList', () => {
 
 describe('HTTP tests for quiz description update', () => {
   let user: { token: string };
-  let quiz: { quizId: string };
+  let quiz: { quizId: number };
 
   beforeEach(() => {
     // Register a user
@@ -1013,7 +1013,7 @@ describe('HTTP tests for quiz description update', () => {
 
 describe('HTTP tests for quiz question create', () => {
   let user: { token: string };
-  let quiz: { quizId: string };
+  let quiz: { quizId: number };
 
   beforeEach(() => {
     const resRegister = request(
@@ -1521,8 +1521,8 @@ describe('HTTP tests for quiz question create', () => {
 
 describe('HTTP tests for quiz question update', () => {
   let user: { token: string };
-  let quiz: { quizId: string };
-  let questionId: string;
+  let quiz: { quizId: number };
+  let questionId: number;
 
   beforeEach(() => {
     const resRegister = request(
@@ -2036,7 +2036,7 @@ describe('HTTP tests for quiz question update', () => {
 
 describe('HTTP tests for getting quiz info', () => {
   let user: { token: string };
-  let quiz: { quizId: string };
+  let quiz: { quizId: number };
 
   beforeEach(() => {
     const resRegister = request(
