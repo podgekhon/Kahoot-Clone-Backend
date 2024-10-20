@@ -2553,7 +2553,7 @@ describe('test for quiz restore', () => {
   });
 });
 
-describe('Test fo adminQuizTransfer', () => {
+describe('Test for adminQuizTransfer', () => {
   let user1: { token: string};
   let user2: { token: string};
 

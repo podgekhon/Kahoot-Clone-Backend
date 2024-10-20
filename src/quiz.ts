@@ -535,7 +535,7 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   }
   const receiverId = receiver.userId;
 
-  // chekcs if userEmail is the current logged in user
+  // checks if userEmail is the current logged in user
   if (senderId === receiverId) {
     return { error: 'user currently owns this quiz' };
   }
