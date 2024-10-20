@@ -566,6 +566,44 @@ export const adminQuizRestore = (quizId: number, token: string) => {
   return {};
 };
 
+export const adminQuizQuestionRemove = (
+  quizId: number,
+  questionId: number,
+  token: string
+): emptyReturn | errorMessages => {
+  const data = getData();
+
+  // Token is empty or invalid (does not refer to valid logged in user session)
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: 'token is empty or invalid' };
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  //  Valid token is provided, but user is not an owner of this quiz or quiz doesn't exist
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'quiz or question doesn\'t exist' };
+  }
+
+  if (quiz.ownerId !== authUserId) {
+    return { error: 'user is not the owner of this quiz' };
+  }
+
+  // Question Id does not refer to a valid question within this quiz
+  const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
+  if (questionIndex === -1) {
+    return { error: 'Question Id does not refer to a valid question' };
+  }
+
+  quiz.questions.splice(questionIndex, 1);
+  quiz.numQuestions--;
+  quiz.timeLastEdited = Math.floor(Date.now());
+
+  setData(data);
+  return {};
+};
+
 /**
  *
  * @param quizId
