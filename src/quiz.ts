@@ -255,6 +255,54 @@ export const adminQuizQuestionUpdate = (
   return { };
 };
 
+export const adminMoveQuizQuestion = (
+  quizId: number,
+  questionId: number,
+  token: string,
+  newPosition: number
+): errorMessages | emptyReturn => {
+  const data = getData();
+
+  // Validate token
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: 'INVALID_TOKEN' };
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const quiz = data.quizzes.find((q: quiz) => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'INVALID_QUIZ' };
+  }
+
+  if (quiz.ownerId !== authUserId) {
+    return { error: 'INVALID_OWNER' };
+  }
+
+  const currentIndex = quiz.questions.findIndex((q) => q.questionId === questionId);
+  // findIndex returns -1 if no elements pass the test condition
+  if (currentIndex === -1) {
+    return { error: 'INVALID_QUESTION_ID' };
+  }
+
+  if (newPosition < 0 || newPosition >= quiz.numQuestions) {
+    return { error: 'INVALID_POSITION' };
+  }
+
+  if (currentIndex === newPosition) {
+    return { error: 'SAME_POSITION' };
+  }
+
+  const [questionToMove] = quiz.questions.splice(currentIndex, 1);
+  quiz.questions.splice(newPosition, 0, questionToMove);
+
+  quiz.timeLastEdited = Math.floor(Date.now());
+
+  setData(data);
+
+  return {};
+};
+
 /**
   * Given a particular quiz, permanently remove the quiz.
   *
