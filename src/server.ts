@@ -36,7 +36,8 @@ import {
   adminUserPasswordUpdate,
   adminAuthLogin,
   adminUserDetails,
-  adminUserDetailsUpdate
+  adminUserDetailsUpdate,
+  adminAuthLogout
 } from './auth';
 
 import {
@@ -46,7 +47,11 @@ import {
   adminTrashList,
   adminQuizDescriptionUpdate,
   adminQuizNameUpdate,
-  adminTrashEmpty
+  adminQuizRestore,
+  adminTrashEmpty,
+  adminQuizQuestionCreate,
+  adminQuizQuestionUpdate,
+  adminQuizInfo
 } from './quiz';
 
 import { clear } from './other';
@@ -78,7 +83,6 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 
 // adminAuthRegister
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
-  console.log('What the hell');
   const { email, password, nameFirst, nameLast } = req.body;
 
   const result = adminAuthRegister(email, password, nameFirst, nameLast);
@@ -123,26 +127,19 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  console.log('LOLOL 1');
   const { token, name, description } = req.body;
   const validtoken = validateToken(token);
   // invalid token
   if ('error' in validtoken) {
-    console.log('LOLOL 2');
     return res.status(httpStatus.UNAUTHORIZED).json({
       error: 'token is empty or invalid'
     });
   }
 
-  console.log('LOLOL 3');
-
   const result = adminQuizCreate(token, name, description);
   if ('error' in result) {
-    console.log('LOLOL 4');
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
-
-  console.log('LOLOL 5');
   return res.json(result);
 });
 
@@ -205,6 +202,181 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
+// adminQuizQuestionCreate
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token, questionBody } = req.body;
+
+  const result = adminQuizQuestionCreate(
+    parseInt(quizid),
+    questionBody,
+    token
+  );
+
+  if ('error' in result) {
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid ' +
+               '(does not refer to valid logged in ' +
+               'user session)'
+      });
+    }
+
+    if (result.error === 'INVALID_QUIZ') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but quiz doesn\'t exist.'
+      });
+    }
+
+    if (result.error === 'INVALID_OWNER') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but user is not an owner of this quiz'
+      });
+    }
+
+    if (result.error === 'INVALID_QUESTION_LENGTH') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Question length must be between 5 and 50 characters.'
+      });
+    }
+
+    if (result.error === 'INVALID_ANSWER_COUNT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'There must be between 2 and 6 answer options.'
+      });
+    }
+
+    if (result.error === 'INVALID_TIME_LIMIT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'The question timeLimit is not a positive number.'
+      });
+    }
+
+    if (result.error === 'EXCEEDED_TOTAL_TIME_LIMIT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'The sum of the question timeLimits in the quiz exceeds 3 minutes.'
+      });
+    }
+
+    if (result.error === 'INVALID_POINTS') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Points must be between 1 and 10.'
+      });
+    }
+
+    if (result.error === 'INVALID_ANSWER_LENGTH') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Each answer must be between 1 and 30 characters.'
+      });
+    }
+
+    if (result.error === 'DUPLICATE_ANSWERS') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Duplicate answer options are not allowed.'
+      });
+    }
+
+    if (result.error === 'NO_CORRECT_ANSWER') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'There must be at least one correct answer.'
+      });
+    }
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+});
+
+// adminQuizQuestionUpdate
+app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  const { quizid, questionid } = req.params;
+  const { token, questionBody } = req.body;
+
+  const result = adminQuizQuestionUpdate(
+    parseInt(quizid),
+    parseInt(questionid),
+    questionBody,
+    token
+  );
+
+  if ('error' in result) {
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid ' +
+               '(does not refer to valid logged in ' +
+               'user session)'
+      });
+    }
+
+    if (result.error === 'INVALID_QUIZ') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but quiz doesn\'t exist.'
+      });
+    }
+
+    if (result.error === 'INVALID_OWNER') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but user is not an owner of this quiz'
+      });
+    }
+
+    if (result.error === 'INVALID_QUESTION_ID') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Question Id does not refer to a valid question within this quiz.'
+      });
+    }
+
+    if (result.error === 'INVALID_QUESTION_LENGTH') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Question length must be between 5 and 50 characters.'
+      });
+    }
+
+    if (result.error === 'INVALID_ANSWER_COUNT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'There must be between 2 and 6 answer options.'
+      });
+    }
+
+    if (result.error === 'INVALID_TIME_LIMIT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'The question timeLimit is not a positive number.'
+      });
+    }
+
+    if (result.error === 'EXCEEDED_TOTAL_TIME_LIMIT') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'The sum of the question timeLimits in the quiz exceeds 3 minutes.'
+      });
+    }
+
+    if (result.error === 'INVALID_POINTS') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Points must be between 1 and 10.'
+      });
+    }
+
+    if (result.error === 'INVALID_ANSWER_LENGTH') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Each answer must be between 1 and 30 characters.'
+      });
+    }
+
+    if (result.error === 'DUPLICATE_ANSWERS') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'Duplicate answer options are not allowed.'
+      });
+    }
+
+    if (result.error === 'NO_CORRECT_ANSWER') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'There must be at least one correct answer.'
+      });
+    }
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+});
+
 // adminUserDetails
 app.get('/v1/admin/user/details', (req, res) => {
   const { token } = req.query;
@@ -235,20 +407,17 @@ app.put('/v1/admin/user/details', (req, res) => {
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { token } = req.query;
   const { quizid } = req.params;
-  console.log(`trash quiz 1: quizid = ${quizid}`);
-  console.log(`trash quiz 1: token = ${token}`);
+
   const result = validateToken(token as string);
   if ('error' in result) {
-    console.log(`trash quiz 2: quizid = ${quizid}`);
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
   }
 
   const removeResult = adminQuizRemove(token as string, Number(quizid));
   if ('error' in removeResult) {
-    console.log(`trash quiz 3: quizid = ${quizid}`);
     return res.status(httpStatus.FORBIDDEN).json({ error: 'Unknown Type: string - error' });
   }
-  console.log(`trash quiz 4: quizid = ${quizid}`);
+
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
@@ -275,6 +444,81 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
 });
+
+// adminQuizInfo
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token } = req.query;
+
+  const result = adminQuizInfo(token as string, parseInt(quizid));
+
+  if ('error' in result) {
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid (does not refer to valid logged in user session)'
+      });
+    }
+    if (result.error === 'INVALID_QUIZ') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but the quiz doesn\'t exist.'
+      });
+    }
+    if (result.error === 'INVALID_OWNER') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but user is not the owner of this quiz.'
+      });
+    }
+  }
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+});
+
+// adminQuizRestore
+app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const quizId = parseInt(req.params.quizId as string);
+  const validtoken = validateToken(token);
+  // invalid token
+  if ('error' in validtoken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'token is empty or invalid'
+    });
+  }
+
+  const result = adminQuizRestore(quizId, token);
+  if ('error' in result) {
+    if (
+      result.error === 'user is not the owner of this quiz' ||
+      result.error === 'quiz doesnt exist'
+    ) {
+      return res.status(httpStatus.FORBIDDEN).json(result);
+    }
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+  return res.json(result);
+});
+
+// adminAuthLogout
+app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const validToken = validateToken(token);
+  if ('error' in validToken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'Token is empty or invalid'
+    });
+  }
+  const result = adminAuthLogout(token);
+  if ('error' in result) {
+    if (result.error === 'Session not found.') {
+      return res.status(httpStatus.FORBIDDEN).json(result);
+    }
+
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
+
 
 // Empty trash
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
