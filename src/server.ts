@@ -50,7 +50,8 @@ import {
   adminQuizRestore,
   adminQuizQuestionCreate,
   adminQuizQuestionUpdate,
-  adminQuizInfo
+  adminQuizInfo,
+  adminQuizDuplicate
 } from './quiz';
 
 import { clear } from './other';
@@ -515,6 +516,31 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+});
+
+// adminQuizDuplicate
+app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate', (req: Request, res: Response) => {
+  const { token } = req.body;
+  const quizId = parseInt(req.params.quizId as string);
+  const questionId = parseInt(req.params.questionId as string);
+
+  const validToken = validateToken(token);
+  if ('error' in validToken) {
+    return res.status(httpStatus.UNAUTHORIZED).json({
+      error: 'Token is empty or invalid'
+    });
+  }
+  const result = adminQuizDuplicate(quizId, questionId, token);
+  if ('error' in result) {
+    if (
+      result.error === 'quiz does not exist' ||
+      result.error === 'user is not owner of this quiz'
+    ) {
+      return res.status(httpStatus.FORBIDDEN).json(result);
+    }
+    return res.status(httpStatus.BAD_REQUEST).json(result);
+  }
+  return res.json(result);
 });
 
 // ====================================================================
