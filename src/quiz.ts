@@ -647,3 +647,43 @@ export const adminQuizDuplicate = (quizId: number, questionId: number, token: st
   setData(data);
   return { duplicatedquestionId: newQuestionId };
 };
+
+export const adminQuizTransfer = (quizId: number, token: string, userEmail: string) => {
+  const data = getData();
+  const receiver = data.users.find((user) => user.email === userEmail);
+  const tokenValidation = validateToken(token);
+  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  if ('error' in tokenValidation) {
+    return { error: 'INVALID_TOKEN' };
+  }
+  const senderId = tokenValidation.authUserId;
+
+  // checks if receiver is a real user
+  if (!receiver) {
+    return { error: 'INVALID_USEREMAIL' };
+  }
+  const receiverId = receiver.userId;
+
+  // checks if userEmail is the current logged in user
+  if (senderId === receiverId) {
+    return { error: 'ALREADY_OWNS' };
+  }
+
+  // if receiver already has quiz with same name
+  if (isNameTaken(receiverId, transferredQuiz.name)) {
+    return {
+      error: 'DUPLICATE_QUIZNAME'
+    };
+  }
+
+  // if sender does not own quiz
+  if (senderId !== transferredQuiz.ownerId) {
+    return { error: 'INVALID_OWNER' };
+  }
+
+  // update new owner
+  transferredQuiz.ownerId = receiverId;
+
+  return {};
+};

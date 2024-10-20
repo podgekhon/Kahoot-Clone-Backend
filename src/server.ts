@@ -53,7 +53,8 @@ import {
   adminQuizQuestionRemove,
   adminQuizInfo,
   adminMoveQuizQuestion,
-  adminQuizDuplicate
+  adminQuizDuplicate,
+  adminQuizTransfer
 } from './quiz';
 
 import { clear } from './other';
@@ -611,6 +612,45 @@ app.delete('/v1/admin/quiz/:quizId/question/:questionId', (req: Request, res: Re
   }
 
   return res.json(result);
+});
+
+// adminQuizTransfer
+app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token, userEmail } = req.body;
+
+  const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
+
+  if ('error' in result) {
+    if (result.error === 'INVALID_TOKEN') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'Token is empty or invalid '
+      });
+    }
+
+    if (result.error === 'INVALID_USEREMAIL') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'email is not registered'
+      });
+    }
+    if (result.error === 'ALREADY_OWNS') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'user currently owns this quiz'
+      });
+    }
+    if (result.error === 'DUPLICATE_QUIZNAME') {
+      return res.status(httpStatus.BAD_REQUEST).json({
+        error: 'user already has a quiz with the same name'
+      });
+    }
+
+    if (result.error === 'INVALID_OWNER') {
+      return res.status(httpStatus.FORBIDDEN).json({
+        error: 'Valid token is provided, but user is not an owner of this quiz'
+      });
+    }
+  }
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // ====================================================================
