@@ -495,15 +495,7 @@ app.delete('/v1/admin/quiz/:quizId/question/:questionId', (req: Request, res: Re
   const { token } = req.body;
   const quizId = parseInt(req.params.quizId as string);
   const questionId = parseInt(req.params.questionId as string);
-  // const validtoken = validateToken(token);
   
-  // invalid token
-  // if ('error' in validtoken) {
-  //   return res.status(httpStatus.UNAUTHORIZED).json({
-  //     error: 'token is empty or invalid'
-  //   });
-  // }
-
   const result = adminQuizQuestionRemove(quizId, questionId, token);
   
   if ('error' in result) {

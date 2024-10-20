@@ -2101,7 +2101,7 @@ describe('test for quiz restore', () => {
         timeout: TIMEOUT_MS
       }
     );
-    // quiz1 shoule be in the trash now
+    // quiz1 should be in the trash now
     expect(JSON.parse(result.body.toString())).toStrictEqual(
       {
         quizzes: [
@@ -2124,7 +2124,7 @@ describe('test for quiz restore', () => {
       }
     );
     const objBody = JSON.parse(result.body.toString());
-    // checkt status code and return type
+    // check status code and return type
     expect(result.statusCode).toStrictEqual(200);
     expect(objBody).toStrictEqual({});
     // list the trash
@@ -2303,7 +2303,7 @@ describe('test for quiz restore', () => {
 });
 
 
-describe ('Tests for adminQuizQuestionRemove', () => {
+describe.only ('Tests for adminQuizQuestionRemove', () => {
   let user: { token: string };
   let quiz: { quizId: string };
   let questionId: string;
@@ -2557,13 +2557,13 @@ describe ('Tests for adminQuizQuestionRemove', () => {
         timeout: TIMEOUT_MS,
       }
     );
-    const user2token = JSON.parse(user2.body.toString()).token;
+    const user2Token = JSON.parse(user2.body as string);
 
     const result = request(
       'DELETE',
       SERVER_URL + `/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
       {
-        json: { token: user.token },
+        json: { token: user2Token.token },
         timeout: TIMEOUT_MS,
       }
     );
@@ -2592,5 +2592,61 @@ describe ('Tests for adminQuizQuestionRemove', () => {
     );
     expect(result.statusCode).toStrictEqual(400);
     expect(JSON.parse(result.body.toString())).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('remove question after quiz is deleted', () => {
+    const deleteResponse = request(
+      'DELETE',
+      SERVER_URL + `/v1/admin/quiz/${quiz.quizId}`,
+      {
+        qs: { token: user.token },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    expect(deleteResponse.statusCode).toEqual(200);
+    // has correct return type
+    expect(JSON.parse(deleteResponse.body.toString())).toEqual({});
+    // has empty quiz list
+    const quizList = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/list',
+      {
+        qs: { token: user.token },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(JSON.parse(quizList.body.toString())).toStrictEqual({
+      quizzes: []
+    });
+    // one quiz in the trash list
+    const trashList = request(
+      'GET',
+      SERVER_URL + '/v1/admin/quiz/trash',
+      {
+        qs: { token: user.token },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(JSON.parse(trashList.body.toString())).toStrictEqual({
+      quizzes: [
+        {
+          quizId: quiz.quizId,
+          name: 'validQuizName'
+        }
+      ]
+    });
+
+
+    const resRemoveQuestion = request(
+      'DELETE',
+      `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
+      {
+        json: { token: user.token },
+        timeout: 100,
+      }
+    );
+    expect(resRemoveQuestion.statusCode).toStrictEqual(403);
+    const bodyObj = JSON.parse(resRemoveQuestion.body as string);
+    expect(bodyObj.error).toStrictEqual('quiz or question doesn\'t exist');
   });
 });
