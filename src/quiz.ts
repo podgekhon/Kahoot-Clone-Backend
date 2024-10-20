@@ -186,7 +186,7 @@ export const adminQuizQuestionCreate = (
 
   quiz.questions.push(newQuestion);
   quiz.timeLastEdited = quiz.timeCreated;
-  quiz.numQuestions++;
+  quiz.numQuestions += 1;
   const { timeLimit } = questionBody;
   quiz.timeLimit = quiz.timeLimit + timeLimit;
 
@@ -530,8 +530,8 @@ export const adminQuizRestore = (quizId: number, token: string) => {
   if ('error' in tokenValidation) {
     return { error: 'INVALID_TOKEN' };
   }
-
   const authUserId = tokenValidation.authUserId;
+
   // find quiz in trash
   const quiz = data.trash.find(q => q.quizId === quizId);
   const quizIsActive = data.quizzes.find(q => q.quizId === quizId);
@@ -564,4 +564,48 @@ export const adminQuizRestore = (quizId: number, token: string) => {
 
   setData(data);
   return {};
+};
+
+/**
+ *
+ * @param quizId
+ * @param questionId
+ * @param token
+ */
+export const adminQuizDuplicate = (quizId: number, questionId: number, token: string) => {
+  const data = getData();
+
+  const tokenValidation = validateToken(token);
+  // invalid token
+  if ('error' in tokenValidation) {
+    return { error: 'INVALID_TOKEN' };
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const validQuiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!validQuiz) {
+    return { error: 'quiz does not exist' };
+  }
+  if (validQuiz.ownerId !== authUserId) {
+    return { error: 'user is not owner of this quiz' };
+  }
+  const validQuestion = validQuiz.questions.find(q => q.questionId === questionId);
+  if (!validQuestion) {
+    return { error: 'question Id does not refer to a valid question within this quiz' };
+  }
+  // get the index of question
+  const validQuestionIndex = validQuiz.questions.findIndex(q => q.questionId === questionId);
+
+  const existingQuestionIds = validQuiz.questions.map(q => q.questionId);
+  const newQuestionId = Math.max(...existingQuestionIds) + 1;
+  // make a copy
+  const newQuestion = { ...validQuestion };
+  newQuestion.questionId = newQuestionId;
+  validQuiz.timeLastEdited = Date.now();
+
+  validQuiz.questions.splice(validQuestionIndex + 1, 0, newQuestion);
+  validQuiz.timeLastEdited = Math.floor(Date.now());
+  validQuiz.numQuestions += 1;
+  setData(data);
+  return { duplicatedquestionId: newQuestionId };
 };
