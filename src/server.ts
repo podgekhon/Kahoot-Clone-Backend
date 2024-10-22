@@ -407,22 +407,22 @@ app.put('/v1/admin/user/details', (req, res) => {
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { token } = req.query;
   const { quizid } = req.params;
-  console.log(`SERVER ADMIN_QUIZ_REMOVE 1`);
+  console.log('SERVER ADMIN_QUIZ_REMOVE 1');
   const result = validateToken(token as string);
   if ('error' in result) {
-    console.log(`SERVER ADMIN_QUIZ_REMOVE 2`);
+    console.log('SERVER ADMIN_QUIZ_REMOVE 2');
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
   }
 
-  console.log(`SERVER ADMIN_QUIZ_REMOVE 3`);
+  console.log('SERVER ADMIN_QUIZ_REMOVE 3');
   const removeResult = adminQuizRemove(token as string, Number(quizid));
-  
+
   if ('error' in removeResult) {
-    console.log(`SERVER ADMIN_QUIZ_REMOVE 4`);
+    console.log('SERVER ADMIN_QUIZ_REMOVE 4');
     return res.status(httpStatus.FORBIDDEN).json({ error: 'Unknown Type: string - error' });
   }
 
-  console.log(`SERVER ADMIN_QUIZ_REMOVE 5`);
+  console.log('SERVER ADMIN_QUIZ_REMOVE 5');
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
@@ -523,14 +523,9 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
-
-
-
 // Empty trash
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
-  const { token, quizIds } = req.query; 
-  console.log(`token JJJJJ = ${token}`);
-  console.log(`quizIds JJJJJJ = ${quizIds}`);
+  const { token, quizIds } = req.query;
   let quizIdsStr = quizIds as string;
   if (!quizIdsStr.startsWith('[')) {
     quizIdsStr = `[${quizIdsStr}]`; // Add brackets if missing
@@ -538,60 +533,18 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   // Call the adminTrashEmpty function to process the request
   const result = adminTrashEmpty(token as string, quizIdsStr);
 
-  console.log( `result = ${result}`);
-
   if (isErrorMessages(result) &&
   ((result.error === 'Invalid token format.') ||
   (result.error === 'Invalid token: session does not exist.'))) {
     return res.status(httpStatus.UNAUTHORIZED).json(result);
-  }
-  else if (isErrorMessages(result) &&
+  } else if (isErrorMessages(result) &&
     (result.error === 'Quiz ID is not in the trash.')) {
     return res.status(httpStatus.BAD_REQUEST).json(result);
   } else if (isErrorMessages(result) &&
   (result.error === 'Quiz ID does not belong to the current user.')) {
-  return res.status(httpStatus.FORBIDDEN).json(result);
+    return res.status(httpStatus.FORBIDDEN).json(result);
   } return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
-
-
-
-// // // Empty trash
-// app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
-//   const { token, quizIds } = req.query; // Use req.body to get the token
-//   console.log(`token JJJJJ = ${token}`);
-//   console.log(`quizIds JJJJJJ = ${quizIds}`);
-//   let quizIdsStr = quizIds as string;
-//   if (!quizIdsStr.startsWith('[')) {
-//     quizIdsStr = `[${quizIdsStr}]`; // Add brackets if missing
-//   }
-//   // Call the adminTrashEmpty function to process the request
-//   try {
-//     // Parse the string into an array
-//     const parsedQuizIds = JSON.parse(quizIdsStr);
-    
-//     // Call the adminTrashEmpty function with the parsed array
-//     const result = adminTrashEmpty(token as string, parsedQuizIds);
-  
-//     if (isErrorMessages(result) &&
-//       (result.error === 'Quiz ID does not refer to a valid quiz.' ||
-//        result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
-//       return res.status(httpStatus.UNAUTHORIZED).json(result);
-//     } else if (isErrorMessages(result) &&
-//       (result.error === 'Quiz ID is not in the trash.')) {
-//       return res.status(httpStatus.BAD_REQUEST).json(result);
-//     } else if (isErrorMessages(result) &&
-//       (result.error === 'Quiz ID does not belong to the current user.')) {
-//       return res.status(httpStatus.FORBIDDEN).json(result);
-//     } else {
-//       return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-//     }
-//   } catch (error) {
-//     // Handle JSON parse errors or any unexpected issues
-//     console.error('Error parsing quizIds:', error);
-//     return res.status(httpStatus.BAD_REQUEST).json({ error: 'Invalid quiz IDs format.' });
-//   }
-// });
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
