@@ -535,89 +535,15 @@ return {};
 ////////////////////////////////////////////////////////////////////////////////////
 
 
-export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
-  // Validate inputs
-  const data = getData();
-  const tokenValidation = validateToken(token);
-  if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
-  }
-
-  const authUserId = tokenValidation.authUserId;
-  const invalidQuizzes: number[] = [];
-  const unauthorizedQuizzes: number[] = [];
-
-  console.log(`TS: quizIds = ${quizIds}`);
-  
-  // Check if all quizIds are in the trash and belong to the current user
-  for (const quizId of quizIds) {
-    const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
-    
-    if (!quizInTrash) {
-      invalidQuizzes.push(quizId);
-    } else if (quizInTrash.ownerId !== authUserId) {
-      unauthorizedQuizzes.push(quizId);
-    }
-  }
-
-  // If there are any invalid quizzes, return an error
-  if (invalidQuizzes.length > 0) {
-    console.log(`Invalid quiz IDs: ${invalidQuizzes}`);
-    return { error: 'Quiz ID is not in the trash.' };
-  }
-
-  // If there are any unauthorized quizzes, return an error
-  if (unauthorizedQuizzes.length > 0) {
-    console.log(`Unauthorized quiz IDs: ${unauthorizedQuizzes}` );
-    return { error: 'Quiz ID does not belong to the current user.' };
-  }
-
-  // Remove the valid quizzes from the trash
-  data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
-  setData(data);
-
-  return {};
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-// export const adminTrashEmpty = (token: string, quizIdsStr: string): errorMessages | emptyReturn => {
+// export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
 //   // Validate inputs
-//   console.log(`ADMIN_TRASH_EMPTY_IMP 1`);
 //   const data = getData();
 //   const tokenValidation = validateToken(token);
 //   if ('error' in tokenValidation) {
-//     console.log(`ADMIN_TRASH_EMPTY_IMP 2`);
 //     return { error: tokenValidation.error };
 //   }
-//   console.log(`ADMIN_TRASH_EMPTY_IMP: quizIdsStr = ${quizIdsStr}`);
-//   const authUserId = tokenValidation.authUserId;
-//   console.log(`ADMIN_TRASH_EMPTY_IMP 3`);
-//   // Parse quizIds from the string
-//   let quizIds: number[];
-//   try {
-//     console.log(`ADMIN_TRASH_EMPTY_IMP 4`);
-//     quizIds = JSON.parse(quizIdsStr); // Parse the JSON string into an array
-//   } catch (error) {
-//     console.log(`ADMIN_TRASH_EMPTY_IMP 5`);
-//     return { error: 'Invalid quizIds format. Must be a valid JSON array of numbers.' };
-//   }
-//   console.log(`ADMIN_TRASH_EMPTY_IMP: quizIds = ${quizIds}`);
-//   console.log(`ADMIN_TRASH_EMPTY_IMP 6`);
-//   // Validate that the parsed result is indeed an array of numbers
-//   if (!Array.isArray(quizIds) || !quizIds.every(id => typeof id === 'number')) {
-//     console.log(`ADMIN_TRASH_EMPTY_IMP 7`);
-//     return { error: 'Invalid quizIds format. Must be a valid JSON array of numbers.' };
-//   }
 
-//   console.log(`ADMIN_TRASH_EMPTY_IMP 8`);
+//   const authUserId = tokenValidation.authUserId;
 //   const invalidQuizzes: number[] = [];
 //   const unauthorizedQuizzes: number[] = [];
 
@@ -625,14 +551,11 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   
 //   // Check if all quizIds are in the trash and belong to the current user
 //   for (const quizId of quizIds) {
-//     console.log(`ADMIN_TRASH_EMPTY_IMP 9`);
 //     const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
     
 //     if (!quizInTrash) {
-//       console.log(`ADMIN_TRASH_EMPTY_IMP 10`);
 //       invalidQuizzes.push(quizId);
 //     } else if (quizInTrash.ownerId !== authUserId) {
-//       console.log(`ADMIN_TRASH_EMPTY_IMP 11`);
 //       unauthorizedQuizzes.push(quizId);
 //     }
 //   }
@@ -640,18 +563,103 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
 //   // If there are any invalid quizzes, return an error
 //   if (invalidQuizzes.length > 0) {
 //     console.log(`Invalid quiz IDs: ${invalidQuizzes}`);
-//     return { error: `Quiz ID is not in the trash.` };
+//     return { error: 'Quiz ID is not in the trash.' };
 //   }
 
 //   // If there are any unauthorized quizzes, return an error
 //   if (unauthorizedQuizzes.length > 0) {
-//     console.log(`Unauthorized quiz IDs: ${unauthorizedQuizzes}`);
-//     return { error: `Quiz ID does not belong to the current user.` };
+//     console.log(`Unauthorized quiz IDs: ${unauthorizedQuizzes}` );
+//     return { error: 'Quiz ID does not belong to the current user.' };
 //   }
 
 //   // Remove the valid quizzes from the trash
 //   data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
 //   setData(data);
-//   console.log(`ADMIN_TRASH_EMPTY_IMP 12`);
+
 //   return {};
 // }
+
+
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+export const adminTrashEmpty = (token: string, quizIdsStr: string): errorMessages | emptyReturn => {
+  // Validate inputs
+  console.log(`ADMIN_TRASH_EMPTY_IMP 1`);
+
+  const data = getData();
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    console.log(`ADMIN_TRASH_EMPTY_IMP 2`);
+    return { error: tokenValidation.error };
+  }
+
+  console.log(`ADMIN_TRASH_EMPTY_IMP: quizIdsStr = ${quizIdsStr}`);
+  const authUserId = tokenValidation.authUserId;
+  console.log(`ADMIN_TRASH_EMPTY_IMP 3`);
+
+  // Parse quizIds from the string
+  let quizIds: number[];
+  try {
+    console.log(`ADMIN_TRASH_EMPTY_IMP 4`);
+
+    quizIds = JSON.parse(quizIdsStr); // Parse the JSON string into an array
+  } catch (error) {
+    console.log(`ADMIN_TRASH_EMPTY_IMP 5`);
+
+    return { error: 'Invalid quizIds format. Must be a valid JSON array of numbers.' };
+  }
+
+  console.log(`ADMIN_TRASH_EMPTY_IMP: quizIds = ${quizIds}`);
+  console.log(`ADMIN_TRASH_EMPTY_IMP 6`);
+
+  // Validate that the parsed result is indeed an array of numbers
+  if (!Array.isArray(quizIds) || !quizIds.every(id => typeof id === 'number')) {
+    console.log(`ADMIN_TRASH_EMPTY_IMP 7`);
+
+    return { error: 'Invalid quizIds format. Must be a valid JSON array of numbers.' };
+  }
+
+  console.log(`ADMIN_TRASH_EMPTY_IMP 8`);
+  const invalidQuizzes: number[] = [];
+  const unauthorizedQuizzes: number[] = [];
+
+  console.log(`TS: quizIds = ${quizIds}`);
+  
+  // Check if all quizIds are in the trash and belong to the current user
+  for (const quizId of quizIds) {
+    console.log(`ADMIN_TRASH_EMPTY_IMP 9`);
+    const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
+    
+    if (!quizInTrash) {
+      console.log(`ADMIN_TRASH_EMPTY_IMP 10`);
+      invalidQuizzes.push(quizId);
+    } else if (quizInTrash.ownerId !== authUserId) {
+      console.log(`ADMIN_TRASH_EMPTY_IMP 11`);
+      unauthorizedQuizzes.push(quizId);
+    }
+  }
+
+  // If there are any invalid quizzes, return an error
+  if (invalidQuizzes.length > 0) {
+    console.log(`Invalid quiz IDs: `);
+    return { error: `Quiz ID is not in the trash.` };
+  }
+
+  // If there are any unauthorized quizzes, return an error
+  if (unauthorizedQuizzes.length > 0) {
+    console.log(`Unauthorized quiz IDs: ${unauthorizedQuizzes}`);
+    return { error: `Quiz ID does not belong to the current user.` };
+  }
+
+  // Remove the valid quizzes from the trash
+  data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
+  setData(data);
+  console.log(`ADMIN_TRASH_EMPTY_IMP 12`);
+  return {};
+}

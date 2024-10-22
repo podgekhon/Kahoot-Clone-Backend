@@ -525,9 +525,10 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
 
 
 
+
 // Empty trash
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
-  const { token, quizIds } = req.query; // Use req.body to get the token
+  const { token, quizIds } = req.query; 
   console.log(`token JJJJJ = ${token}`);
   console.log(`quizIds JJJJJJ = ${quizIds}`);
   let quizIdsStr = quizIds as string;
@@ -535,11 +536,13 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
     quizIdsStr = `[${quizIdsStr}]`; // Add brackets if missing
   }
   // Call the adminTrashEmpty function to process the request
-  const result = adminTrashEmpty(token as string, quizIds as string);
+  const result = adminTrashEmpty(token as string, quizIdsStr);
+
+  console.log( `result = ${result}`);
 
   if (isErrorMessages(result) &&
-    (result.error === 'Quiz ID does not refer to a valid quiz.' ||
-     result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
+  ((result.error === 'Invalid token format.') ||
+  (result.error === 'Invalid token: session does not exist.'))) {
     return res.status(httpStatus.UNAUTHORIZED).json(result);
   }
   else if (isErrorMessages(result) &&
@@ -548,14 +551,12 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   } else if (isErrorMessages(result) &&
   (result.error === 'Quiz ID does not belong to the current user.')) {
   return res.status(httpStatus.FORBIDDEN).json(result);
-  } else {
-    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-  }
+  } return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 
 
-// // Empty trash
+// // // Empty trash
 // app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
 //   const { token, quizIds } = req.query; // Use req.body to get the token
 //   console.log(`token JJJJJ = ${token}`);

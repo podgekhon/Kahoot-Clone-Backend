@@ -2610,20 +2610,23 @@ describe('Tests for adminTrashEmpty', () => {
   });
 
   test('successfully empties trash with valid token and valid quiz IDs', () => {
-    const emptyResponse = request(
+    const Response = request(
       'DELETE',
       `${SERVER_URL}/v1/admin/quiz/trash/empty`,
       {
-        json: {
+        qs: {
           token: admin.token,
-          quizIds: [quizId],
-        },
-        timeout: TIMEOUT_MS,
+          quizIds: JSON.stringify(quizId),
+        }
       }
     );
-
-    expect(emptyResponse.statusCode).toStrictEqual(200);
-    expect(emptyResponse.body).toStrictEqual({});
+    // const responseBody = JSON.parse(Response.body.toString());
+    console.log(`ADMIN TOKEN ${admin.token}`);
+    console.log(`QUIZID ${quizId}`);
+    console.log(`EMPTY RESPONSE ${JSON.parse(Response.body.toString())}`);
+    const parsedBody = JSON.parse(Response.body.toString()); 
+    expect(Response.statusCode).toStrictEqual(200);
+    expect(parsedBody).toStrictEqual({});
   });
 
   test('returns 401 error for invalid token', () => {
@@ -2631,11 +2634,10 @@ describe('Tests for adminTrashEmpty', () => {
       'DELETE',
       `${SERVER_URL}/v1/admin/quiz/trash/empty`,
       {
-        json: {
+        qs: {
           token: 'invalid_token',
-          quizIds: [quizId],
-        },
-        timeout: TIMEOUT_MS,
+          quizIds: quizId,
+        }
       }
     );
 
@@ -2650,11 +2652,10 @@ describe('Tests for adminTrashEmpty', () => {
       'DELETE',
       `${SERVER_URL}/v1/admin/quiz/trash/empty`,
       {
-        json: {
+        qs: {
           token: '',
-          quizIds: [quizId],
-        },
-        timeout: TIMEOUT_MS,
+          quizIds: quizId,
+        }
       }
     );
 
@@ -2669,17 +2670,16 @@ describe('Tests for adminTrashEmpty', () => {
       'DELETE',
       `${SERVER_URL}/v1/admin/quiz/trash/empty`,
       {
-        json: {
+        qs: {
           token: admin.token,
-          quizIds: [9999], // An ID that doesn't exist
-        },
-        timeout: TIMEOUT_MS,
+          quizIds: 9999, // An ID that doesn't exist
+        }
       }
     );
 
     expect(emptyResponse.statusCode).toStrictEqual(400);
     expect(JSON.parse(emptyResponse.body as string)).toStrictEqual(
-      'Quiz ID is not in the trash.'
+      { error: 'Quiz ID is not in the trash.' }
     );
   });
 
@@ -2705,17 +2705,18 @@ describe('Tests for adminTrashEmpty', () => {
       'DELETE',
       `${SERVER_URL}/v1/admin/quiz/trash/empty`,
       {
-        json: {
+        qs: {
           token: newAdmin.token,
-          quizIds: [quizId], // The quiz ID that belongs to the original admin
+          quizIds: quizId, // The quiz ID that belongs to the original admin
         },
         timeout: TIMEOUT_MS,
       }
     );
 
     expect(emptyResponse.statusCode).toStrictEqual(403);
-    const responseBody = JSON.parse(emptyResponse.body as string);
-    expect(responseBody.error).toBe(`Quiz ID does not belong to the current user.`);
+    expect(JSON.parse(emptyResponse.body as string)).toStrictEqual(
+      { error: 'Quiz ID does not belong to the current user.' }
+    );
   });
 });
 
@@ -2732,28 +2733,133 @@ describe('Tests for adminTrashEmpty', () => {
 
 
 
-describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
+describe.only('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
   let admin: { token: string };
   let quizIds: number[] = [];
 
   beforeEach(() => {
-    // Register an admin user
-    const resRegister = request(
+  // Register an admin user
+  const resRegister = request(
+    'POST',
+    `${SERVER_URL}/v1/admin/auth/register`,
+    {
+      json: {
+        email: 'admin@unsw.edu.au',
+        password: 'AdminPass1234',
+        nameFirst: 'Admin',
+        nameLast: 'User',
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  admin = JSON.parse(resRegister.body as string);
+
+  for (let i = 0; i < 5; i++) {
+    const resCreateQuiz = request(
       'POST',
-      `${SERVER_URL}/v1/admin/auth/register`,
+      `${SERVER_URL}/v1/admin/quiz`,
       {
         json: {
-          email: 'admin@unsw.edu.au',
-          password: 'AdminPass1234',
-          nameFirst: 'Admin',
-          nameLast: 'User',
+          token: admin.token,
+          name: `Sample Quiz ${i + 1}`,
+          description: `This is sample quiz number ${i + 1}.`,
         },
         timeout: TIMEOUT_MS,
       }
     );
-    admin = JSON.parse(resRegister.body as string);
 
-    // Create multiple quizzes and get their IDs
+    const quizResponse = JSON.parse(resCreateQuiz.body as string);
+    quizIds.push(quizResponse.quizId);
+    // console.log(`TEST BEFORE EACH: token = ${admin.token}`);
+    // console.log(`TEST BEFORE EACH: quizResponse.quizId = ${quizResponse.quizId}`);
+    // Simulate moving the quiz to trash
+
+    request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizResponse.quizId}`, {
+      qs: { token: admin.token },
+      timeout: TIMEOUT_MS,
+    });
+    // console.log(`TEST BEFORE EACH: token = ${admin.token}`);
+  }
+
+});
+
+  test('successfully empties trash with multiple valid quiz IDs', () => {
+
+    console.log(`  TEST: quizIds = ${quizIds} `);
+    console.log(`TEST IN TEST: token = ${admin.token}`);
+
+    // const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash`, {
+    //   qs: { token: admin.token },
+    //   timeout: TIMEOUT_MS
+    // });
+    
+    // console.log(`trashlist = ${trashListResponse.body}`);
+
+    const emptyResponse = request(
+      'DELETE',
+      `${SERVER_URL}/v1/admin/quiz/trash/empty`,
+      {
+        qs: {
+          token: admin.token,
+          quizIds: JSON.stringify(quizIds), 
+        }
+      }
+    );
+
+
+    // const trashListResponse2 = request('GET', `${SERVER_URL}/v1/admin/quiz/trash`, {
+    //   qs: { token: admin.token },
+    //   timeout: TIMEOUT_MS
+    // });
+    
+    // console.log(`trashlist 2 = ${trashListResponse2.body}`);
+    const parsedBody = JSON.parse(emptyResponse.body.toString()); 
+    expect(emptyResponse.statusCode).toStrictEqual(200);
+    expect(parsedBody).toStrictEqual({});
+  });
+
+  test('successfully empties trash with valid token and subset of valid quiz IDs', () => {
+    console.log(`QUIZIDS = ${[quizIds[0], quizIds[2]]}`);
+    const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash`, {
+      qs: { token: admin.token },
+      timeout: TIMEOUT_MS
+    });
+    
+    console.log(`TRASHLIST = ${trashListResponse.body}`);
+    const emptyResponse = request(
+      'DELETE',
+      `${SERVER_URL}/v1/admin/quiz/trash/empty`,
+      {
+        qs: {
+          token: admin.token,
+          quizIds: JSON.stringify([quizIds[0], quizIds[2]]), // Passing a subset of quiz IDs
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    const parsedBody = JSON.parse(emptyResponse.body.toString()); 
+    expect(emptyResponse.statusCode).toStrictEqual(200);
+    expect(parsedBody).toStrictEqual({});
+  });
+
+  test('successfully empties trash with valid token and duplicated quiz IDs', () => {
+    const emptyResponse = request(
+      'DELETE',
+      `${SERVER_URL}/v1/admin/quiz/trash/empty`,
+      {
+        qs: {
+          token: admin.token,
+          quizIds: JSON.stringify([quizIds[0], quizIds[0]]), // Passing a duplicate quiz ID
+        },
+        timeout: TIMEOUT_MS,
+      }
+    );
+    const parsedBody = JSON.parse(emptyResponse.body.toString()); 
+    expect(emptyResponse.statusCode).toStrictEqual(200);
+    expect(parsedBody).toStrictEqual({});
+  });
+
+  test('returns 400 error when emptying trash with valid token and mixed valid and invalid quiz IDs', () => {
     for (let i = 0; i < 5; i++) {
       const resCreateQuiz = request(
         'POST',
@@ -2767,97 +2873,27 @@ describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
           timeout: TIMEOUT_MS,
         }
       );
+  
       const quizResponse = JSON.parse(resCreateQuiz.body as string);
       quizIds.push(quizResponse.quizId);
-      console.log(`TEST BEFORE EACH: token = ${admin.token}`);
-      console.log(`TEST BEFORE EACH: quizResponse.quizId = ${quizResponse.quizId}`);
+      // console.log(`TEST BEFORE EACH: token = ${admin.token}`);
+      // console.log(`TEST BEFORE EACH: quizResponse.quizId = ${quizResponse.quizId}`);
       // Simulate moving the quiz to trash
-
+  
       request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizResponse.quizId}`, {
         qs: { token: admin.token },
         timeout: TIMEOUT_MS,
       });
-      console.log(`TEST BEFORE EACH: token 2 = ${admin.token}`);
+      // console.log(`TEST BEFORE EACH: token = ${admin.token}`);
     }
-  });
-
-  test.only('successfully empties trash with multiple valid quiz IDs', () => {
-    console.log(`  TEST: quizIds = ${quizIds} `);
-    console.log(`TEST IN TEST: token = ${admin.token}`);
-
-    const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash`, {
-      qs: { token: admin.token },
-      timeout: TIMEOUT_MS
-    });
-    
-    console.log(`trashlist = ${trashListResponse.body}`);
-
     const emptyResponse = request(
       'DELETE',
       `${SERVER_URL}/v1/admin/quiz/trash/empty`,
       {
         qs: {
           token: admin.token,
-          quizIds: quizIds, 
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-
-    const trashListResponse2 = request('GET', `${SERVER_URL}/v1/admin/quiz/trash`, {
-      qs: { token: admin.token },
-      timeout: TIMEOUT_MS
-    });
-    
-    console.log(`trashlist 2 = ${trashListResponse2.body}`);
-
-    expect(emptyResponse.statusCode).toStrictEqual(200);
-    expect(emptyResponse.body).toStrictEqual({});
-  });
-
-  test('successfully empties trash with valid token and subset of valid quiz IDs', () => {
-    const emptyResponse = request(
-      'DELETE',
-      `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-      {
-        json: {
-          token: admin.token,
-          quizIds: [quizIds[0], quizIds[2]], // Passing a subset of quiz IDs
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    expect(emptyResponse.statusCode).toStrictEqual(200);
-    expect(emptyResponse.body).toStrictEqual({});
-  });
-
-  test('successfully empties trash with valid token and duplicated quiz IDs', () => {
-    const emptyResponse = request(
-      'DELETE',
-      `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-      {
-        json: {
-          token: admin.token,
-          quizIds: [quizIds[0], quizIds[0]], // Passing a duplicate quiz ID
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    expect(emptyResponse.statusCode).toStrictEqual(200);
-    expect(emptyResponse.body).toStrictEqual({});
-  });
-
-  test('returns 400 error when emptying trash with valid token and mixed valid and invalid quiz IDs', () => {
-    const emptyResponse = request(
-      'DELETE',
-      `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-      {
-        json: {
-          token: admin.token,
-          quizIds: [quizIds[1], 9999, quizIds[3]], // Passing valid IDs and a non-existent ID
+          // quizIds: [quizIds[1], 9999, quizIds[3]], // Passing valid IDs and a non-existent ID
+          quizIds: JSON.stringify([quizIds[1], 9999, quizIds[3]]),
         },
         timeout: TIMEOUT_MS,
       }
@@ -2874,3 +2910,51 @@ describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
 ////////////////////////////////////////////////////////////////////////   
 ////////////////////////////////////////////////////////////////////////   
 ////////////////////////////////////////////////////////////////////////   
+
+
+
+// beforeEach(() => {
+//   // Register an admin user
+//   const resRegister = request(
+//     'POST',
+//     `${SERVER_URL}/v1/admin/auth/register`,
+//     {
+//       json: {
+//         email: 'admin@unsw.edu.au',
+//         password: 'AdminPass1234',
+//         nameFirst: 'Admin',
+//         nameLast: 'User',
+//       },
+//       timeout: TIMEOUT_MS,
+//     }
+//   );
+//   admin = JSON.parse(resRegister.body as string);
+
+//   // Create multiple quizzes and get their IDs
+//   for (let i = 0; i < 5; i++) {
+//     const resCreateQuiz = request(
+//       'POST',
+//       `${SERVER_URL}/v1/admin/quiz`,
+//       {
+//         json: {
+//           token: admin.token,
+//           name: `Sample Quiz ${i + 1}`,
+//           description: `This is sample quiz number ${i + 1}.`,
+//         },
+//         timeout: TIMEOUT_MS,
+//       }
+//     );
+
+//     const quizResponse = JSON.parse(resCreateQuiz.body as string);
+//     quizIds.push(quizResponse.quizId);
+//     console.log(`TEST BEFORE EACH: token = ${admin.token}`);
+//     console.log(`TEST BEFORE EACH: quizResponse.quizId = ${quizResponse.quizId}`);
+//     // Simulate moving the quiz to trash
+
+//     request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizResponse.quizId}`, {
+//       qs: { token: admin.token },
+//       timeout: TIMEOUT_MS,
+//     });
+//     console.log(`TEST BEFORE EACH: token 2 = ${admin.token}`);
+//   }
+// });
