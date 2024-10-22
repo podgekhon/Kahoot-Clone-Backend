@@ -688,9 +688,10 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   return {};
 };
 
-export const adminTrashEmpty = (token: string, quizIdsStr: string): errorMessages | emptyReturn => {
-  // Validate inputs
 
+// adminTrashEmpty
+export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
+  // Validate inputs
   const data = getData();
   const tokenValidation = validateToken(token);
   if ('error' in tokenValidation) {
@@ -698,27 +699,13 @@ export const adminTrashEmpty = (token: string, quizIdsStr: string): errorMessage
   }
 
   const authUserId = tokenValidation.authUserId;
-
-  // Parse quizIds from the string
-  let quizIds: number[];
-  try {
-    quizIds = JSON.parse(quizIdsStr); // Parse the JSON string into an array
-  } catch (error) {
-    return { error: 'Invalid quizIds format. Must be a valid JSON array of numbers.' };
-  }
-
-  // Validate that the parsed result is indeed an array of numbers
-  if (!Array.isArray(quizIds) || !quizIds.every(id => typeof id === 'number')) {
-    return { error: 'Invalid quizIds format. Must be a valid JSON array of numbers.' };
-  }
-
   const invalidQuizzes: number[] = [];
   const unauthorizedQuizzes: number[] = [];
-
+  
   // Check if all quizIds are in the trash and belong to the current user
   for (const quizId of quizIds) {
     const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
-
+    
     if (!quizInTrash) {
       invalidQuizzes.push(quizId);
     } else if (quizInTrash.ownerId !== authUserId) {
@@ -739,5 +726,7 @@ export const adminTrashEmpty = (token: string, quizIdsStr: string): errorMessage
   // Remove the valid quizzes from the trash
   data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
   setData(data);
+
   return {};
-};
+}
+
