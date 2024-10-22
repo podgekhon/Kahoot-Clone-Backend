@@ -688,7 +688,6 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   return {};
 };
 
-
 export const adminTrashEmpty = (token: string, quizIdsStr: string): errorMessages | emptyReturn => {
   // Validate inputs
 

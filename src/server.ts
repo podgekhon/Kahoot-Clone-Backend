@@ -677,8 +677,6 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   } return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
-
-
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================

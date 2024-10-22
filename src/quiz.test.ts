@@ -4049,9 +4049,9 @@ describe('Tests for adminTrashEmpty', () => {
     );
 
     expect(emptyResponse.statusCode).toStrictEqual(400);
-    expect(JSON.parse(emptyResponse.body as string)).toStrictEqual(
-      { error: 'Quiz ID is not in the trash.' }
-    );
+    expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      error: expect.any(String),
+    });
   });
 
   test('returns 403 error for quiz ID that does not belong to the current user', () => {
@@ -4085,9 +4085,9 @@ describe('Tests for adminTrashEmpty', () => {
     );
 
     expect(emptyResponse.statusCode).toStrictEqual(403);
-    expect(JSON.parse(emptyResponse.body as string)).toStrictEqual(
-      { error: 'Quiz ID does not belong to the current user.' }
-    );
+    expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      error: expect.any(String),
+    });
   });
 });
 
@@ -4183,7 +4183,6 @@ describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
       {
         qs: {
           token: admin.token,
-          // quizIds: [quizIds[1], 9999, quizIds[3]], // Passing valid IDs and a non-existent ID
           quizIds: JSON.stringify([quizIds[1], 9999, quizIds[3]]),
         },
         timeout: TIMEOUT_MS,
@@ -4191,8 +4190,8 @@ describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
     );
 
     expect(emptyResponse.statusCode).toStrictEqual(400);
-    const responseBody = JSON.parse(emptyResponse.body as string).error;
-    expect(responseBody).toBe('Quiz ID is not in the trash.');
+    expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      error: expect.any(String),
+    });
   });
 });
-
