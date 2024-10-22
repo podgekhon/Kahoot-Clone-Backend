@@ -687,3 +687,44 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
 
   return {};
 };
+
+// adminTrashEmpty
+export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
+  // Validate inputs
+  const data = getData();
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+
+  const authUserId = tokenValidation.authUserId;
+  const invalidQuizzes: number[] = [];
+  const unauthorizedQuizzes: number[] = [];
+
+  // Check if all quizIds are in the trash and belong to the current user
+  for (const quizId of quizIds) {
+    const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
+
+    if (!quizInTrash) {
+      invalidQuizzes.push(quizId);
+    } else if (quizInTrash.ownerId !== authUserId) {
+      unauthorizedQuizzes.push(quizId);
+    }
+  }
+
+  // If there are any invalid quizzes, return an error
+  if (invalidQuizzes.length > 0) {
+    return { error: 'Quiz ID is not in the trash.' };
+  }
+
+  // If there are any unauthorized quizzes, return an error
+  if (unauthorizedQuizzes.length > 0) {
+    return { error: 'Quiz ID does not belong to the current user.' };
+  }
+
+  // Remove the valid quizzes from the trash
+  data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
+  setData(data);
+
+  return {};
+};
