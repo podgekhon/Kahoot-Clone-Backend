@@ -659,7 +659,8 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   const { token, quizIds } = req.query;
   let quizIdsStr = quizIds as string;
   if (!quizIdsStr.startsWith('[')) {
-    quizIdsStr = `[${quizIdsStr}]`; // Add brackets if missing
+    // Add brackets if missing
+    quizIdsStr = `[${quizIdsStr}]`; 
   }
   // Call the adminTrashEmpty function to process the request
   const result = adminTrashEmpty(token as string, quizIdsStr);

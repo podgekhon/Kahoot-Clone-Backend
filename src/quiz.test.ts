@@ -4044,7 +4044,8 @@ describe('Tests for adminTrashEmpty', () => {
       {
         qs: {
           token: admin.token,
-          quizIds: 9999, // An ID that doesn't exist
+           // An ID that doesn't exist
+          quizIds: 9999,
         }
       }
     );
@@ -4079,7 +4080,8 @@ describe('Tests for adminTrashEmpty', () => {
       {
         qs: {
           token: newAdmin.token,
-          quizIds: quizId, // The quiz ID that belongs to the original admin
+          // The quiz ID that belongs to the original admin
+          quizIds: quizId,
         },
         timeout: TIMEOUT_MS,
       }
@@ -4181,20 +4183,14 @@ describe.only('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
       });
     }
     
-    console.log(`QUIZIDS = ${[quizIds[0], quizIds[2]]}`);
-    const trashListResponse = request('GET', `${SERVER_URL}/v1/admin/quiz/trash`, {
-      qs: { token: admin.token },
-      timeout: TIMEOUT_MS
-    });
-    
-    console.log(`TRASHLIST = ${trashListResponse.body}`);
     const emptyResponse = request(
       'DELETE',
       `${SERVER_URL}/v1/admin/quiz/trash/empty`,
       {
         qs: {
           token: admin.token,
-          quizIds: JSON.stringify([quizIds[0], quizIds[2]]), // Passing a subset of quiz IDs
+          // Passing a subset of quiz IDs
+          quizIds: JSON.stringify([quizIds[0], quizIds[2]]),
         },
         timeout: TIMEOUT_MS,
       }
@@ -4236,7 +4232,8 @@ describe.only('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
       {
         qs: {
           token: admin.token,
-          quizIds: JSON.stringify([quizIds[0], quizIds[0]]), // Passing a duplicate quiz ID
+          // Passing a duplicate quiz ID
+          quizIds: JSON.stringify([quizIds[0], quizIds[0]]),
         },
         timeout: TIMEOUT_MS,
       }
