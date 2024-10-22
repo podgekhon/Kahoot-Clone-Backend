@@ -696,7 +696,6 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   if ('error' in tokenValidation) {
     return { error: tokenValidation.error };
   }
-
   const authUserId = tokenValidation.authUserId;
   const invalidQuizzes: number[] = [];
   const unauthorizedQuizzes: number[] = [];
@@ -711,7 +710,6 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
       unauthorizedQuizzes.push(quizId);
     }
   }
-
   // If there are any invalid quizzes, return an error
   if (invalidQuizzes.length > 0) {
     return { error: 'Quiz ID is not in the trash.' };

@@ -60,6 +60,7 @@ import {
 
 import { clear } from './other';
 import { validateToken, isErrorMessages } from './helperfunction';
+import { getData } from './dataStore';
 // import { getData } from './dataStore';
 
 export enum httpStatus {
@@ -658,27 +659,10 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   const { token, quizIds } = req.query;
 
-  let quizIdsArray: number[];
+  // Parse quizIds into an array of numbers
+  const quizIdsArray = JSON.parse(quizIds as string);
 
-  try {
-    // Parse quizIds into an array of numbers
-    if (typeof quizIds === 'string') {
-      // If it's a string, attempt to parse it as a JSON array
-      quizIdsArray = JSON.parse(quizIds);
-    } else {
-      // If quizIds is already an array, we cast it to the correct type
-      quizIdsArray = quizIds as unknown as number[];
-    }
-
-    // Ensure it's a valid array of numbers
-    if (!Array.isArray(quizIdsArray) || !quizIdsArray.every(Number.isInteger)) {
-      throw new Error('Invalid quizIds format.');
-    }
-  } catch (error) {
-    throw new Error('Invalid quizIds format. It should be a JSON array of quiz IDs.');
-  }
-
-  // Call the adminTrashEmpty function with the parsed array
+  // Call the adminTrashEmpty function with the parsed array'
   const result = adminTrashEmpty(token as string, quizIdsArray);
 
   if (isErrorMessages(result) &&
