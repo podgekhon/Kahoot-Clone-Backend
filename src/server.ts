@@ -654,7 +654,6 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
-
 // Empty trash
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   const { token, quizIds } = req.query;
@@ -696,7 +695,6 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
-
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

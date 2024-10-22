@@ -688,7 +688,6 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   return {};
 };
 
-
 // adminTrashEmpty
 export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
   // Validate inputs
@@ -701,11 +700,11 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   const authUserId = tokenValidation.authUserId;
   const invalidQuizzes: number[] = [];
   const unauthorizedQuizzes: number[] = [];
-  
+
   // Check if all quizIds are in the trash and belong to the current user
   for (const quizId of quizIds) {
     const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
-    
+
     if (!quizInTrash) {
       invalidQuizzes.push(quizId);
     } else if (quizInTrash.ownerId !== authUserId) {
@@ -728,5 +727,4 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   setData(data);
 
   return {};
-}
-
+};
