@@ -4102,7 +4102,7 @@ describe('Tests for adminTrashEmpty', () => {
   describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
     let admin: { token: string };
     let quizIds: number[] = [];
-    let quizResponse: { quizId: number }
+    let quizResponse: { quizId: number };
     beforeEach(() => {
     // Register an admin user
       quizIds = [];
