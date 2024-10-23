@@ -684,6 +684,7 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
 
   // update new owner
   transferredQuiz.ownerId = receiverId;
+  setData(data);
 
   return {};
 };
