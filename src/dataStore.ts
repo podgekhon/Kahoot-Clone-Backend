@@ -26,6 +26,12 @@ Example usage
 
 // Use getData() to access the data
 function getData() {
+  const fp = __dirname + '/dataStore.json';
+  if (fs.existsSync(fp)) {
+    const dataStoreBuffer = fs.readFileSync(fp);
+    const jsonStr = String(dataStoreBuffer);
+    data = JSON.parse(jsonStr);
+  }
   return data;
 }
 
