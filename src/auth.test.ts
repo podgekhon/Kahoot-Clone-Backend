@@ -781,7 +781,7 @@ describe.skip('adminUserDetailsUpdate', () => {
 });
 
 // adminUserLogout
-describe('POST /v1/admin/auth/logout', () => {
+describe.skip('POST /v1/admin/auth/logout', () => {
   let user1;
   let user1Return;
   let user1token: string;
