@@ -60,7 +60,6 @@ import {
 
 import { clear } from './other';
 import { validateToken, isErrorMessages } from './helperfunction';
-import { getData } from './dataStore';
 // import { getData } from './dataStore';
 
 export enum httpStatus {
