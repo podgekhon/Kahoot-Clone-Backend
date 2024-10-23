@@ -1,10 +1,16 @@
 import { adminAuthRegisterHttp, clearHttp } from './helperfunctiontests';
+import { errorMessages, tokenReturn } from './interface';
 
 // import request from 'sync-request-curl';
 // import { port, url } from './config.json';
 
 // const SERVER_URL = `${url}:${port}`;
 // const TIMEOUT_MS = 100 * 1000;
+
+export interface user {
+  statusCode: number,
+  body: errorMessages | tokenReturn,
+}
 
 export enum httpStatus {
   UNAUTHORIZED = 401,
@@ -53,7 +59,7 @@ beforeEach(() => {
 
 describe('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
-    let user1: any;
+    let user1: user;
     beforeEach(() => {
       user1 = adminAuthRegisterHttp('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     });
