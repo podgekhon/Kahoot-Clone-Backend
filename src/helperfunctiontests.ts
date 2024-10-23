@@ -38,4 +38,3 @@ body: ReturnType <typeof adminAuthRegister> } => {
   });
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
-
