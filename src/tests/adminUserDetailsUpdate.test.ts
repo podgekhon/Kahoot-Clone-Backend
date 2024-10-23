@@ -132,7 +132,6 @@ describe('adminUserDetailsUpdate', () => {
     expect(updateResult).toStrictEqual({});
 
     // get user details, it should be updated
-
     const resDetails = request(
       'GET',
       `${url}:${port}/v1/admin/user/details`,
