@@ -60,8 +60,6 @@ import {
 
 import { clear } from './other';
 import { validateToken, isErrorMessages } from './helperfunction';
-import { getData } from './dataStore';
-// import { getData } from './dataStore';
 
 export enum httpStatus {
   UNAUTHORIZED = 401,
@@ -83,7 +81,7 @@ app.get('/echo', (req: Request, res: Response) => {
 // ------clear---------///
 app.delete('/v1/clear', (req: Request, res: Response) => {
   const result = clear();
-  return res.json(result);
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminAuthRegister
