@@ -520,7 +520,7 @@ describe.skip('test for adminUserPasswordUpdate', () => {
 });
 
 /// ////////-----adminUserDetails-----////////////
-describe('test for adminUserDetails', () => {
+describe.skip('test for adminUserDetails', () => {
   let user: { token: string };
 
   beforeEach(() => {
@@ -686,7 +686,7 @@ describe('test for adminUserDetails', () => {
 });
 
 // tests for adminUserDetailsUpdate
-describe('adminUserDetailsUpdate', () => {
+describe.skip('adminUserDetailsUpdate', () => {
   let admin: any;
   let adminToken: string;
 

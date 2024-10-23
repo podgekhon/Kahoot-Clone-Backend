@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore';
+import { getData } from './dataStore';
 
 import {
   token,
