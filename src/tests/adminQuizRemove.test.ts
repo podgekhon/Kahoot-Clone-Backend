@@ -160,7 +160,7 @@ describe('adminQuizRemove', () => {
   });
 
   test('invalid token', () => {
-		// log out user1
+    // log out user1
     const result = request(
       'POST',
       SERVER_URL + '/v1/admin/auth/logout',
@@ -188,8 +188,8 @@ describe('adminQuizRemove', () => {
       }
     );
     expect(resRegister.statusCode).toStrictEqual(200);
-		// invalid token
-		const deleteResponse = request(
+    // invalid token
+    const deleteResponse = request(
       'DELETE',
       SERVER_URL + `/v1/admin/quiz/${quiz.quizId}?token=${adminToken}`,
       {
@@ -198,6 +198,5 @@ describe('adminQuizRemove', () => {
     );
     expect(deleteResponse.statusCode).toEqual(401);
     expect(JSON.parse(deleteResponse.body.toString())).toEqual({ error: expect.any(String) });
-
   });
 });
