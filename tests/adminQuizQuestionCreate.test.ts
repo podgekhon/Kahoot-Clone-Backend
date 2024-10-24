@@ -1,7 +1,7 @@
 import request from 'sync-request-curl';
-import { port, url } from '../config.json';
+import { port, url } from '../src/config.json';
 
-import { question } from '../interface';
+import { question } from '../src/interface';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;

@@ -1,6 +1,6 @@
 import request from 'sync-request-curl';
-import { port, url } from '../config.json';
-import { quizQuestionCreateResponse } from '../interface';
+import { port, url } from '../src/config.json';
+import { quizQuestionCreateResponse } from '../src/interface';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;

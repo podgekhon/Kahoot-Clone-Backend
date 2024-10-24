@@ -1,5 +1,5 @@
-import { adminAuthRegisterHttp, clearHttp } from '../helperfunctiontests';
-import { errorMessages, tokenReturn } from '../interface';
+import { adminAuthRegisterHttp, clearHttp } from '../src/helperfunctiontests';
+import { errorMessages, tokenReturn } from '../src/interface';
 
 // import request from 'sync-request-curl';
 // import { port, url } from './config.json';
