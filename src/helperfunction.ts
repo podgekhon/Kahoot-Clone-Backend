@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore';
+import { getData } from './dataStore';
 
 import {
   token,
@@ -70,7 +70,7 @@ export function generateToken(userId: number): string {
     userId
   };
   data.sessions.push(session);
-  setData(data);
+  // setData(data);
   return encodeURIComponent(JSON.stringify({ sessionId: sessionId }));
 }
 

@@ -566,6 +566,44 @@ export const adminQuizRestore = (quizId: number, token: string) => {
   return {};
 };
 
+export const adminQuizQuestionRemove = (
+  quizId: number,
+  questionId: number,
+  token: string
+): emptyReturn | errorMessages => {
+  const data = getData();
+
+  // Token is empty or invalid (does not refer to valid logged in user session)
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: 'token is empty or invalid' };
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  //  Valid token is provided, but user is not an owner of this quiz or quiz doesn't exist
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz) {
+    return { error: 'quiz or question doesn\'t exist' };
+  }
+
+  if (quiz.ownerId !== authUserId) {
+    return { error: 'user is not the owner of this quiz' };
+  }
+
+  // Question Id does not refer to a valid question within this quiz
+  const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
+  if (questionIndex === -1) {
+    return { error: 'Question Id does not refer to a valid question' };
+  }
+
+  quiz.questions.splice(questionIndex, 1);
+  quiz.numQuestions--;
+  quiz.timeLastEdited = Math.floor(Date.now());
+
+  setData(data);
+  return {};
+};
+
 /**
  *
  * @param quizId
@@ -608,4 +646,84 @@ export const adminQuizDuplicate = (quizId: number, questionId: number, token: st
   validQuiz.numQuestions += 1;
   setData(data);
   return { duplicatedquestionId: newQuestionId };
+};
+
+export const adminQuizTransfer = (quizId: number, token: string, userEmail: string) => {
+  const data = getData();
+  const receiver = data.users.find((user) => user.email === userEmail);
+  const tokenValidation = validateToken(token);
+  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+
+  if ('error' in tokenValidation) {
+    return { error: 'INVALID_TOKEN' };
+  }
+  const senderId = tokenValidation.authUserId;
+
+  // checks if receiver is a real user
+  if (!receiver) {
+    return { error: 'INVALID_USEREMAIL' };
+  }
+  const receiverId = receiver.userId;
+
+  // checks if userEmail is the current logged in user
+  if (senderId === receiverId) {
+    return { error: 'ALREADY_OWNS' };
+  }
+
+  // if receiver already has quiz with same name
+  if (isNameTaken(receiverId, transferredQuiz.name)) {
+    return {
+      error: 'DUPLICATE_QUIZNAME'
+    };
+  }
+
+  // if sender does not own quiz
+  if (senderId !== transferredQuiz.ownerId) {
+    return { error: 'INVALID_OWNER' };
+  }
+
+  // update new owner
+  transferredQuiz.ownerId = receiverId;
+  setData(data);
+
+  return {};
+};
+
+// adminTrashEmpty
+export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
+  // Validate inputs
+  const data = getData();
+  const tokenValidation = validateToken(token);
+  if ('error' in tokenValidation) {
+    return { error: tokenValidation.error };
+  }
+  const authUserId = tokenValidation.authUserId;
+  const invalidQuizzes: number[] = [];
+  const unauthorizedQuizzes: number[] = [];
+
+  // Check if all quizIds are in the trash and belong to the current user
+  for (const quizId of quizIds) {
+    const quizInTrash = data.trash.find(quiz => quiz.quizId === quizId);
+
+    if (!quizInTrash) {
+      invalidQuizzes.push(quizId);
+    } else if (quizInTrash.ownerId !== authUserId) {
+      unauthorizedQuizzes.push(quizId);
+    }
+  }
+  // If there are any invalid quizzes, return an error
+  if (invalidQuizzes.length > 0) {
+    return { error: 'Quiz ID is not in the trash.' };
+  }
+
+  // If there are any unauthorized quizzes, return an error
+  if (unauthorizedQuizzes.length > 0) {
+    return { error: 'Quiz ID does not belong to the current user.' };
+  }
+
+  // Remove the valid quizzes from the trash
+  data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
+  setData(data);
+
+  return {};
 };
