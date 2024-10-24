@@ -1,5 +1,13 @@
 import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
+import {
+  requestAdminAuthRegister,
+  requestAdminQuizList,
+  requestAdminQuizCreate,
+  requestAdminQuizTransfer,
+} from '../src/helperfunctiontests';
+import { quizCreateResponse, tokenReturn } from '../src/interface';
+import { adminAuthRegister } from '../src/auth';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
@@ -9,134 +17,50 @@ beforeEach(() => {
 });
 
 describe('Test for adminQuizTransfer', () => {
-  let user1: { token: string};
-  let user2: { token: string};
+  let user1Response;
+  let user2Response;
+  let user3Response;
 
-  let User1QuizList: string;
-  let User2QuizList: string;
+  let User1QuizListResponse;
+  let User2QuizListResponse;
 
   let user1Token: string;
+  let user2Token: string;
+  let user3Token: string;
+
+  let quizCreateResponse;
+  let quizId: number;
 
   beforeEach(() => {
-    const resRegisterUser1 = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'user1@gmail.com',
-          password: 'validPassword1',
-          nameFirst: 'User',
-          nameLast: 'One'
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-    user1 = JSON.parse(resRegisterUser1.body.toString());
-    expect(resRegisterUser1.statusCode).toStrictEqual(200);
-    user1Token = user1.token;
+    user1Response = requestAdminAuthRegister('user1@gmail.com', 'validPassword1', 'User', 'One');
+    user1Token = (user1Response.body as tokenReturn).token;
+    expect(user1Response.statusCode).toStrictEqual(200);
 
-    const resUser1QuizList = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list',
-      {
-        qs: {
-          token: user1Token,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
+    user2Response = requestAdminAuthRegister('user2@gmail.com', 'validPassword2', 'User', 'Two');
+    expect(user2Response.statusCode).toStrictEqual(200);
+    user2Token = (user2Response.body as tokenReturn).token;
 
-    User1QuizList = JSON.parse(resUser1QuizList.body.toString());
-    expect(resUser1QuizList.statusCode).toStrictEqual(200);
-    expect(User1QuizList).toStrictEqual({
+    user3Response = requestAdminAuthRegister('user3@gmail.com', 'validPassword3', 'User', 'Three');
+    expect(user3Response.statusCode).toStrictEqual(200);
+    user3Token = (user3Response.body as tokenReturn).token;
+
+    User1QuizListResponse = requestAdminQuizList(user2Token);
+    expect(User1QuizListResponse.statusCode).toStrictEqual(200);
+    expect(User1QuizListResponse.body).toStrictEqual({
       quizzes: []
     });
+
+    quizCreateResponse = requestAdminQuizCreate(user1Token, 'Math Quiz', 'this is a math quiz');
+    expect(quizCreateResponse.statusCode).toStrictEqual(200);
+    quizId = (quizCreateResponse.body as quizCreateResponse).quizId;
   });
 
   test('Valid adminQuizTransfer', () => {
-    const resRegisterUser2 = request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'user2@gmail.com',
-            password: 'validPassword2',
-            nameFirst: 'User',
-            nameLast: 'Two',
-          },
-          timeout: 100,
-        }
-    );
+    const quizTransferResponse = requestAdminQuizTransfer(quizId, user1Token, 'user2@gmail.com');
+    expect(quizTransferResponse.statusCode).toStrictEqual(200);
 
-    user2 = JSON.parse(resRegisterUser2.body.toString());
-    expect(resRegisterUser2.statusCode).toStrictEqual(200);
-    const user2Token = user2.token;
-
-    const resCreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user2Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
-
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    const resUser2QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user2Token,
-          userEmail: 'user1@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(200);
-    const quizTransfer = JSON.parse(resUser2QuizTransfer.body.toString());
-
-    const resUser2QuizList = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list',
-      {
-        qs: {
-          token: user2Token,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(200);
-    User2QuizList = JSON.parse(resUser2QuizList.body.toString());
-
-    expect(User2QuizList).toStrictEqual({
-      quizzes: []
-    });
-
-    const resAfterTransferUser1QuizList = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list',
-      {
-        qs: {
-          token: user1Token,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    const afterTransferUser1Quizlist = JSON.parse(
-      resAfterTransferUser1QuizList.body.toString()
-    );
-
-    expect(afterTransferUser1Quizlist).toStrictEqual({
+    User2QuizListResponse = requestAdminQuizList(user2Token);
+    expect(User2QuizListResponse.body).toStrictEqual({
       quizzes: [
         {
           quizId: quizId,
@@ -145,263 +69,61 @@ describe('Test for adminQuizTransfer', () => {
       ]
     });
 
-    expect(quizTransfer).toStrictEqual({});
+    User2QuizListResponse = requestAdminQuizList(user1Token);
+    expect(User2QuizListResponse.statusCode).toStrictEqual(200);
+    expect(User2QuizListResponse.body).toStrictEqual({
+      quizzes: []
+    });
   });
 
   test('returns error receiver is not a real user', () => {
-    const resCreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user1Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        },
-        timeout: TIMEOUT_MS
-      }
+    const quizTransferResponse = requestAdminQuizTransfer(
+      quizId,
+      user1Token,
+      'notRealUser2@gmail.com'
     );
-
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
-
-    const resUser1QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user1Token,
-          userEmail: 'NotRealUser@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    const quizTransfer = JSON.parse(resUser1QuizTransfer.body.toString());
-
-    expect(resUser1QuizTransfer.statusCode).toStrictEqual(400);
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
+    expect(quizTransferResponse.statusCode).toStrictEqual(400);
+    expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error if user sends to themself', () => {
-    const resCreateQuiz = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz`,
-        {
-          json: {
-            token: user1Token,
-            name: 'Math Quiz',
-            description: 'this is a math quiz'
-          }
-        }
+    const quizTransferResponse = requestAdminQuizTransfer(
+      quizId,
+      user1Token,
+      'user1@gmail.com'
     );
-
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
-
-    const resUser1QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user1Token,
-          userEmail: 'user1@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    const quizTransfer = JSON.parse(resUser1QuizTransfer.body.toString());
-
-    expect(resUser1QuizTransfer.statusCode).toStrictEqual(400);
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
+    expect(quizTransferResponse.statusCode).toStrictEqual(400);
+    expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error if receiver has a quiz with same name', () => {
-    const resCreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user1Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
+    quizCreateResponse = requestAdminQuizCreate(user2Token, 'Math Quiz', 'this is a math quiz');
+    expect(quizCreateResponse.statusCode).toStrictEqual(200);
 
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
+    const quizTransferResponse = requestAdminQuizTransfer(quizId, user1Token, 'user2@gmail.com');
+    expect(quizTransferResponse.statusCode).toStrictEqual(400);
 
-    const resRegisterUser2 = request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'user2@gmail.com',
-            password: 'validPassword2',
-            nameFirst: 'User',
-            nameLast: 'Two',
-          },
-          timeout: 100,
-        }
-    );
-    user2 = JSON.parse(resRegisterUser2.body.toString());
-    expect(resRegisterUser2.statusCode).toStrictEqual(200);
-    const user2Token = user2.token;
-
-    const resUser2CreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user2Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
-
-    expect(resUser2CreateQuiz.statusCode).toStrictEqual(200);
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    const resUser2QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user2Token,
-          userEmail: 'user1@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    const quizTransfer = JSON.parse(resUser2QuizTransfer.body.toString());
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(400);
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
+    expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('return error if token is invalid', () => {
-    const resRegisterUser2 = request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'user2@gmail.com',
-            password: 'validPassword2',
-            nameFirst: 'User',
-            nameLast: 'Two',
-          },
-          timeout: 100,
-        }
-    );
+  test('invalid token: empty token', () => {
+    const quizTransferResponse = requestAdminQuizTransfer(quizId, '', 'user2@gmail.com');
+    expect(quizTransferResponse.statusCode).toStrictEqual(401);
 
-    user2 = JSON.parse(resRegisterUser2.body.toString());
-    expect(resRegisterUser2.statusCode).toStrictEqual(200);
-    const user2Token = user2.token;
+    expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
+  });
 
-    const resCreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user2Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
+  test('invalid token: invalid token', () => {
+    const quizTransferResponse = requestAdminQuizTransfer(quizId, '9999999', 'user2@gmail.com');
+    expect(quizTransferResponse.statusCode).toStrictEqual(401);
 
-    expect(resCreateQuiz.statusCode).toStrictEqual(200);
-    const quiz = JSON.parse(resCreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    const resUser2QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: '',
-          userEmail: 'user1@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(401);
-    const quizTransfer = JSON.parse(resUser2QuizTransfer.body.toString());
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
+    expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('return error if user is not an owner of this quiz', () => {
-    const resUser1CreateQuiz = request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: user1Token,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
-    );
+    const quizTransferResponse = requestAdminQuizTransfer(quizId, user3Token, 'user2@gmail.com');
+    expect(quizTransferResponse.statusCode).toStrictEqual(403);
 
-    expect(resUser1CreateQuiz.statusCode).toStrictEqual(200);
-    const quiz = JSON.parse(resUser1CreateQuiz.body.toString());
-    const quizId = quiz.quizId;
-
-    const resRegisterUser2 = request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'user2@gmail.com',
-            password: 'validPassword2',
-            nameFirst: 'User',
-            nameLast: 'Two',
-          },
-          timeout: 100,
-        }
-    );
-
-    request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'user3@gmail.com',
-            password: 'validPassword3',
-            nameFirst: 'User',
-            nameLast: 'Three',
-          },
-          timeout: 100,
-        }
-    );
-
-    user2 = JSON.parse(resRegisterUser2.body.toString());
-    expect(resRegisterUser2.statusCode).toStrictEqual(200);
-    const user2Token = user2.token;
-
-    const resUser2QuizTransfer = request(
-      'POST',
-      SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
-      {
-        json: {
-          token: user2Token,
-          userEmail: 'user3@gmail.com',
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-
-    expect(resUser2QuizTransfer.statusCode).toStrictEqual(403);
-    const quizTransfer = JSON.parse(resUser2QuizTransfer.body.toString());
-    expect(quizTransfer).toStrictEqual({ error: expect.any(String) });
+    expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 });
