@@ -28,6 +28,7 @@ beforeEach(() => {
 describe('test for adminUserPasswordUpdate', () => {
   let user1;
   let user1token: string;
+  
   beforeEach(() => {
     user1 = requestAdminAuthRegister('ericMa@unsw.edu.au', 'EricMa1234', 'Eric', 'Ma');
     user1token = (user1.body as tokenReturn).token;
