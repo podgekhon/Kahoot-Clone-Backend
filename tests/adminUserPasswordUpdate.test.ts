@@ -4,7 +4,8 @@ import {
   requestClear,
   requestAdminAuthRegister,
   requestAdminUserPasswordUpdate,
-  httpStatus
+  httpStatus,
+  requestAdminAuthLogin
 } from '../src/helperfunctiontests';
 import { tokenReturn } from '../src/interface';
 
@@ -85,34 +86,14 @@ describe('test for adminUserPasswordUpdate', () => {
 
     // try to login by using the old password
     // should fail
-    let res = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/login',
-      {
-        json: {
-          email: 'ericMa@unsw.edu.au',
-          password: 'EricMa1234'
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
+    let res = requestAdminAuthLogin('ericMa@unsw.edu.au', 'EricMa1234');
     expect(res.statusCode).toStrictEqual(400);
-    expect(JSON.parse(res.body.toString())).toStrictEqual({ error: expect.any(String) });
+    expect(res.body).toStrictEqual({ error: expect.any(String) });
 
     // try to login with the new password
     // should success
-    res = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/login',
-      {
-        json: {
-          email: 'ericMa@unsw.edu.au',
-          password: '1234EricMa'
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
+    res = requestAdminAuthLogin('ericMa@unsw.edu.au', '1234EricMa');
     expect(res.statusCode).toStrictEqual(200);
-    expect(JSON.parse(res.body.toString())).toStrictEqual({ token: expect.any(String) });
+    expect(res.body).toStrictEqual({ token: expect.any(String) });
   });
 });
