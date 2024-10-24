@@ -1,4 +1,4 @@
-import { adminAuthRegisterHttp, clearHttp } from '../src/helperfunctiontests';
+import { adminAuthRegisterHttp, requestClear } from '../src/helperfunctiontests';
 import { errorMessages, tokenReturn } from '../src/interface';
 
 // import request from 'sync-request-curl';
@@ -54,7 +54,7 @@ const invalidPasswords = [
 /// //////////-----adminAuthRegister------///////////
 
 beforeEach(() => {
-  clearHttp();
+  requestClear();
 });
 
 describe('adminAuthRegister', () => {
