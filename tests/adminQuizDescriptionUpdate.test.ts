@@ -13,7 +13,7 @@ import {
 
 import {
   httpStatus
-} from '../src/server';
+} from '../src/helperfunctiontests';
 
 beforeEach(() => {
   requestClear();
