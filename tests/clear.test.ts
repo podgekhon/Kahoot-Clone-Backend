@@ -1,12 +1,12 @@
-import { clearHttp } from '../src/helperfunctiontests';
+import { requestClear } from '../src/helperfunctiontests';
 
 beforeEach(() => {
-  clearHttp();
+  requestClear();
 });
 
 describe('clear test', () => {
   test('test clear successful', () => {
-    const result = clearHttp();
+    const result = requestClear();
     expect(result.body).toStrictEqual({});
     expect(result.statusCode).toStrictEqual(200);
   });
