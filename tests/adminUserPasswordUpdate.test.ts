@@ -2,7 +2,7 @@ import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
 import {
   requestClear,
-  adminAuthRegisterHttp,
+  requestAdminAuthRegister,
   requestAdminUserPasswordUpdate,
   httpStatus
 } from '../src/helperfunctiontests';
@@ -28,7 +28,7 @@ describe('test for adminUserPasswordUpdate', () => {
   let user1;
   let user1token: string;
   beforeEach(() => {
-    user1 = adminAuthRegisterHttp('ericMa@unsw.edu.au', 'EricMa1234', 'Eric', 'Ma');
+    user1 = requestAdminAuthRegister('ericMa@unsw.edu.au', 'EricMa1234', 'Eric', 'Ma');
     user1token = (user1.body as tokenReturn).token;
   });
 
