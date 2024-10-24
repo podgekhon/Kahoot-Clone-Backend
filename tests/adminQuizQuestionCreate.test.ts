@@ -1,13 +1,26 @@
-import request from 'sync-request-curl';
-import { port, url } from '../src/config.json';
+import { 
+  requestAdminAuthRegister,
+  requestAdminQuizCreate,
+  requestAdminQuizDescriptionUpdate,
+  requestAdminQuizInfo,
+  requestAdminQuizQuestionCreate,
+  requestClear,
+} from '../src/helperfunctiontests';
 
-import { question } from '../src/interface';
+import { 
+  tokenReturn,
+  quizCreateResponse,
+  quizQuestionCreateResponse,
+  quizInfo,
+  question
+} from '../src/interface';
 
-const SERVER_URL = `${url}:${port}`;
-const TIMEOUT_MS = 100 * 1000;
+import {
+  httpStatus
+} from '../src/helperfunctiontests';
 
 beforeEach(() => {
-  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
+  requestClear();
 });
 
 describe('HTTP tests for quiz question create', () => {
@@ -15,38 +28,24 @@ describe('HTTP tests for quiz question create', () => {
   let quiz: { quizId: number };
 
   beforeEach(() => {
-    const resRegister = request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'test@gmail.com',
-            password: 'validPassword5',
-            nameFirst: 'Patrick',
-            nameLast: 'Chen',
-          },
-          timeout: 100,
-        }
+    const resRegister = requestAdminAuthRegister(
+      'test@gmail.com',
+      'validPassword5',
+      'Patrick',
+      'Chen'
     );
-    user = JSON.parse(resRegister.body as string);
+    user = resRegister.body as tokenReturn;
 
-    const resCreateQuiz = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz`,
-        {
-          json: {
-            token: user.token,
-            name: 'validQuizName',
-            description: 'validQuizDescription',
-          },
-          timeout: 100,
-        }
+    const resCreateQuiz = requestAdminQuizCreate(
+      user.token,                 
+      'validQuizName',           
+      'validQuizDescription'     
     );
-    quiz = JSON.parse(resCreateQuiz.body as string);
+    quiz = resCreateQuiz.body as quizCreateResponse;
   });
 
   test('successfully creates a quiz question', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'Who is the Monarch of England?',
@@ -65,34 +64,23 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(200);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toHaveProperty('questionId');
-    const createdQuestionId = bodyObj.questionId;
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    expect(resCreateQuestion.body).toHaveProperty('questionId');
+    const createdQuestionId = (resCreateQuestion.body as quizQuestionCreateResponse).questionId;
 
     // Get quizInfo to verify that the question was added
-    const resQuizInfo = request(
-      'GET',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}`,
-        {
-          qs: {
-            token: user.token,
-          },
-          timeout: 100,
-        }
+    const resQuizInfo = requestAdminQuizInfo(
+      quiz.quizId,
+      user.token
     );
-
-    expect(resQuizInfo.statusCode).toStrictEqual(200);
-    const quizInfo = JSON.parse(resQuizInfo.body as string);
+    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    const quizInfo = resQuizInfo.body as quizInfo;
 
     // Verify the quiz contains the newly added question
     expect(quizInfo).toHaveProperty('questions');
@@ -120,7 +108,7 @@ describe('HTTP tests for quiz question create', () => {
   });
 
   test('returns error when question length is invalid', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         // Invalid question string since it is less that 5 characters or more
@@ -141,22 +129,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
-
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when points are out of range', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'Who is the Monarch of England?',
@@ -176,22 +159,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
-
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when there are duplicate answers', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'Who is the Monarch of England?',
@@ -211,38 +189,27 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
-
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when user is not the quiz owner', () => {
     // Register a second user
-    const resRegisterUser2 = request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'user2@gmail.com',
-            password: 'validPassword2',
-            nameFirst: 'User',
-            nameLast: 'Two',
-          },
-          timeout: 100,
-        }
+    const resRegisterUser2 = requestAdminAuthRegister(
+      'user2@gmail.com',
+      'validPassword2',
+      'User',
+      'Two'
     );
-    const user2 = JSON.parse(resRegisterUser2.body as string);
+    
+    const user2 = resRegisterUser2.body as tokenReturn;
 
-    const questionBody = {
+    const question1 = {
       token: user2.token,
       questionBody: {
         question: 'Who is the Monarch of England?',
@@ -261,23 +228,19 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    // User2 tries to access quiz created by original user
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
-    );
-
-    expect(resCreateQuestion.statusCode).toStrictEqual(403);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    // User2 tries to create question for quiz created by original user
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
+    )
+    
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when question has more than 6 answers', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'What is the capital of Australia?',
@@ -296,22 +259,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
-
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when question has fewer than 2 answers', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'What is the capital of Australia?',
@@ -324,22 +282,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
-
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when question timeLimit is not a positive number', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'What is the capital of Australia?',
@@ -353,22 +306,18 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when total question timeLimits in quiz exceed 3 minutes', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'What is the capital of Australia?',
@@ -382,22 +331,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
-
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when answer length is shorter than 1 or longer than 30 characters', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'What is the capital of Australia?',
@@ -411,22 +355,18 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when there are no correct answers', () => {
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'What is the capital of Australia?',
@@ -440,22 +380,18 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when token is empty or invalid', () => {
-    const questionBody = {
+    const question1 = {
       // Empty token, hence invalid
       token: '',
       questionBody: {
@@ -469,24 +405,20 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(401);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when quiz does not exist', () => {
     const invalidQuizId = quiz.quizId + 1;
 
-    const questionBody = {
+    const question1 = {
       token: user.token,
       questionBody: {
         question: 'What is the capital of Australia?',
@@ -499,17 +431,13 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${invalidQuizId}/question`,
-        {
-          json: questionBody,
-          timeout: 100,
-        }
+    const resCreateQuestion = requestAdminQuizQuestionCreate(
+      invalidQuizId,
+      question1.token,
+      question1.questionBody
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(403);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 });
