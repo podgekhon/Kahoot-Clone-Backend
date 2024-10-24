@@ -39,7 +39,6 @@ body: ReturnType <typeof adminAuthRegister> } => {
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 // adminUserPasswordUpdate
 export const requestAdminUserPasswordUpdate = (
   token: string,
@@ -61,5 +60,5 @@ export const requestAdminUserPasswordUpdate = (
       timeout: TIMEOUT_MS
     }
   );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode};
-}
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
