@@ -444,7 +444,7 @@ export const requestadminMoveQuizQuestion = (
 };
 
 // adminQuizDuplicate
-export const requestAdminQuizDuplicate = (
+export const requestAdminQuizQuestionDuplicate = (
   quizId: number, questionId: number, token: string
 ): {
   body: ReturnType <typeof adminQuizDuplicate>,
