@@ -8,7 +8,7 @@ beforeEach(() => {
   request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
 });
 
-describe.skip('HTTP tests for quiz question move', () => {
+describe('HTTP tests for quiz question move', () => {
   let user: { token: string };
   let quiz: { quizId: number };
   let question1: { questionId: number };
@@ -245,7 +245,7 @@ describe.skip('HTTP tests for quiz question move', () => {
         }
     );
 
-    expect(resMoveQuestion.statusCode).toStrictEqual(400);
+    expect(resMoveQuestion.statusCode).toStrictEqual(403);
     const bodyObj = JSON.parse(resMoveQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });

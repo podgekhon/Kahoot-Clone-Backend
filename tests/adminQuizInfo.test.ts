@@ -1,10 +1,16 @@
 import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
-import { quizQuestionCreateResponse } from '../src/interface';
+import { quizInfo, quizQuestionCreateResponse, token } from '../src/interface';
 import { 
+  requestAdminAuthRegister,
+  requestAdminQuizCreate,
   requestAdminQuizInfo,
-  adminAuthRegisterHttp
+  requestAdminQuizQuestionCreate
 } from '../src/helperfunctiontests';
+import { 
+  tokenReturn,
+  quizCreateResponse
+} from '../src/interface';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
@@ -18,34 +24,20 @@ describe('HTTP tests for getting quiz info', () => {
   let quiz: { quizId: number };
 
   beforeEach(() => {
-    const resRegister = request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'test@gmail.com',
-            password: 'validPassword5',
-            nameFirst: 'Patrick',
-            nameLast: 'Chen',
-          },
-          timeout: 100,
-        }
+    const resRegister = requestAdminAuthRegister(
+      'test@gmail.com',            
+      'validPassword5',             
+      'Patrick',                    
+      'Chen'                        
     );
-    user = JSON.parse(resRegister.body as string);
+    user = resRegister.body as tokenReturn;
 
-    const resCreateQuiz = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz`,
-        {
-          json: {
-            token: user.token,
-            name: 'validQuizName',
-            description: 'validQuizDescription',
-          },
-          timeout: 100,
-        }
+    const resCreateQuiz = requestAdminQuizCreate(
+      user.token,                 
+      'validQuizName',           
+      'validQuizDescription'     
     );
-    quiz = JSON.parse(resCreateQuiz.body as string);
+    quiz = resCreateQuiz.body as quizCreateResponse;
   });
 
   test('successfully fetches quiz info with created questions', () => {
@@ -76,33 +68,26 @@ describe('HTTP tests for getting quiz info', () => {
       },
     };
 
-    const resCreateQuestion1 = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        { json: question1, timeout: 100 }
+    const resCreateQuestion1 = requestAdminQuizQuestionCreate(
+      quiz.quizId, 
+      question1.token, 
+      question1.questionBody
     );
     expect(resCreateQuestion1.statusCode).toStrictEqual(200);
-    const createdQuestion1 = JSON.parse(resCreateQuestion1.body as string);
+    const createdQuestion1 = resCreateQuestion1.body as quizQuestionCreateResponse;
 
-    const resCreateQuestion2 = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
-        { json: question2, timeout: 100 }
+    const resCreateQuestion2 = requestAdminQuizQuestionCreate(
+      quiz.quizId,
+      question2.token,
+      question2.questionBody
     );
+    
     expect(resCreateQuestion2.statusCode).toStrictEqual(200);
-    const createdQuestion2 = JSON.parse(resCreateQuestion2.body as string);
+    const createdQuestion2 = resCreateQuestion2.body as quizQuestionCreateResponse;
 
-    const resQuizInfo = request(
-      'GET',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}`,
-        {
-          qs: { token: user.token },
-          timeout: 100,
-        }
-    );
-
+    const resQuizInfo = requestAdminQuizInfo(quiz.quizId, user.token);
     expect(resQuizInfo.statusCode).toStrictEqual(200);
-    const quizInfo = JSON.parse(resQuizInfo.body as string);
+    const quizInfo = resQuizInfo.body as quizInfo;
 
     expect(quizInfo).toMatchObject({
       quizId: quiz.quizId,
@@ -113,7 +98,8 @@ describe('HTTP tests for getting quiz info', () => {
       timeLimit: expect.any(Number),
     });
 
-    // Verify that the questions exist in the `questions` array, without assuming order
+    // Verify that the questions exist in the `questions` array, 
+    // without assuming order
     const questionIds = quizInfo.questions.map(
       (q: quizQuestionCreateResponse) => q.questionId
     );
@@ -175,88 +161,36 @@ describe('HTTP tests for getting quiz info', () => {
   });
 
   test('returns error when token is empty', () => {
-    const resQuizInfo = request(
-      'GET',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}`,
-        {
-          qs: {
-            token: '',
-          },
-          timeout: 100,
-        }
-    );
-
+    const resQuizInfo = requestAdminQuizInfo(quiz.quizId, '');
     expect(resQuizInfo.statusCode).toStrictEqual(401);
-    const bodyObj = JSON.parse(resQuizInfo.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when token is invalid', () => {
-    const resQuizInfo = request(
-      'GET',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}`,
-        {
-          qs: {
-            token: 'invalidToken',
-          },
-          timeout: 100,
-        }
-    );
-
+    const resQuizInfo = requestAdminQuizInfo(quiz.quizId, 'invalidToken');
     expect(resQuizInfo.statusCode).toStrictEqual(401);
-    const bodyObj = JSON.parse(resQuizInfo.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when user is not the quiz owner', () => {
-    const resRegisterUser2 = request(
-      'POST',
-        `${url}:${port}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'user2@gmail.com',
-            password: 'validPassword2',
-            nameFirst: 'User',
-            nameLast: 'Two',
-          },
-          timeout: 100,
-        }
+    const resRegisterUser2 = requestAdminAuthRegister(
+      'user2@gmail.com',            
+      'validPassword2',             
+      'User',                    
+      'Two'                        
     );
-    const user2 = JSON.parse(resRegisterUser2.body as string);
+    const user2 = resRegisterUser2.body as tokenReturn;
 
     // User2 tries to access the quiz of original user
-    const resQuizInfo = request(
-      'GET',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}`,
-        {
-          qs: {
-            token: user2.token,
-          },
-          timeout: 100,
-        }
-    );
-
+    const resQuizInfo = requestAdminQuizInfo(quiz.quizId, user2.token)
     expect(resQuizInfo.statusCode).toStrictEqual(403);
-    const bodyObj = JSON.parse(resQuizInfo.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when quiz does not exist', () => {
     const invalidQuizId = quiz.quizId + 1;
-
-    const resQuizInfo = request(
-      'GET',
-        `${url}:${port}/v1/admin/quiz/${invalidQuizId}`,
-        {
-          qs: {
-            token: user.token,
-          },
-          timeout: 100,
-        }
-    );
-
+    const resQuizInfo = requestAdminQuizInfo(invalidQuizId, user.token);
     expect(resQuizInfo.statusCode).toStrictEqual(403);
-    const bodyObj = JSON.parse(resQuizInfo.body as string);
-    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+    expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
 });
