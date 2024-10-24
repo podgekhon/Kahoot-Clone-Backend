@@ -1,4 +1,4 @@
-import { clearHttp } from '../helperfunctiontests';
+import { clearHttp } from '../src/helperfunctiontests';
 
 beforeEach(() => {
   clearHttp();
