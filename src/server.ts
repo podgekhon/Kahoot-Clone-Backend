@@ -592,11 +592,11 @@ app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate', (req: Request,
 
 // adminQuizQuestionRemove
 app.delete('/v1/admin/quiz/:quizId/question/:questionId', (req: Request, res: Response) => {
-  const { token } = req.body;
+  const { token } = req.query;
   const quizId = parseInt(req.params.quizId as string);
   const questionId = parseInt(req.params.questionId as string);
 
-  const result = adminQuizQuestionRemove(quizId, questionId, token);
+  const result = adminQuizQuestionRemove(quizId, questionId, token as string);
 
   if ('error' in result) {
     if (
