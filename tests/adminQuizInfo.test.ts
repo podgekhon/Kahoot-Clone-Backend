@@ -5,7 +5,8 @@ import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizInfo,
-  requestAdminQuizQuestionCreate
+  requestAdminQuizQuestionCreate,
+  requestClear,
 } from '../src/helperfunctiontests';
 import { 
   tokenReturn,
@@ -16,7 +17,7 @@ const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
 
 beforeEach(() => {
-  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
+  requestClear();
 });
 
 describe('HTTP tests for getting quiz info', () => {
