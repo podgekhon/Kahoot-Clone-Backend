@@ -1,8 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from '../config.json';
 
-import { question } from '../interface';
-
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
 
@@ -10,9 +8,10 @@ beforeEach(() => {
   request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
 });
 
-describe('HTTP tests for quiz question create', () => {
+describe('HTTP tests for quiz question update', () => {
   let user: { token: string };
   let quiz: { quizId: number };
+  let questionId: number;
 
   beforeEach(() => {
     const resRegister = request(
@@ -43,9 +42,8 @@ describe('HTTP tests for quiz question create', () => {
         }
     );
     quiz = JSON.parse(resCreateQuiz.body as string);
-  });
 
-  test('successfully creates a quiz question', () => {
+    // Create a question to update
     const questionBody = {
       token: user.token,
       questionBody: {
@@ -73,58 +71,50 @@ describe('HTTP tests for quiz question create', () => {
           timeout: 100,
         }
     );
+    const questionResponse = JSON.parse(resCreateQuestion.body as string);
+    questionId = questionResponse.questionId;
+  });
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(200);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
-    expect(bodyObj).toHaveProperty('questionId');
-    const createdQuestionId = bodyObj.questionId;
-
-    // Get quizInfo to verify that the question was added
-    const resQuizInfo = request(
-      'GET',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}`,
-        {
-          qs: {
-            token: user.token,
+  test('successfully updates a quiz question', () => {
+    const updatedQuestionBody = {
+      token: user.token,
+      questionBody: {
+        question: 'Who is the current Monarch of the UK?',
+        timeLimit: 5,
+        points: 6,
+        answerOptions: [
+          {
+            answer: 'Prince Charles',
+            correct: true,
           },
+          {
+            answer: 'Prince William',
+            correct: false,
+          },
+        ],
+      },
+    };
+
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
+        {
+          json: updatedQuestionBody,
           timeout: 100,
         }
     );
 
-    expect(resQuizInfo.statusCode).toStrictEqual(200);
-    const quizInfo = JSON.parse(resQuizInfo.body as string);
-
-    // Verify the quiz contains the newly added question
-    expect(quizInfo).toHaveProperty('questions');
-    const addedQuestion = quizInfo.questions.find(
-      (q: question) => q.questionId === createdQuestionId
-    );
-
-    // Check that the question matches the one created
-    expect(addedQuestion).toMatchObject({
-      questionId: createdQuestionId,
-      question: 'Who is the Monarch of England?',
-      timeLimit: 4,
-      points: 5,
-      answerOptions: expect.arrayContaining([
-        expect.objectContaining({
-          answer: 'Prince Charles',
-          correct: true,
-        }),
-        expect.objectContaining({
-          answer: 'Prince William',
-          correct: false,
-        }),
-      ]),
-    });
+    expect(resUpdateQuestion.statusCode).toStrictEqual(200);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
+    expect(bodyObj).toStrictEqual({});
   });
 
   test('returns error when question length is invalid', () => {
-    const questionBody = {
+    const invalidQuestionBody = {
       token: user.token,
       questionBody: {
-        // Invalid question string since it is less that 5 characters or more
-        // than 50 characters in length
+        // Invalid since question string is is less than 5 characters in length
+        // or greater than 50 characters in length
         question: 'Who?',
         timeLimit: 4,
         points: 5,
@@ -141,27 +131,28 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
-          json: questionBody,
+          json: invalidQuestionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when points are out of range', () => {
-    const questionBody = {
+    const invalidPointsBody = {
       token: user.token,
       questionBody: {
         question: 'Who is the Monarch of England?',
         timeLimit: 4,
-        // Invalid points since points are less than 1 or greater than 10
+        // Invalid since points awarded for the question are less than 1 or
+        // greater than 10
         points: 20,
         answerOptions: [
           {
@@ -176,17 +167,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
-          json: questionBody,
+          json: invalidPointsBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -198,30 +189,24 @@ describe('HTTP tests for quiz question create', () => {
         timeLimit: 4,
         points: 5,
         answerOptions: [
-          {
-            answer: 'Prince Charles',
-            correct: true,
-          },
-          {
-            // Duplicate answer
-            answer: 'Prince Charles',
-            correct: false,
-          },
+          { answer: 'Prince Charles', correct: true },
+          // Duplicate answer
+          { answer: 'Prince Charles', correct: false },
         ],
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -247,32 +232,26 @@ describe('HTTP tests for quiz question create', () => {
       questionBody: {
         question: 'Who is the Monarch of England?',
         timeLimit: 4,
-        points: 5,
+        points: 3,
         answerOptions: [
-          {
-            answer: 'Prince Charles',
-            correct: true,
-          },
-          {
-            answer: 'Prince William',
-            correct: false,
-          },
+          { answer: 'Prince Charles', correct: true },
+          { answer: 'Prince William', correct: false },
         ],
       },
     };
 
-    // User2 tries to access quiz created by original user
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    // User2 tries to update the question from the quiz created by original user
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(403);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(403);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -290,23 +269,23 @@ describe('HTTP tests for quiz question create', () => {
           { answer: 'Brisbane', correct: false },
           { answer: 'Perth', correct: false },
           { answer: 'Adelaide', correct: false },
-          // Extra answer
+          // Extra answer since max is 6
           { answer: 'Hobart', correct: false },
         ],
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -318,23 +297,23 @@ describe('HTTP tests for quiz question create', () => {
         timeLimit: 4,
         points: 5,
         answerOptions: [
-          // Only one answer, hence invalid
+          // Invalid since only one answer
           { answer: 'Canberra', correct: true },
         ],
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -343,7 +322,7 @@ describe('HTTP tests for quiz question create', () => {
       token: user.token,
       questionBody: {
         question: 'What is the capital of Australia?',
-        // Invalid time limit since it is negative
+        // Invalid timeLimit since it is negative
         timeLimit: -1,
         points: 5,
         answerOptions: [
@@ -353,17 +332,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -382,17 +361,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -404,24 +383,24 @@ describe('HTTP tests for quiz question create', () => {
         timeLimit: 4,
         points: 5,
         answerOptions: [
-          // Answer legnth is too short
+          // Answer length is too short
           { answer: '', correct: true },
           { answer: 'Canberra', correct: false },
         ],
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -440,17 +419,17 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(400);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -469,22 +448,22 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(401);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(401);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when quiz does not exist', () => {
-    const invalidQuizId = quiz.quizId + 1;
+    const invalidQuizId = 'invalid-quiz-id';
 
     const questionBody = {
       token: user.token,
@@ -499,17 +478,47 @@ describe('HTTP tests for quiz question create', () => {
       },
     };
 
-    const resCreateQuestion = request(
-      'POST',
-        `${url}:${port}/v1/admin/quiz/${invalidQuizId}/question`,
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${invalidQuizId}/question/${questionId}`,
         {
           json: questionBody,
           timeout: 100,
         }
     );
 
-    expect(resCreateQuestion.statusCode).toStrictEqual(403);
-    const bodyObj = JSON.parse(resCreateQuestion.body as string);
+    expect(resUpdateQuestion.statusCode).toStrictEqual(403);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
+    expect(bodyObj).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when Question ID does not refer to a valid question within this quiz', () => {
+    const invalidQuestionId = 'invalid-question-id';
+
+    const questionBody = {
+      token: user.token,
+      questionBody: {
+        question: 'What is the capital of Australia?',
+        timeLimit: 30,
+        points: 5,
+        answerOptions: [
+          { answer: 'Canberra', correct: true },
+          { answer: 'Sydney', correct: false },
+        ],
+      },
+    };
+
+    const resUpdateQuestion = request(
+      'PUT',
+        `${url}:${port}/v1/admin/quiz/${quiz.quizId}/question/${invalidQuestionId}`,
+        {
+          json: questionBody,
+          timeout: 100,
+        }
+    );
+
+    expect(resUpdateQuestion.statusCode).toStrictEqual(400);
+    const bodyObj = JSON.parse(resUpdateQuestion.body as string);
     expect(bodyObj).toStrictEqual({ error: expect.any(String) });
   });
 });

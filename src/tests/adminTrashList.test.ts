@@ -46,7 +46,9 @@ describe('adminTrashList', () => {
       timeout: TIMEOUT_MS
     });
     expect(trashListResponse.statusCode).toStrictEqual(401);
-    expect(JSON.parse(trashListResponse.body.toString())).toStrictEqual({ error: expect.any(String) });
+    expect(JSON.parse(trashListResponse.body.toString())).toStrictEqual({
+      error: expect.any(String)
+    });
   });
 
   test('Get trash list with invalid format token', () => {
