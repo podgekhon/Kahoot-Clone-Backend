@@ -6,7 +6,14 @@ import {
   requestAdminQuizCreate,
   requestAdminQuizTransfer,
 } from '../src/helperfunctiontests';
-import { quizCreateResponse, tokenReturn } from '../src/interface';
+import {
+  quizCreateResponse,
+  tokenReturn,
+  userAuthRegister,
+  quizTransfer,
+  quizCreate,
+  quizListResponse,
+} from '../src/interface';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
@@ -16,19 +23,20 @@ beforeEach(() => {
 });
 
 describe('Test for adminQuizTransfer', () => {
-  let user1Response;
-  let user2Response;
-  let user3Response;
+  let user1Response: userAuthRegister;
+  let user2Response: userAuthRegister;
+  let user3Response: userAuthRegister;
 
-  let User1QuizListResponse;
-  let User2QuizListResponse;
+  let User1QuizListResponse: quizListResponse;
+  let User2QuizListResponse: quizListResponse;
 
   let user1Token: string;
   let user2Token: string;
   let user3Token: string;
 
-  let quizCreateResponse;
+  let quizCreateResponse: quizCreate;
   let quizId: number;
+  let quizTransferResponse: quizTransfer;
 
   beforeEach(() => {
     user1Response = requestAdminAuthRegister('user1@gmail.com', 'validPassword1', 'User', 'One');
@@ -55,7 +63,7 @@ describe('Test for adminQuizTransfer', () => {
   });
 
   test('Valid adminQuizTransfer', () => {
-    const quizTransferResponse = requestAdminQuizTransfer(quizId, user1Token, 'user2@gmail.com');
+    quizTransferResponse = requestAdminQuizTransfer(quizId, user1Token, 'user2@gmail.com');
     expect(quizTransferResponse.statusCode).toStrictEqual(200);
 
     User2QuizListResponse = requestAdminQuizList(user2Token);
@@ -76,7 +84,7 @@ describe('Test for adminQuizTransfer', () => {
   });
 
   test('returns error receiver is not a real user', () => {
-    const quizTransferResponse = requestAdminQuizTransfer(
+    quizTransferResponse = requestAdminQuizTransfer(
       quizId,
       user1Token,
       'notRealUser2@gmail.com'
@@ -99,28 +107,28 @@ describe('Test for adminQuizTransfer', () => {
     quizCreateResponse = requestAdminQuizCreate(user2Token, 'Math Quiz', 'this is a math quiz');
     expect(quizCreateResponse.statusCode).toStrictEqual(200);
 
-    const quizTransferResponse = requestAdminQuizTransfer(quizId, user1Token, 'user2@gmail.com');
+    quizTransferResponse = requestAdminQuizTransfer(quizId, user1Token, 'user2@gmail.com');
     expect(quizTransferResponse.statusCode).toStrictEqual(400);
 
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('invalid token: empty token', () => {
-    const quizTransferResponse = requestAdminQuizTransfer(quizId, '', 'user2@gmail.com');
+    quizTransferResponse = requestAdminQuizTransfer(quizId, '', 'user2@gmail.com');
     expect(quizTransferResponse.statusCode).toStrictEqual(401);
 
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('invalid token: invalid token', () => {
-    const quizTransferResponse = requestAdminQuizTransfer(quizId, '9999999', 'user2@gmail.com');
+    quizTransferResponse = requestAdminQuizTransfer(quizId, '9999999', 'user2@gmail.com');
     expect(quizTransferResponse.statusCode).toStrictEqual(401);
 
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('return error if user is not an owner of this quiz', () => {
-    const quizTransferResponse = requestAdminQuizTransfer(quizId, user3Token, 'user2@gmail.com');
+    quizTransferResponse = requestAdminQuizTransfer(quizId, user3Token, 'user2@gmail.com');
     expect(quizTransferResponse.statusCode).toStrictEqual(403);
 
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
