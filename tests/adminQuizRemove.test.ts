@@ -36,6 +36,7 @@ describe('test for adminQuizRemove', () => {
     expect(quizList.body).toStrictEqual({
       quizzes: []
     });
+    
     // one quiz in the trash list
     const trashList = requestAdminTrashList(user1token);
     expect(trashList.body).toStrictEqual({
