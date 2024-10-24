@@ -5,11 +5,7 @@ import {
   requestClear
 } from '../src/helperfunctiontests';
 
-import {
-  user
-} from './adminAuthRegister.test';
-
-import { tokenReturn, quizCreateResponse } from '../src/interface';
+import { tokenReturn, quizCreateResponse, userAuthRegister } from '../src/interface';
 
 export enum httpStatus {
   UNAUTHORIZED = 401,
@@ -23,7 +19,7 @@ beforeEach(() => {
 });
 
 describe('adminQuizCreate', () => {
-  let user1: user;
+  let user1: userAuthRegister;
   let user1Token: string;
   // register a user before each test
 
@@ -96,9 +92,8 @@ describe('adminQuizCreate', () => {
 
     // Validate quiz is in the quiz list
     const quizList = requestAdminQuizList(user1Token);
-    const quizId = (result.body as quizCreateResponse).quizId
+    const quizId = (result.body as quizCreateResponse).quizId;
 
-    
     expect(quizList.body).toStrictEqual({
       quizzes: [{ quizId: quizId, name: 'quiz1' }]
     });
