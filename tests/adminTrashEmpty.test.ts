@@ -1,11 +1,22 @@
-import request from 'sync-request-curl';
-import { port, url } from '../src/config.json';
+import {
+  requestAdminAuthRegister,
+  requestAdminQuizCreate,
+  requestAdminTrashEmpty,
+  requestAdminQuizRemove,
+  requestClear
+} from '../src/helperfunctiontests';
 
-const SERVER_URL = `${url}:${port}`;
-const TIMEOUT_MS = 100 * 1000;
+import {
+  tokenReturn,
+  quizCreateResponse
+} from '../src/interface';
+
+import {
+  httpStatus
+} from '../src/helperfunctiontests'
 
 beforeEach(() => {
-  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
+  requestClear();
 });
 
 // tests for adminTrashEmpty
@@ -16,154 +27,75 @@ describe('Tests for adminTrashEmpty', () => {
 
     beforeEach(() => {
       // Register an admin user
-      const resRegister = request(
-        'POST',
-          `${SERVER_URL}/v1/admin/auth/register`,
-          {
-            json: {
-              email: 'admin@unsw.edu.au',
-              password: 'AdminPass1234',
-              nameFirst: 'Admin',
-              nameLast: 'User',
-            },
-            timeout: TIMEOUT_MS,
-          }
+      const resRegister = requestAdminAuthRegister(
+        'admin@unsw.edu.au',
+        'AdminPass1234',
+        'Admin',
+        'User'
       );
-      admin = JSON.parse(resRegister.body as string);
+      admin = resRegister.body as tokenReturn;
 
       // Create a quiz and get its ID
-      const resCreateQuiz = request(
-        'POST',
-          `${SERVER_URL}/v1/admin/quiz`,
-          {
-            json: {
-              token: admin.token,
-              name: 'Sample Quiz',
-              description: 'This is a sample quiz.',
-            },
-            timeout: TIMEOUT_MS,
-          }
+      const resCreateQuiz = requestAdminQuizCreate(
+        admin.token,
+        'Sample Quiz',
+        'This is a sample quiz.'
       );
-      const quizResponse = JSON.parse(resCreateQuiz.body as string);
-      quizId = quizResponse.quizId;
+      quizId = (resCreateQuiz.body as quizCreateResponse).quizId;
 
       // Simulate moving the quiz to trash
-      request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizId}`, {
-        qs: {
-          token: admin.token
-        },
-        timeout: TIMEOUT_MS,
-      });
+      requestAdminQuizRemove(quizId, admin.token);
     });
 
     test('successfully empties trash with valid token and valid quiz IDs', () => {
-      const Response = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: admin.token,
-              quizIds: JSON.stringify([quizId]),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
-      const parsedBody = JSON.parse(Response.body.toString());
-      expect(Response.statusCode).toStrictEqual(200);
-      expect(parsedBody).toStrictEqual({});
+      const emptyResponse = requestAdminTrashEmpty(admin.token, [quizId]);
+
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(emptyResponse.body).toStrictEqual({});
     });
 
     test('returns 401 error for invalid token', () => {
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: 'invalid_token',
-              quizIds: JSON.stringify([quizId]),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
+      const emptyResponse = requestAdminTrashEmpty('invalid_token', [quizId]);
 
-      expect(emptyResponse.statusCode).toStrictEqual(401);
-      expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(emptyResponse.body).toStrictEqual({
         error: expect.any(String),
       });
     });
 
     test('returns 401 error for empty token', () => {
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: '',
-              quizIds: JSON.stringify([quizId]),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
+      const emptyResponse = requestAdminTrashEmpty('', [quizId]);
 
-      expect(emptyResponse.statusCode).toStrictEqual(401);
-      expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(emptyResponse.body).toStrictEqual({
         error: expect.any(String),
       });
     });
 
     test('returns 400 error for quiz ID not in trash', () => {
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: admin.token,
-              // An ID that doesn't exist
-              quizIds: JSON.stringify([999]),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
+      const emptyResponse = requestAdminTrashEmpty(admin.token, [999]);
 
-      expect(emptyResponse.statusCode).toStrictEqual(400);
-      expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+      expect(emptyResponse.body).toStrictEqual({
         error: expect.any(String),
       });
     });
 
-    test('returns 403 error for quiz ID that does not belong to the current user', () => {
+    test('returns httpStatus.FORBIDDEN error for quiz ID that does not belong to the current user', () => {
       // Create a new admin user
-      const resRegisterNewAdmin = request(
-        'POST',
-          `${SERVER_URL}/v1/admin/auth/register`,
-          {
-            json: {
-              email: 'newadmin@unsw.edu.au',
-              password: 'NewAdminPass1234',
-              nameFirst: 'New',
-              nameLast: 'Admin',
-            },
-            timeout: TIMEOUT_MS,
-          }
+      const resRegisterNewAdmin = requestAdminAuthRegister(
+        'newadmin@unsw.edu.au',
+        'NewAdminPass1234',
+        'New',
+        'Admin'
       );
-      const newAdmin = JSON.parse(resRegisterNewAdmin.body as string);
+      const newAdmin = resRegisterNewAdmin.body as tokenReturn;
 
       // Attempt to empty the trash using the new admin's token
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: newAdmin.token,
-              // The quiz ID that belongs to the original admin
-              quizIds: JSON.stringify([quizId]),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
+      const emptyResponse = requestAdminTrashEmpty(newAdmin.token, [quizId]);
 
-      expect(emptyResponse.statusCode).toStrictEqual(403);
-      expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+      expect(emptyResponse.body).toStrictEqual({
         error: expect.any(String),
       });
     });
@@ -172,135 +104,67 @@ describe('Tests for adminTrashEmpty', () => {
   describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
     let admin: { token: string };
     let quizIds: number[] = [];
-    let quizResponse: { quizId: number };
+    
     beforeEach(() => {
-      // Register an admin user
       quizIds = [];
-      const resRegister = request(
-        'POST',
-        `${SERVER_URL}/v1/admin/auth/register`,
-        {
-          json: {
-            email: 'admin@unsw.edu.au',
-            password: 'AdminPass1234',
-            nameFirst: 'Admin',
-            nameLast: 'User',
-          },
-          timeout: TIMEOUT_MS,
-        });
-      admin = JSON.parse(resRegister.body as string);
+      // Register an admin user
+      const resRegister = requestAdminAuthRegister(
+        'admin@unsw.edu.au',
+        'AdminPass1234',
+        'Admin',
+        'User'
+      );
+      admin = resRegister.body as tokenReturn;
 
       for (let i = 0; i < 5; i++) {
-        const resCreateQuiz = request(
-          'POST',
-          `${SERVER_URL}/v1/admin/quiz`,
-          {
-            json: {
-              token: admin.token,
-              name: `Sample Quiz ${i + 1}`,
-              description: `This is sample quiz number ${i + 1}.`,
-            },
-            timeout: TIMEOUT_MS,
-          }
+        const resCreateQuiz = requestAdminQuizCreate(
+          admin.token,
+          `Sample Quiz ${i + 1}`,
+          `This is sample quiz number ${i + 1}.`
         );
-
-        quizResponse = JSON.parse(resCreateQuiz.body as string);
-        quizIds.push(quizResponse.quizId);
+        const quizId = (resCreateQuiz.body as quizCreateResponse).quizId
+        quizIds.push(quizId);
 
         // Simulate moving the quiz to trash
-        request('DELETE', `${SERVER_URL}/v1/admin/quiz/${quizResponse.quizId}`, {
-          qs: { token: admin.token },
-          timeout: TIMEOUT_MS,
-        });
+        requestAdminQuizRemove(quizId, admin.token);
       }
     });
 
     test('successfully empties trash with valid token and duplicated quiz IDs', () => {
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: admin.token,
-              // Passing a duplicate quiz ID
-              quizIds: JSON.stringify([quizIds[0], quizIds[0]]),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
-      const parsedBody = JSON.parse(emptyResponse.body.toString());
-      expect(emptyResponse.statusCode).toStrictEqual(200);
-      expect(parsedBody).toStrictEqual({});
+      const emptyResponse = requestAdminTrashEmpty(admin.token, [quizIds[0], quizIds[0]]);
+
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(emptyResponse.body).toStrictEqual({});
     });
 
     test('successfully empties trash with multiple valid quiz IDs', () => {
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: admin.token,
-              quizIds: JSON.stringify(quizIds),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
-      const parsedBody = JSON.parse(emptyResponse.body.toString());
-      expect(emptyResponse.statusCode).toStrictEqual(200);
-      expect(parsedBody).toStrictEqual({});
+      const emptyResponse = requestAdminTrashEmpty(admin.token, quizIds);
+
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(emptyResponse.body).toStrictEqual({});
     });
 
     test('successfully empties trash with valid token and subset of valid quiz IDs', () => {
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: admin.token,
-              // Passing a subset of quiz IDs
-              quizIds: JSON.stringify([quizIds[0], quizIds[2]]),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
-      const parsedBody = JSON.parse(emptyResponse.body.toString());
-      expect(emptyResponse.statusCode).toStrictEqual(200);
-      expect(parsedBody).toStrictEqual({});
+      const emptyResponse = requestAdminTrashEmpty(admin.token, [quizIds[0], quizIds[2]]);
+
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(emptyResponse.body).toStrictEqual({});
     });
 
     test('Emptying trash with mixed valid and invalid quiz IDs', () => {
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: admin.token,
-              quizIds: JSON.stringify([quizIds[1], 9999, quizIds[3]]),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
+      const emptyResponse = requestAdminTrashEmpty(admin.token, [quizIds[1], 9999, quizIds[3]]);
 
-      expect(emptyResponse.statusCode).toStrictEqual(400);
-      expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+      expect(emptyResponse.body).toStrictEqual({
         error: expect.any(String),
       });
     });
+
     test('empty trash with negative quiz ID values', () => {
-      const quizIds = [-1, -2, -3];
-      const emptyResponse = request(
-        'DELETE',
-          `${SERVER_URL}/v1/admin/quiz/trash/empty`,
-          {
-            qs: {
-              token: admin.token,
-              quizIds: JSON.stringify(quizIds),
-            },
-            timeout: TIMEOUT_MS,
-          }
-      );
-      expect(emptyResponse.statusCode).toStrictEqual(400);
-      expect(JSON.parse(emptyResponse.body as string)).toStrictEqual({
+      const emptyResponse = requestAdminTrashEmpty(admin.token, [-1, -2, -3]);
+
+      expect(emptyResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+      expect(emptyResponse.body).toStrictEqual({
         error: expect.any(String),
       });
     });
