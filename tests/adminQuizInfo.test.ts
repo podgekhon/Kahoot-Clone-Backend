@@ -1,6 +1,3 @@
-import request from 'sync-request-curl';
-import { port, url } from '../src/config.json';
-import { quizInfo, quizQuestionCreateResponse, token } from '../src/interface';
 import { 
   requestAdminAuthRegister,
   requestAdminQuizCreate,
@@ -8,13 +5,17 @@ import {
   requestAdminQuizQuestionCreate,
   requestClear,
 } from '../src/helperfunctiontests';
+
 import { 
+  quizInfo,
   tokenReturn,
-  quizCreateResponse
+  quizCreateResponse,
+  quizQuestionCreateResponse
 } from '../src/interface';
 
-const SERVER_URL = `${url}:${port}`;
-const TIMEOUT_MS = 100 * 1000;
+import {
+  httpStatus
+} from '../src/server';
 
 beforeEach(() => {
   requestClear();
@@ -74,7 +75,7 @@ describe('HTTP tests for getting quiz info', () => {
       question1.token, 
       question1.questionBody
     );
-    expect(resCreateQuestion1.statusCode).toStrictEqual(200);
+    expect(resCreateQuestion1.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     const createdQuestion1 = resCreateQuestion1.body as quizQuestionCreateResponse;
 
     const resCreateQuestion2 = requestAdminQuizQuestionCreate(
@@ -83,11 +84,11 @@ describe('HTTP tests for getting quiz info', () => {
       question2.questionBody
     );
     
-    expect(resCreateQuestion2.statusCode).toStrictEqual(200);
+    expect(resCreateQuestion2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     const createdQuestion2 = resCreateQuestion2.body as quizQuestionCreateResponse;
 
     const resQuizInfo = requestAdminQuizInfo(quiz.quizId, user.token);
-    expect(resQuizInfo.statusCode).toStrictEqual(200);
+    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     const quizInfo = resQuizInfo.body as quizInfo;
 
     expect(quizInfo).toMatchObject({
@@ -163,13 +164,13 @@ describe('HTTP tests for getting quiz info', () => {
 
   test('returns error when token is empty', () => {
     const resQuizInfo = requestAdminQuizInfo(quiz.quizId, '');
-    expect(resQuizInfo.statusCode).toStrictEqual(401);
+    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
     expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when token is invalid', () => {
     const resQuizInfo = requestAdminQuizInfo(quiz.quizId, 'invalidToken');
-    expect(resQuizInfo.statusCode).toStrictEqual(401);
+    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
     expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -184,14 +185,14 @@ describe('HTTP tests for getting quiz info', () => {
 
     // User2 tries to access the quiz of original user
     const resQuizInfo = requestAdminQuizInfo(quiz.quizId, user2.token)
-    expect(resQuizInfo.statusCode).toStrictEqual(403);
+    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when quiz does not exist', () => {
     const invalidQuizId = quiz.quizId + 1;
     const resQuizInfo = requestAdminQuizInfo(invalidQuizId, user.token);
-    expect(resQuizInfo.statusCode).toStrictEqual(403);
+    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
 });
