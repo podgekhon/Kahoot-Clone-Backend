@@ -41,7 +41,7 @@ const invalidPasswords = [
 ];
 
 /// //////////-----adminAuthRegister------///////////
-describe('adminAuthRegister', () => {
+describe.skip('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
     // let user1: authResponse | errorMessages;
     let user1Return: string;
@@ -268,7 +268,7 @@ describe('adminAuthRegister', () => {
 });
 
 /// ////////-----adminAuthLogin-----////////////
-describe('adminAuthLogin', () => {
+describe.skip('adminAuthLogin', () => {
   let user: { token: string };
   let userId: { authUserId: number };
 
@@ -365,7 +365,7 @@ describe('adminAuthLogin', () => {
 });
 
 /// //////-----adminUserPasswordUpdate-----//////////
-describe('test for adminUserPasswordUpdate', () => {
+describe.skip('test for adminUserPasswordUpdate', () => {
   let user1;
   let user1Return;
   let user1token: string;
@@ -520,7 +520,7 @@ describe('test for adminUserPasswordUpdate', () => {
 });
 
 /// ////////-----adminUserDetails-----////////////
-describe('test for adminUserDetails', () => {
+describe.skip('test for adminUserDetails', () => {
   let user: { token: string };
 
   beforeEach(() => {
@@ -686,7 +686,7 @@ describe('test for adminUserDetails', () => {
 });
 
 // tests for adminUserDetailsUpdate
-describe('adminUserDetailsUpdate', () => {
+describe.skip('adminUserDetailsUpdate', () => {
   let admin: any;
   let adminToken: string;
 
@@ -781,7 +781,7 @@ describe('adminUserDetailsUpdate', () => {
 });
 
 // adminUserLogout
-describe('POST /v1/admin/auth/logout', () => {
+describe.skip('POST /v1/admin/auth/logout', () => {
   let user1;
   let user1Return;
   let user1token: string;

@@ -1,5 +1,5 @@
-import { adminAuthRegisterHttp, clearHttp } from './helperfunctiontests';
-import { errorMessages, tokenReturn } from './interface';
+import { adminAuthRegisterHttp, clearHttp } from '../helperfunctiontests';
+import { errorMessages, tokenReturn } from '../interface';
 
 // import request from 'sync-request-curl';
 // import { port, url } from './config.json';
@@ -59,7 +59,7 @@ beforeEach(() => {
 
 describe('adminAuthRegister', () => {
   describe('Tests with 1 ordinary user', () => {
-    let user1: user;
+    let user1: any;
     beforeEach(() => {
       user1 = adminAuthRegisterHttp('eric@unsw.edu.au', '1234abcd', 'Eric', 'Yang');
     });
