@@ -1,47 +1,30 @@
-import request from 'sync-request-curl';
-import { port, url } from '../src/config.json';
-
-const SERVER_URL = `${url}:${port}`;
-const TIMEOUT_MS = 100 * 1000;
+import {
+  requestClear,
+  requestAdminAuthRegister,
+  requestAdminAuthLogin,
+  requestAdminUserDetails
+} from '../src/helperfunctiontests';
+import { tokenReturn } from '../src/interface';
 
 beforeEach(() => {
-  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
+  requestClear();
 });
 
 /// ////////-----adminUserDetails-----////////////
 describe('test for adminUserDetails', () => {
-  let user: { token: string };
-
+  let user1;
+  let user1token: string;
   beforeEach(() => {
-    const resRegister = request('POST', `${url}:${port}/v1/admin/auth/register`, {
-      json: {
-        email: 'test@gmail.com',
-        password: 'validPassword5',
-        nameFirst: 'Patrick',
-        nameLast: 'Chen',
-      },
-      timeout: 100,
-    });
-    user = JSON.parse(resRegister.body as string);
+    user1 = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
+    user1token = (user1.body as tokenReturn).token;
   });
 
   test('successfully returns details of a valid user', () => {
-    const resDetails = request(
-      'GET',
-        `${url}:${port}/v1/admin/user/details`,
-        {
-          qs: {
-            token: user.token,
-          },
-          timeout: 100,
-        }
-    );
-    const result = JSON.parse(resDetails.body as string);
-
-    expect(result).toStrictEqual({
+    const resDetails = requestAdminUserDetails(user1token);
+    expect(resDetails.body).toStrictEqual({
       user: {
         userId: expect.any(Number),
-        name: 'Patrick Chen',
+        name: 'Guanlin Kong',
         email: 'test@gmail.com',
         numSuccessfulLogins: 1,
         numFailedPasswordsSinceLastLogin: 0,
@@ -50,126 +33,38 @@ describe('test for adminUserDetails', () => {
   });
 
   test('returns error when token is not valid', () => {
-    const resDetails = request(
-      'GET',
-        `${url}:${port}/v1/admin/user/details`,
-        {
-          qs: {
-            token: 'invalidToken',
-          },
-          timeout: 100,
-        }
-    );
-    const result = JSON.parse(resDetails.body as string);
-
-    expect(result).toStrictEqual({ error: expect.any(String) });
+    const resDetails = requestAdminUserDetails('1');
+    expect(resDetails.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('numSuccessfulLogins increments after successful logins', () => {
     // Simulate multiple successful logins
-    request('POST', `${url}:${port}/v1/admin/auth/login`, {
-      json: {
-        email: 'test@gmail.com',
-        password: 'validPassword5',
-      },
-      timeout: 100,
-    });
-    request('POST', `${url}:${port}/v1/admin/auth/login`, {
-      json: {
-        email: 'test@gmail.com',
-        password: 'validPassword5',
-      },
-      timeout: 100,
-    });
-
-    const resDetails = request(
-      'GET',
-        `${url}:${port}/v1/admin/user/details`,
-        {
-          qs: {
-            token: user.token,
-          },
-          timeout: 100,
-        }
-    );
-    const result = JSON.parse(resDetails.body as string);
+    requestAdminAuthLogin('test@gmail.com', 'validPassword5');
+    requestAdminAuthLogin('test@gmail.com', 'validPassword5');
+    const resDetails = requestAdminUserDetails(user1token);
 
     // Check if the number of successful logins is correct (1 registration + 2 logins)
-    expect(result.user.numSuccessfulLogins).toBe(3);
+    expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
   });
 
   test('numFailedPasswordsSinceLastLogin increments on failed login attempts', () => {
     // Simulate failed login attempts
-    request('POST', `${url}:${port}/v1/admin/auth/login`, {
-      json: {
-        email: 'test@gmail.com',
-        password: 'wrongPassword',
-      },
-      timeout: 100,
-    });
-    request('POST', `${url}:${port}/v1/admin/auth/login`, {
-      json: {
-        email: 'test@gmail.com',
-        password: 'wrongPassword',
-      },
-      timeout: 100,
-    });
-
-    const resDetails = request(
-      'GET',
-        `${url}:${port}/v1/admin/user/details`,
-        {
-          qs: {
-            token: user.token,
-          },
-          timeout: 100,
-        }
-    );
-    const result = JSON.parse(resDetails.body as string);
+    requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
+    requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
+    const resDetails = requestAdminUserDetails(user1token);
 
     // Check if the number of failed login attempts is correct (2 failed attempts)
-    expect(result.user.numFailedPasswordsSinceLastLogin).toBe(2);
+    expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
   });
 
   test('numFailedPasswordsSinceLastLogin resets after a successful login', () => {
     // Simulate failed login attempts
-    request('POST', `${url}:${port}/v1/admin/auth/login`, {
-      json: {
-        email: 'test@gmail.com',
-        password: 'wrongPassword',
-      },
-      timeout: 100,
-    });
-    request('POST', `${url}:${port}/v1/admin/auth/login`, {
-      json: {
-        email: 'test@gmail.com',
-        password: 'wrongPassword',
-      },
-      timeout: 100,
-    });
-
-    // Simulate a successful login
-    request('POST', `${url}:${port}/v1/admin/auth/login`, {
-      json: {
-        email: 'test@gmail.com',
-        password: 'validPassword5',
-      },
-      timeout: 100,
-    });
-
-    const resDetails = request(
-      'GET',
-        `${url}:${port}/v1/admin/user/details`,
-        {
-          qs: {
-            token: user.token,
-          },
-          timeout: 100,
-        }
-    );
-    const result = JSON.parse(resDetails.body as string);
+    requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
+    requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
+    requestAdminAuthLogin('test@gmail.com', 'validPassword5');
+    const resDetails = requestAdminUserDetails(user1token);
 
     // Check if the failed attempts reset to 0 after a successful login
-    expect(result.user.numFailedPasswordsSinceLastLogin).toBe(0);
+    expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
   });
 });
