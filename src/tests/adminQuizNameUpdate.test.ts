@@ -38,7 +38,7 @@ describe('adminQuizNameUpdate', () => {
   });
 
   test('invalid token', () => {
-  	// log out user1
+  // log out user1
     const res = request(
       'POST',
       SERVER_URL + '/v1/admin/auth/logout',

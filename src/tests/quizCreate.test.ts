@@ -26,12 +26,41 @@ describe('adminQuizCreate', () => {
   });
 
   test('invalid token', () => {
+    // log out user1
+    const res = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/logout',
+      {
+        json: {
+          token: user1token,
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(res.statusCode).toStrictEqual(200);
+    expect(JSON.parse(res.body.toString())).toStrictEqual({});
+    // log in user2
+    const resRegister = request(
+      'POST',
+      SERVER_URL + '/v1/admin/auth/register',
+      {
+        json: {
+          email: 'user2@gmail.com',
+          password: 'validPassword5',
+          nameFirst: 'Eric',
+          nameLast: 'Ma'
+        },
+        timeout: TIMEOUT_MS
+      }
+    );
+    expect(resRegister.statusCode).toStrictEqual(200);
+
     const result = request(
       'POST',
       SERVER_URL + '/v1/admin/quiz',
       {
         json: {
-          token: JSON.stringify('hahainvalid'),
+          token: user1token,
           name: 'Quiz1',
           description: 'lol invalid token'
         },
