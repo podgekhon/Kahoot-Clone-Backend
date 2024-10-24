@@ -13,6 +13,9 @@ export enum httpStatus {
 
 import { clear } from './other';
 import { adminAuthRegister } from './auth';
+import {
+  adminQuizInfo
+} from './quiz';
 
 // clear
 export const clearHttp = (): {
@@ -37,4 +40,25 @@ body: ReturnType <typeof adminAuthRegister> } => {
     timeout: TIMEOUT_MS
   });
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizInfo
+export const requestAdminQuizInfo = (
+  quizId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizInfo>,
+  statusCode: number,
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}`,
+    {
+      qs: { token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return {
+    body: JSON.parse(res.body.toString()),
+    statusCode: res.statusCode,
+  };
 };
