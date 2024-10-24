@@ -1,55 +1,70 @@
 import {
-  requestClear,
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizRemove,
-  requestAdminQuizList,
   requestAdminTrashList,
-  requestAdminAuthLogout,
-  requestAdminAuthLogin
+  requestClear
 } from '../src/helperfunctiontests';
-import { quizCreateResponse, tokenReturn } from '../src/interface';
+import {
+  quizCreateResponse,
+  tokenReturn,
+  userAuthRegister,
+  quizCreate,
+  trashList
+} from '../src/interface';
 
 beforeEach(() => {
   requestClear();
 });
 
 describe('test for adminQuizRemove', () => {
-  let user1;
-  let quiz;
-  let quizID: number;
+  let user1: userAuthRegister;
+  let user2: userAuthRegister;
+
   let user1token: string;
+  let user2token: string;
+
+  let quiz: quizCreate;
+  let quizID: number;
+
+  let trashList: trashList;
+
   beforeEach(() => {
     user1 = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
     user1token = (user1.body as tokenReturn).token;
     quiz = requestAdminQuizCreate(user1token, 'Test Quiz', 'This is a test quiz');
     quizID = (quiz.body as quizCreateResponse).quizId;
+
+    user2 = requestAdminAuthRegister(
+      'test1@gmail.com',
+      'validPassword5',
+      'Guanlin1',
+      'Kong1'
+    );
+    user2token = (user2.body as tokenReturn).token;
   });
 
   test('empty token', () => {
-    const trashList = requestAdminTrashList('12345');
+    trashList = requestAdminTrashList('12345');
     expect(trashList.statusCode).toStrictEqual(401);
     expect(trashList.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Get trash list with empty token', () => {
-    const trashList = requestAdminTrashList(' ');
+    trashList = requestAdminTrashList(' ');
     expect(trashList.statusCode).toStrictEqual(401);
     expect(trashList.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Get trash list success', () => {
     requestAdminQuizRemove(quizID, user1token);
-    const trashList = requestAdminTrashList(user1token);
+    trashList = requestAdminTrashList(user1token);
     expect(trashList.statusCode).toStrictEqual(200);
     expect(trashList.body).toHaveProperty('quizzes');
   });
 
   test('Get trash list with token from different user', () => {
-    const newuser = requestAdminAuthRegister('test1@gmail.com', 'validPassword5', 'Guanlin1', 'Kong1');
-    const newtoken = (newuser.body as tokenReturn).token;
-
-    const trashList = requestAdminTrashList(newtoken);
+    trashList = requestAdminTrashList(user2token);
     expect(trashList.statusCode).toStrictEqual(401);
     expect(trashList.body).toStrictEqual({ error: expect.any(String) });
   });
