@@ -423,7 +423,7 @@ export const requestAdminQuizQuestionRemove = (
 };
 
 // adminMoveQuizQuestion
-export const requestadminMoveQuizQuestion = (
+export const requestAdminMoveQuizQuestion = (
   quizId: number, questionId: number, token: string, newPosition: number
 ): {
   body: ReturnType <typeof adminMoveQuizQuestion>,

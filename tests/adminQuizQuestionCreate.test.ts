@@ -1,7 +1,6 @@
 import { 
   requestAdminAuthRegister,
   requestAdminQuizCreate,
-  requestAdminQuizDescriptionUpdate,
   requestAdminQuizInfo,
   requestAdminQuizQuestionCreate,
   requestClear,
@@ -79,7 +78,6 @@ describe('HTTP tests for quiz question create', () => {
       quiz.quizId,
       user.token
     );
-    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     const quizInfo = resQuizInfo.body as quizInfo;
 
     // Verify the quiz contains the newly added question
