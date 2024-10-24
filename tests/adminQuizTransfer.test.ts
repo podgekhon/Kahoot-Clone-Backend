@@ -7,7 +7,6 @@ import {
   requestAdminQuizTransfer,
 } from '../src/helperfunctiontests';
 import { quizCreateResponse, tokenReturn } from '../src/interface';
-import { adminAuthRegister } from '../src/auth';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
