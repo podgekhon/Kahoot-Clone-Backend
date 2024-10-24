@@ -1,4 +1,5 @@
 /// ///////////// interface for dataStore /////////////////
+import { adminQuizTransfer } from './quiz';
 export interface dataStore {
   users: user[],
   quizzes: quiz[],
@@ -97,4 +98,9 @@ export interface quizInfo {
   numQuestions: number,
   questions: question[],
   timeLimit: number
+}
+
+export interface quizTransfer {
+  body: ReturnType<typeof adminQuizTransfer>;
+  statusCode: number;
 }
