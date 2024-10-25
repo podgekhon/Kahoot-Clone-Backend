@@ -39,6 +39,10 @@ import {
 } from './quiz';
 
 // clear
+/**
+ * call a http request to clear everything
+ * @returns {} - empty object
+ */
 export const requestClear = (): {
   body: ReturnType <typeof clear>
   statusCode: number
@@ -48,6 +52,14 @@ export const requestClear = (): {
 };
 
 // adminAuthRegister
+/**
+ * make http request to register a user
+ * @param { string } email
+ * @param { string } password
+ * @param { string } nameFirst
+ * @param { string } nameLast
+ * @returns
+ */
 export const requestAdminAuthRegister = (
   email: string, password: string, nameFirst: string, nameLast: string
 ): {
@@ -67,6 +79,12 @@ export const requestAdminAuthRegister = (
 };
 
 // adminAuthLogin
+/**
+ * make http request to login a suer
+ * @param { string } email
+ * @param { string } password
+ * @returns
+ */
 export const requestAdminAuthLogin = (
   email: string, password: string
 ): {
@@ -84,6 +102,13 @@ export const requestAdminAuthLogin = (
 };
 
 // adminUserPasswordUpdate
+/**
+ * make http request to update password
+ * @param { string } token
+ * @param { string } oldPassword
+ * @param { string } newPassword
+ * @returns { Response }
+ */
 export const requestAdminUserPasswordUpdate = (
   token: string, oldPassword: string, newPassword: string
 ): {
@@ -106,6 +131,11 @@ export const requestAdminUserPasswordUpdate = (
 };
 
 // adminUserDetails
+/**
+ * make http request to get user details
+ * @param { string } token
+ * @returns
+ */
 export const requestAdminUserDetails = (
   token: string
 ): {
@@ -124,6 +154,14 @@ export const requestAdminUserDetails = (
 };
 
 // adminUserDetailsUpdate
+/**
+ * make http request to update user details
+ * @param { string } token
+ * @param { string } email
+ * @param { string } nameFirst
+ * @param { string } nameLast
+ * @returns { Response }
+ */
 export const requestAdminUserDetailsUpdate = (
   token: string, email: string, nameFirst: string, nameLast: string
 ): {
@@ -147,6 +185,11 @@ export const requestAdminUserDetailsUpdate = (
 };
 
 // adminQuizList
+/**
+ * make http request to get list of quizzes
+ * @param { string } token
+ * @returns { Response }
+ */
 export const requestAdminQuizList = (
   token: string
 ): {
@@ -165,6 +208,13 @@ export const requestAdminQuizList = (
 };
 
 // adminQuizCreate
+/**
+ * make http request to create a quiz
+ * @param { string } token
+ * @param { string} name
+ * @param { string} description
+ * @returns { Response }
+ */
 export const requestAdminQuizCreate = (
   token: string, name: string, description: string
 ): {
@@ -187,6 +237,12 @@ export const requestAdminQuizCreate = (
 };
 
 // adminQuizRemove
+/**
+ * make http request to remove a quiz
+ * @param { number } quizId
+ * @param { string } token
+ * @returns { Response }
+ */
 export const requestAdminQuizRemove = (
   quizId: number, token: string
 ): {
@@ -205,6 +261,12 @@ export const requestAdminQuizRemove = (
 };
 
 // adminQuizInfo
+/**
+ * make http request to get quiz information
+ * @param { number } quizId
+ * @param { string } token
+ * @returns { Response }
+ */
 export const requestAdminQuizInfo = (
   quizId: number, token: string
 ): {
@@ -224,6 +286,13 @@ export const requestAdminQuizInfo = (
 };
 
 // adminQuizNameUpdate
+/**
+ * make http request to update quiz name
+ * @param { number } quizId
+ * @param { string } token
+ * @param { string } name
+ * @returns { Response }
+ */
 export const requestAdminQuizNameUpdate = (
   quizId: number, token: string, name: string
 ): {
@@ -245,6 +314,13 @@ export const requestAdminQuizNameUpdate = (
 };
 
 // adminQuizDescriptionUpdate
+/**
+ * make http request to update a quiz description
+ * @param { number } quizId
+ * @param { string } token
+ * @param { string } description
+ * @returns
+ */
 export const requestAdminQuizDescriptionUpdate = (
   quizId: number, token: string, description: string
 ): {
@@ -266,6 +342,11 @@ export const requestAdminQuizDescriptionUpdate = (
 };
 
 // adminAuthLogout
+/**
+ * make http request to log out a user
+ * @param { string } token
+ * @returns { Response }
+ */
 export const requestAdminAuthLogout = (
   token: string
 ): {
@@ -286,6 +367,11 @@ export const requestAdminAuthLogout = (
 };
 
 // adminTrashList
+/**
+ * make http request to list quizzes in the trash
+ * @param { string } token
+ * @returns { Response }
+ */
 export const requestAdminTrashList = (
   token: string
 ): {
@@ -304,6 +390,12 @@ export const requestAdminTrashList = (
 };
 
 // adminQuizRestore
+/**
+ * make http request to restore a quiz
+ * @param { number } quizId
+ * @param { string } token
+ * @returns
+ */
 export const requestAdminQuizRestore = (
   quizId: number, token: string
 ): {
@@ -324,6 +416,12 @@ export const requestAdminQuizRestore = (
 };
 
 // adminTrashEmpty
+/**
+ * make http request to empty a trash
+ * @param { string } token
+ * @param { array  } quizIds - array of quiz ID
+ * @returns { Response }
+ */
 export const requestAdminTrashEmpty = (
   token: string, quizIds: number[]
 ): {
@@ -342,6 +440,13 @@ export const requestAdminTrashEmpty = (
 };
 
 // adminQuizTransfer
+/**
+ * make http request to transfer a quiz to antoher user
+ * @param { number } quizId
+ * @param { string }token
+ * @param { string } userEmail
+ * @returns { Response }
+ */
 export const requestAdminQuizTransfer = (
   quizId: number, token: string, userEmail: string
 ): {
@@ -363,6 +468,13 @@ export const requestAdminQuizTransfer = (
 };
 
 // adminQuizQuestionCreate
+/**
+ * make http request to create a question
+ * @param { number } quizId
+ * @param { string } token
+ * @param { object } questionBody - an object containing question details
+ * @returns { Response }
+ */
 export const requestAdminQuizQuestionCreate = (
   quizId: number, token: string, questionBody: object
 ): {
@@ -384,6 +496,14 @@ export const requestAdminQuizQuestionCreate = (
 };
 
 // adminQuizQuestionUpdate
+/**
+ * make http request to update a question
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @param { object } questionBody
+ * @returns { Response }
+ */
 export const requestAdminQuizQuestionUpdate = (
   quizId: number, questionId: number, token: string, questionBody: object
 ): {
@@ -405,6 +525,13 @@ export const requestAdminQuizQuestionUpdate = (
 };
 
 // adminQuizQuestionRemove
+/**
+ * make http requets to remove a question
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @returns { Response }
+ */
 export const requestAdminQuizQuestionRemove = (
   quizId: number, questionId: number, token: string
 ): {
@@ -423,6 +550,14 @@ export const requestAdminQuizQuestionRemove = (
 };
 
 // adminMoveQuizQuestion
+/**
+ * make http request to move a question to a new position
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @param { number } newPosition
+ * @returns { Response }
+ */
 export const requestAdminMoveQuizQuestion = (
   quizId: number, questionId: number, token: string, newPosition: number
 ): {
@@ -443,7 +578,14 @@ export const requestAdminMoveQuizQuestion = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminQuizDuplicate
+// adminQuizQuestionDuplicate
+/**
+ * make http request to duplicate a quiz
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @returns { Response }
+ */
 export const requestAdminQuizQuestionDuplicate = (
   quizId: number, questionId: number, token: string
 ): {
