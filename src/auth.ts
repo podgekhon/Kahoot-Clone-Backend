@@ -16,7 +16,7 @@ import {
   isEmailUsed,
   isNameValid,
   isValidPassword,
-  random
+  randomId
 } from './helperfunction';
 
 import validator from 'validator';
@@ -41,22 +41,19 @@ export const adminAuthRegister = (
   nameLast: string
 ): errorMessages | tokenReturn => {
   const data = getData();
-  // Check if Email address is used by another user.
+
   if (isEmailUsed(email, data)) {
     return { error: 'Email already used' };
   }
 
-  // Validate email format
   if (!validator.isEmail(email)) {
     return { error: 'Invalid email format' };
   }
 
-  // Validate first name (NameFirst)
   if (!isNameValid(nameFirst)) {
     return { error: 'First name invalid' };
   }
 
-  // Validate last name (NameLast)
   if (!isNameValid(nameLast)) {
     return { error: 'Last name invalid' };
   }
@@ -69,8 +66,8 @@ export const adminAuthRegister = (
     return { error: 'password invalid' };
   }
 
-  // 7. Register the user and update the data
-  const authUserId = random(500);
+  // Register the user and update the data
+  const authUserId = randomId(100000);
 
   data.users.push({
     userId: authUserId,
@@ -99,7 +96,10 @@ export const adminAuthRegister = (
   *
   * @returns {integer} - UserId
 */
-export const adminAuthLogin = (email: string, password: string): errorMessages | tokenReturn => {
+export const adminAuthLogin = (
+  email: string,
+  password: string
+): errorMessages | tokenReturn => {
   const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
@@ -189,13 +189,11 @@ export const adminUserDetailsUpdate = (
   }
   const authUserId = tokenValidation.authUserId;
 
-  // Check if authUserId is valid
   const currentUser = data.users.find(user => user.userId === authUserId);
   if (!currentUser) {
     return { error: 'AuthUserId is not a valid user.' };
   }
 
-  // Check if email is valid
   if (!validator.isEmail(email)) {
     return { error: 'Invalid email format.' };
   }
@@ -211,12 +209,10 @@ export const adminUserDetailsUpdate = (
     return { error: 'Email is currently used by another user.' };
   }
 
-  // Validate first name (NameFirst)
   if (!isNameValid(nameFirst)) {
     return { error: 'First name invalid' };
   }
 
-  // Validate last name (NameLast)
   if (!isNameValid(nameLast)) {
     return { error: 'Last name invalid' };
   }

@@ -1,4 +1,4 @@
-import { requestClear } from '../src/helperfunctiontests';
+import { requestClear } from '../src/requestHelperFunctions';
 
 beforeEach(() => {
   requestClear();

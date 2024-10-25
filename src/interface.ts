@@ -90,6 +90,10 @@ export interface quizQuestionCreateResponse {
   questionId: number,
 }
 
+export interface quizQuestionDuplicateResponse {
+  duplicatedQuestionId: number,
+}
+
 export interface quizInfo {
   quizId: number,
   name: string,

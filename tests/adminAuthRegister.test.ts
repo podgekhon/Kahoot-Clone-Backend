@@ -1,4 +1,7 @@
-import { requestAdminAuthRegister, requestClear } from '../src/helperfunctiontests';
+import { 
+  requestAdminAuthRegister, 
+  requestClear 
+} from '../src/requestHelperFunctions';
 import { userAuthRegister } from '../src/interface';
 
 // import request from 'sync-request-curl';

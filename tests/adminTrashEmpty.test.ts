@@ -4,7 +4,7 @@ import {
   requestAdminTrashEmpty,
   requestAdminQuizRemove,
   requestClear
-} from '../src/helperfunctiontests';
+} from '../src/requestHelperFunctions';
 
 import {
   tokenReturn,
@@ -13,7 +13,7 @@ import {
 
 import {
   httpStatus
-} from '../src/helperfunctiontests'
+} from '../src/requestHelperFunctions'
 
 beforeEach(() => {
   requestClear();

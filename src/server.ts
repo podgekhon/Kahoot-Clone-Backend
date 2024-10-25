@@ -53,7 +53,7 @@ import {
   adminQuizQuestionRemove,
   adminQuizInfo,
   adminMoveQuizQuestion,
-  adminQuizDuplicate,
+  adminQuizQuestionDuplicate,
   adminQuizTransfer,
   adminTrashEmpty
 } from './quiz';
@@ -61,8 +61,9 @@ import {
 import { clear } from './other';
 import { isErrorMessages } from './helperfunction';
 import { errorMessages } from './interface';
+import { errorMap } from './errorMap';
 
-export enum httpStatus {
+enum httpStatus {
   UNAUTHORIZED = 401,
   BAD_REQUEST = 400,
   FORBIDDEN = 403,
@@ -95,7 +96,7 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
     res.status(httpStatus.BAD_REQUEST).json(result);
     return;
   }
-  return res.json(result);
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminAuthLogin
@@ -117,15 +118,13 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
   if ('error' in result) {
     if (result.error === 'Invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: 'token is empty or invalid'
-      });
+      return res.status(httpStatus.UNAUTHORIZED).json(result);
     } else {
       return res.status(httpStatus.BAD_REQUEST).json(result);
     }
   }
 
-  return res.json(result);
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizCreate
@@ -142,7 +141,7 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
       return res.status(httpStatus.BAD_REQUEST).json(result);
     }
   }
-  return res.json(result);
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizNameUpdate
@@ -178,25 +177,8 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   );
 
   if ('error' in result) {
-    if (result.error === 'INVALID_TOKEN') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: 'Token is empty or invalid ' +
-               '(does not refer to valid logged in ' +
-               'user session)'
-      });
-    }
-    if (result.error === 'INVALID_QUIZ') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error:
-        'Valid token is provided, but user is not an owner of this quiz, ' +
-        'or quiz doesn\'t exist.'
-      });
-    }
-    if (result.error === 'DESCRIPTION_TOO_LONG') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Description is more than 100 characters in length.'
-      });
-    }
+    const { status, message } = errorMap[result.error];
+    return res.status(status).json({ error: message });
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
@@ -214,168 +196,33 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   );
 
   if ('error' in result) {
-    if (result.error === 'INVALID_TOKEN') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: 'Token is empty or invalid ' +
-               '(does not refer to valid logged in ' +
-               'user session)'
-      });
-    }
-
-    if (result.error === 'INVALID_QUIZ') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but quiz doesn\'t exist.'
-      });
-    }
-
-    if (result.error === 'INVALID_OWNER') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but user is not an owner of this quiz'
-      });
-    }
-
-    if (result.error === 'INVALID_QUESTION_LENGTH') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Question length must be between 5 and 50 characters.'
-      });
-    }
-
-    if (result.error === 'INVALID_ANSWER_COUNT') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'There must be between 2 and 6 answer options.'
-      });
-    }
-
-    if (result.error === 'INVALID_TIME_LIMIT') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'The question timeLimit is not a positive number.'
-      });
-    }
-
-    if (result.error === 'EXCEEDED_TOTAL_TIME_LIMIT') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'The sum of the question timeLimits in the quiz exceeds 3 minutes.'
-      });
-    }
-
-    if (result.error === 'INVALID_POINTS') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Points must be between 1 and 10.'
-      });
-    }
-
-    if (result.error === 'INVALID_ANSWER_LENGTH') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Each answer must be between 1 and 30 characters.'
-      });
-    }
-
-    if (result.error === 'DUPLICATE_ANSWERS') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Duplicate answer options are not allowed.'
-      });
-    }
-
-    if (result.error === 'NO_CORRECT_ANSWER') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'There must be at least one correct answer.'
-      });
-    }
+    const { status, message } = errorMap[result.error];
+    return res.status(status).json({ error: message });
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizQuestionUpdate
-app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
-  const { quizid, questionid } = req.params;
-  const { token, questionBody } = req.body;
+app.put('/v1/admin/quiz/:quizid/question/:questionid',
+  (req: Request, res: Response) => {
+    const { quizid, questionid } = req.params;
+    const { token, questionBody } = req.body;
 
-  const result = adminQuizQuestionUpdate(
-    parseInt(quizid),
-    parseInt(questionid),
-    questionBody,
-    token
-  );
+    const result = adminQuizQuestionUpdate(
+      parseInt(quizid),
+      parseInt(questionid),
+      questionBody,
+      token
+    );
 
-  if ('error' in result) {
-    if (result.error === 'INVALID_TOKEN') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: 'Token is empty or invalid ' +
-               '(does not refer to valid logged in ' +
-               'user session)'
-      });
+    if ('error' in result) {
+      const { status, message } = errorMap[result.error];
+      return res.status(status).json({ error: message });
     }
 
-    if (result.error === 'INVALID_QUIZ') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but quiz doesn\'t exist.'
-      });
-    }
-
-    if (result.error === 'INVALID_OWNER') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but user is not an owner of this quiz'
-      });
-    }
-
-    if (result.error === 'INVALID_QUESTION_ID') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Question Id does not refer to a valid question within this quiz.'
-      });
-    }
-
-    if (result.error === 'INVALID_QUESTION_LENGTH') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Question length must be between 5 and 50 characters.'
-      });
-    }
-
-    if (result.error === 'INVALID_ANSWER_COUNT') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'There must be between 2 and 6 answer options.'
-      });
-    }
-
-    if (result.error === 'INVALID_TIME_LIMIT') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'The question timeLimit is not a positive number.'
-      });
-    }
-
-    if (result.error === 'EXCEEDED_TOTAL_TIME_LIMIT') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'The sum of the question timeLimits in the quiz exceeds 3 minutes.'
-      });
-    }
-
-    if (result.error === 'INVALID_POINTS') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Points must be between 1 and 10.'
-      });
-    }
-
-    if (result.error === 'INVALID_ANSWER_LENGTH') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Each answer must be between 1 and 30 characters.'
-      });
-    }
-
-    if (result.error === 'DUPLICATE_ANSWERS') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Duplicate answer options are not allowed.'
-      });
-    }
-
-    if (result.error === 'NO_CORRECT_ANSWER') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'There must be at least one correct answer.'
-      });
-    }
-  }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-});
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  });
 
 // adminUserDetails
 app.get('/v1/admin/user/details', (req, res) => {
@@ -383,10 +230,10 @@ app.get('/v1/admin/user/details', (req, res) => {
 
   const result = adminUserDetails(token as string);
   if ('error' in result) {
-    return res.status(401).json({ error: result.error });
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: result.error });
   }
 
-  return res.status(200).json(result);
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminUserDetailsUpdate
@@ -396,11 +243,12 @@ app.put('/v1/admin/user/details', (req, res) => {
   const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
   if ('error' in updateResult) {
     if (updateResult.error === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+      return res.status(httpStatus.UNAUTHORIZED).json(updateResult);
     }
-    return res.status(httpStatus.BAD_REQUEST).json({ error: 'Unknown Type: string - error' });
+    return res.status(httpStatus.BAD_REQUEST).json(updateResult);
   }
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(updateResult);
 });
 
 // delete Quiz
@@ -413,7 +261,7 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
     if (removeResult.error === 'invalid token') {
       return res.status(httpStatus.UNAUTHORIZED).json(removeResult);
     }
-    return res.status(httpStatus.FORBIDDEN).json({ error: 'Unknown Type: string - error' });
+    return res.status(httpStatus.FORBIDDEN).json(removeResult);
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
@@ -422,8 +270,8 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 // get trash list
 app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
   const { token } = req.query;
-  const quizTrashList = adminTrashList(token as string);
 
+  const quizTrashList = adminTrashList(token as string);
   if ('error' in quizTrashList) {
     return res.status(httpStatus.UNAUTHORIZED).json(quizTrashList);
   }
@@ -434,8 +282,8 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
 // adminQuizList
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
   const { token } = req.query;
-  const quizList = adminQuizList(token as string);
 
+  const quizList = adminQuizList(token as string);
   if ('error' in quizList) {
     return res.status(httpStatus.UNAUTHORIZED).json(quizList);
   }
@@ -449,23 +297,9 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { token } = req.query;
 
   const result = adminQuizInfo(token as string, parseInt(quizid));
-
   if ('error' in result) {
-    if (result.error === 'INVALID_TOKEN') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: 'Token is empty or invalid (does not refer to valid logged in user session)'
-      });
-    }
-    if (result.error === 'INVALID_QUIZ') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but the quiz doesn\'t exist.'
-      });
-    }
-    if (result.error === 'INVALID_OWNER') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but user is not the owner of this quiz.'
-      });
-    }
+    const { status, message } = errorMap[result.error];
+    return res.status(status).json({ error: message });
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
@@ -488,51 +322,29 @@ app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
     }
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
-  return res.json(result);
+
+  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizQuestionMove
-app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
-  const { quizid, questionid } = req.params;
-  const { token, newPosition } = req.body;
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move',
+  (req: Request, res: Response) => {
+    const { quizid, questionid } = req.params;
+    const { token, newPosition } = req.body;
 
-  const result = adminMoveQuizQuestion(parseInt(quizid), parseInt(questionid), token, newPosition);
+    const result = adminMoveQuizQuestion(
+      parseInt(quizid),
+      parseInt(questionid),
+      token,
+      newPosition
+    );
 
-  if ('error' in result) {
-    if (result.error === 'INVALID_TOKEN') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: 'Token is empty or invalid (does not refer to valid logged in user session)',
-      });
+    if ('error' in result) {
+      const { status, message } = errorMap[result.error];
+      return res.status(status).json({ error: message });
     }
-    if (result.error === 'INVALID_QUIZ') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but the quiz doesn\'t exist.',
-      });
-    }
-    if (result.error === 'INVALID_OWNER') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but user is not the owner of this quiz.',
-      });
-    }
-    if (result.error === 'INVALID_QUESTION_ID') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'Question Id does not refer to a valid question within this quiz.',
-      });
-    }
-    if (result.error === 'INVALID_POSITION') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'NewPosition is less than 0 or greater than the number of questions.',
-      });
-    }
-    if (result.error === 'SAME_POSITION') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'NewPosition is the same as the current question position.',
-      });
-    }
-  }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
-});
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
+  });
 
 // adminAuthLogout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
@@ -546,56 +358,58 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
     if (result.error === 'Session not found.') {
       return res.status(httpStatus.FORBIDDEN).json(result);
     }
-
     return res.status(httpStatus.BAD_REQUEST).json(result);
   }
+
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
-// adminQuizDuplicate
-app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate', (req: Request, res: Response) => {
-  const { token } = req.body;
-  const quizId = parseInt(req.params.quizId as string);
-  const questionId = parseInt(req.params.questionId as string);
+// adminQuizQuestionDuplicate
+app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate',
+  (req: Request, res: Response) => {
+    const { token } = req.body;
+    const quizId = parseInt(req.params.quizId as string);
+    const questionId = parseInt(req.params.questionId as string);
 
-  const result = adminQuizDuplicate(quizId, questionId, token);
-  if ('error' in result) {
-    if (result.error === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json(result);
-    } else if (
-      result.error === 'quiz does not exist' ||
+    const result = adminQuizQuestionDuplicate(quizId, questionId, token);
+    if ('error' in result) {
+      if (result.error === 'invalid token') {
+        return res.status(httpStatus.UNAUTHORIZED).json(result);
+      } else if (
+        result.error === 'quiz does not exist' ||
       result.error === 'user is not owner of this quiz'
-    ) {
-      return res.status(httpStatus.FORBIDDEN).json(result);
-    }
-    return res.status(httpStatus.BAD_REQUEST).json(result);
-  }
-  return res.json(result);
-});
-
-// adminQuizQuestionRemove
-app.delete('/v1/admin/quiz/:quizId/question/:questionId', (req: Request, res: Response) => {
-  const { token } = req.query;
-  const quizId = parseInt(req.params.quizId as string);
-  const questionId = parseInt(req.params.questionId as string);
-
-  const result = adminQuizQuestionRemove(quizId, questionId, token as string);
-
-  if ('error' in result) {
-    if (
-      result.error === 'user is not the owner of this quiz' ||
-      result.error === 'quiz or question doesn\'t exist'
-    ) {
-      return res.status(httpStatus.FORBIDDEN).json(result);
-    } else if (result.error === 'token is empty or invalid') {
-      return res.status(httpStatus.UNAUTHORIZED).json(result);
-    } else {
+      ) {
+        return res.status(httpStatus.FORBIDDEN).json(result);
+      }
       return res.status(httpStatus.BAD_REQUEST).json(result);
     }
-  }
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  });
 
-  return res.json(result);
-});
+// adminQuizQuestionRemove
+app.delete('/v1/admin/quiz/:quizId/question/:questionId',
+  (req: Request, res: Response) => {
+    const { token } = req.query;
+    const quizId = parseInt(req.params.quizId as string);
+    const questionId = parseInt(req.params.questionId as string);
+
+    const result = adminQuizQuestionRemove(quizId, questionId, token as string);
+
+    if ('error' in result) {
+      if (
+        result.error === 'user is not the owner of this quiz' ||
+      result.error === 'quiz or question doesn\'t exist'
+      ) {
+        return res.status(httpStatus.FORBIDDEN).json(result);
+      } else if (result.error === 'token is empty or invalid') {
+        return res.status(httpStatus.UNAUTHORIZED).json(result);
+      } else {
+        return res.status(httpStatus.BAD_REQUEST).json(result);
+      }
+    }
+
+    return res.json(result);
+  });
 
 // adminQuizTransfer
 app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
@@ -605,33 +419,8 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
 
   if ('error' in result) {
-    if (result.error === 'INVALID_TOKEN') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: 'Token is empty or invalid '
-      });
-    }
-
-    if (result.error === 'INVALID_USEREMAIL') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'email is not registered'
-      });
-    }
-    if (result.error === 'ALREADY_OWNS') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'user currently owns this quiz'
-      });
-    }
-    if (result.error === 'DUPLICATE_QUIZNAME') {
-      return res.status(httpStatus.BAD_REQUEST).json({
-        error: 'user already has a quiz with the same name'
-      });
-    }
-
-    if (result.error === 'INVALID_OWNER') {
-      return res.status(httpStatus.FORBIDDEN).json({
-        error: 'Valid token is provided, but user is not an owner of this quiz'
-      });
-    }
+    const { status, message } = errorMap[result.error];
+    return res.status(status).json({ error: message });
   }
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
@@ -642,7 +431,6 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
 
   // Parse quizIds into an array of numbers
   const quizIdsArray = JSON.parse(quizIds as string);
-
   // Call the adminTrashEmpty function with the parsed array'
   const result = adminTrashEmpty(token as string, quizIdsArray);
 
