@@ -31,7 +31,7 @@ import validator from 'validator';
  * @param {string} password - The user's password
  * @param {string} nameFirst - The user's first name
  * @param {string} nameLast - The user's last name
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {tokenReturn} - An object containing a token upon successful registration
  */
@@ -125,7 +125,7 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
  * Given a user's token, returns detailed information about the user.
  *
  * @param {string} token - The authentication token of the user
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {userDetails} - An empty containting the user's details upon successful registration
  */
@@ -161,7 +161,7 @@ export const adminUserDetails = (token: string): errorMessages | userDetails => 
  * @param {string} email - The new email address to be set
  * @param {string} nameFirst - The new first name to be set
  * @param {string} nameLast - The new last name to be set
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
@@ -220,7 +220,7 @@ export const adminUserDetailsUpdate = (
  * @param {string} token - The authentication token of the logged-in user
  * @param {string} oldPassword - The user's current password
  * @param {string} newPassword - The new password to be set
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
@@ -275,7 +275,7 @@ export const adminUserPasswordUpdate = (
  * Logs out a user by deleting their session token.
  *
  * @param {string} token - The authentication token of the user
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */

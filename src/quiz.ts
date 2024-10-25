@@ -136,8 +136,7 @@ export const adminQuizCreate = (
   return { quizId: newQuiz.quizId };
 };
 
-
-  /**
+/**
   * Create a new stub question for a particular quiz.
   *
   * @param {number} quizId - an unique id of a quiz
@@ -203,7 +202,6 @@ export const adminQuizQuestionCreate = (
 
   return { questionId: newQuestion.questionId };
 };
-
 
 /**
   * Update the relevant details of a particular question within a quiz.
@@ -275,7 +273,6 @@ export const adminQuizQuestionUpdate = (
 
   return { };
 };
-
 
 /**
   * Move a question from one particular position in the quiz to another
@@ -476,7 +473,6 @@ export const adminQuizNameUpdate = (
   return { };
 };
 
-
 /**
   * Update the description of the relevant quiz
   *
@@ -522,12 +518,11 @@ export const adminQuizDescriptionUpdate = (
   return { };
 };
 
-
 /**
  * View the quiz trash
  *
  * @param {string} token - a unique session id for user
- * 
+ *
  * @returns {quizList}  - list of quizzes in trash
  * @returns {errorMessages} - returns error message if error
  */
@@ -556,18 +551,17 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
   return { quizzes: userTrashQuizzes };
 };
 
-
 /**
  * Restore a quiz from trash
  *
  * @param {number} quizId - an unique id of a quiz
  * @param {string} token - a unique session id for user
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
 
-export const adminQuizRestore = (quizId: number, token: string): errorMessages | emptyReturn  => {
+export const adminQuizRestore = (quizId: number, token: string): errorMessages | emptyReturn => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -608,7 +602,6 @@ export const adminQuizRestore = (quizId: number, token: string): errorMessages |
   setData(data);
   return {};
 };
-
 
 /**
   * Delete a particular question from a quiz
@@ -658,7 +651,6 @@ export const adminQuizQuestionRemove = (
   return {};
 };
 
-
 /**
   * A particular question gets duplicated to immediately after where the source question is
   *
@@ -666,12 +658,13 @@ export const adminQuizQuestionRemove = (
   * @param {number} questionId - an unique id of a question in quiz
   * @param {string} token - a unique session id for user
   *
-  * @returns {quizQuestionDuplicateResponse} - returns an object containing the duplicated quizid if no error
+  * @returns {quizQuestionDuplicateResponse} - returns an object containing
+  * the duplicated quizid if no error
   * @returns {errorMessages} - returns error message if error
 */
 export const adminQuizQuestionDuplicate = (
-  quizId: number, 
-  questionId: number, 
+  quizId: number,
+  questionId: number,
   token: string
 ): quizQuestionDuplicateResponse | errorMessages => {
   const data = getData();
@@ -719,11 +712,15 @@ export const adminQuizQuestionDuplicate = (
  * @param {number} quizId - an unique id of a quiz
  * @param {string} token - a unique session id for user
  * @param {string} userEmail - email of user
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
-export const adminQuizTransfer = (quizId: number, token: string, userEmail: string): errorMessages | emptyReturn => {
+export const adminQuizTransfer = (
+  quizId: number,
+  token: string,
+  userEmail: string
+): errorMessages | emptyReturn => {
   const data = getData();
   const receiver = data.users.find((user) => user.email === userEmail);
   const tokenValidation = validateToken(token, data);
@@ -764,13 +761,12 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   return {};
 };
 
-
 /**
  * Permanently delete specific quizzes currently sitting in the trash
  *
  * @param {number[]} quizIds - an array of existing quizIds owned by user
  * @param {string} token - a unique session id for user
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */

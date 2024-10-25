@@ -106,7 +106,7 @@ export interface quizInfo {
 }
 
 export interface quizDuplicateResponse {
-  duplicatedquestionId: number, 
+  duplicatedquestionId: number,
 }
 
 export interface quizTransfer {
