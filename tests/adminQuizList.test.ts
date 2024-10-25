@@ -1,6 +1,19 @@
 import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
 
+import {
+  quizListResponse,
+  userAuthRegister,
+  tokenReturn,
+  quizCreate,
+} from '../src/interface';
+import {
+  requestAdminAuthLogout,
+  requestAdminAuthRegister,
+  requestAdminQuizCreate,
+  requestAdminQuizList
+} from '../src/requestHelperFunctions';
+
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
 
@@ -10,84 +23,47 @@ beforeEach(() => {
 
 /// ////////-----adminQuizList-----////////////
 describe('adminQuizList', () => {
-  let user: { token: string};
-  let quizList: string;
+  let user: userAuthRegister;
+  let user2: userAuthRegister;
+  let quizList: quizListResponse;
   let userToken: string;
+  let quizCreateResponse1: quizCreate;
+  let quizCreateResponse2: quizCreate;
 
   beforeEach(() => {
-    const resRegister = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'test@gmail.com',
-          password: 'validPassword5',
-          nameFirst: 'Patrick',
-          nameLast: 'Chen'
-        },
-        timeout: TIMEOUT_MS
-      }
+    user = requestAdminAuthRegister(
+      'test@gmail.com',
+      'validPassword5',
+      'Patrick',
+      'Chen'
     );
-    user = JSON.parse(resRegister.body.toString());
-    expect(resRegister.statusCode).toStrictEqual(200);
-    userToken = user.token;
+    userToken = (user.body as tokenReturn).token;
+    expect(user.statusCode).toStrictEqual(200);
   });
 
   test('returns an empty list when user has no quizzes', () => {
-    const resAdminQuizlist = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list', {
-        qs: {
-          token: userToken,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    quizList = JSON.parse(resAdminQuizlist.body.toString());
-    expect(resAdminQuizlist.statusCode).toStrictEqual(200);
-    expect(quizList).toStrictEqual({ quizzes: [] });
+    quizList = requestAdminQuizList(userToken);
+    expect(quizList.statusCode).toStrictEqual(200);
+    expect(quizList.body).toStrictEqual({ quizzes: [] });
   });
 
   test('returns a list of quizzes owned by the user', () => {
-    // create a quiz
-    request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: userToken,
-          name: 'Math Quiz',
-          description: 'this is a math quiz'
-        }
-      }
+    quizCreateResponse1 = requestAdminQuizCreate(
+      userToken,
+      'Math Quiz',
+      'this is a math quiz'
     );
-    // create another quiz
-    request(
-      'POST',
-      SERVER_URL + '/v1/admin/quiz',
-      {
-        json: {
-          token: userToken,
-          name: 'English Quiz',
-          description: 'this is an English quiz'
-        }
-      }
+    expect(quizCreateResponse1.statusCode).toStrictEqual(200);
+    quizCreateResponse2 = requestAdminQuizCreate(
+      userToken,
+      'English Quiz',
+      'this is a math quiz'
     );
+    expect(quizCreateResponse2.statusCode).toStrictEqual(200);
 
-    const resAdminQuizlist = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list', {
-        qs: {
-          token: userToken,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-
-    quizList = JSON.parse(resAdminQuizlist.body.toString());
-    expect(resAdminQuizlist.statusCode).toStrictEqual(200);
-    expect(quizList).toStrictEqual({
+    quizList = requestAdminQuizList(userToken);
+    expect(quizList.statusCode).toStrictEqual(200);
+    expect(quizList.body).toStrictEqual({
       quizzes: [
         {
           quizId: expect.any(Number),
@@ -103,61 +79,28 @@ describe('adminQuizList', () => {
 
   test('returns an error when token is invalid', () => {
     // log out user1
-    const result = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/logout',
-      {
-        json: {
-          token: userToken,
-        },
-        timeout: TIMEOUT_MS
-      }
-    );
-    expect(result.statusCode).toStrictEqual(200);
-    expect(JSON.parse(result.body.toString())).toStrictEqual({});
+    const authLogoutResponse = requestAdminAuthLogout(userToken);
+    expect(authLogoutResponse.statusCode).toStrictEqual(200);
+    expect(authLogoutResponse.body).toStrictEqual({});
+
     // log in user2
-    const resRegister = request(
-      'POST',
-      SERVER_URL + '/v1/admin/auth/register',
-      {
-        json: {
-          email: 'user2@gmail.com',
-          password: 'validPassword5',
-          nameFirst: 'Eric',
-          nameLast: 'Ma'
-        },
-        timeout: TIMEOUT_MS
-      }
+    user2 = requestAdminAuthRegister(
+      'user2@gmail.com',
+      'validPassword5',
+      'Eric',
+      'Ma'
     );
-    expect(resRegister.statusCode).toStrictEqual(200);
+    expect(user2.statusCode).toStrictEqual(200);
 
     // now user 2 is logged in, user 1 logged out
-    const resAdminQuizlist = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list', {
-        qs: {
-          token: userToken,
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-    expect(resAdminQuizlist.statusCode).toStrictEqual(401);
-    const quizList = JSON.parse(resAdminQuizlist.body.toString());
-    expect(quizList).toStrictEqual({ error: expect.any(String) });
+    quizList = requestAdminQuizList(userToken);
+    expect(quizList.statusCode).toStrictEqual(401);
+    expect(quizList.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('empty token', () => {
-    const resAdminQuizlist = request(
-      'GET',
-      SERVER_URL + '/v1/admin/quiz/list', {
-        qs: {
-          token: JSON.stringify(''),
-        },
-        timeout: TIMEOUT_MS,
-      }
-    );
-    expect(resAdminQuizlist.statusCode).toStrictEqual(401);
-    const quizList = JSON.parse(resAdminQuizlist.body.toString());
-    expect(quizList).toStrictEqual({ error: expect.any(String) });
+    quizList = requestAdminQuizList(JSON.stringify(''));
+    expect(quizList.statusCode).toStrictEqual(401);
+    expect(quizList.body).toStrictEqual({ error: expect.any(String) });
   });
 });
