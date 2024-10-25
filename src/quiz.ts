@@ -666,10 +666,14 @@ export const adminQuizQuestionRemove = (
   * @param {number} questionId - an unique id of a question in quiz
   * @param {string} token - a unique session id for user
   *
-  * @returns {quizDuplicateResponse} - returns an object containing the duplicated quizid if no error
+  * @returns {quizQuestionDuplicateResponse} - returns an object containing the duplicated quizid if no error
   * @returns {errorMessages} - returns error message if error
 */
-export const adminQuizDuplicate = (quizId: number, questionId: number, token: string): quizDuplicateResponse | errorMessages => {
+export const adminQuizQuestionDuplicate = (
+  quizId: number, 
+  questionId: number, 
+  token: string
+): quizQuestionDuplicateResponse | errorMessages => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
