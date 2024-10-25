@@ -1,5 +1,5 @@
 /// ///////////// interface for dataStore /////////////////
-import { adminAuthRegister } from './auth';
+import { adminAuthRegister, adminAuthLogin } from './auth';
 import { adminQuizCreate, adminQuizList, adminQuizTransfer, adminTrashList } from './quiz';
 export interface dataStore {
   users: user[],
@@ -70,6 +70,10 @@ export interface userDetails {
   numSuccessfulLogins: number,
   numFailedPasswordsSinceLastLogin: number,
 }
+}
+export interface authLoginResponse {
+  body: ReturnType<typeof adminAuthLogin>;
+  statusCode: number;
 }
 
 export interface emptyReturn {}
