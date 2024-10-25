@@ -24,17 +24,25 @@ Example usage
   console.log(store) # Prints { 'names': ['Hayden', 'Tam', 'Rani', 'Giuliana', 'Jake'] }
 */
 
-// Use getData() to access the data
+/**
+ * get data from the json file
+ *
+ * @returns {dataStore} data - return whats in the dataStore.json file
+ */
 function getData() {
   const fp = './dataStore.json';
   if (fs.existsSync(fp)) {
     const dataStoreBuffer = fs.readFileSync(fp);
     const jsonStr = String(dataStoreBuffer);
     data = JSON.parse(jsonStr);
-  } 
+  }
   return data;
 }
-
+/**
+ * save new data into json file
+ *
+ * @param {dataStore} newData - newData going to be save into dataStore.json
+ */
 function setData(newData: dataStore) {
   const updateData = JSON.stringify(newData);
   fs.writeFileSync('./dataStore.json', updateData);

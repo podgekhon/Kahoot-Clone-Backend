@@ -57,6 +57,7 @@ export function validateToken(
 }
 
 let lastSessionId = 0;
+
 /**
   * Generates a session token for a given userId and stores the session
   * in the data store.
@@ -80,6 +81,7 @@ export function generateToken(userId: number, data: dataStore): string {
 /// ///////////////////////////////////////////////////////////////
 
 /**
+ * check whether email has been used before
  *
  * @param {string} email - email use to register
  * @returns {boolean} - return true if valid
@@ -89,6 +91,7 @@ export const isEmailUsed = (email: string, data: dataStore): boolean => {
 };
 
 /**
+ * check whether name is valid, returning boolen
  *
  * @param {string} name - user's firstname or lastname
  * @returns {boolean} - return true if name is valid
@@ -214,7 +217,6 @@ export const isNameTaken = (authUserId: number, name: string, data: dataStore): 
  * @param {object} data - the dataset containing user and quiz information.
  * @returns {object|null} - an error object if validation fails,
  *                         or null if the quiz and user are valid.
- *
  */
 export const isValidQuiz = (
   authUserId: number,
@@ -313,10 +315,22 @@ export const validateAnswers = (
   return null;
 };
 
+/**
+ *  check whether the return of a request is error message
+ *
+ * @param {errorMessages| emptyReturn} result - result of http request
+ * @returns {boolean}
+ */
 export function isErrorMessages(result: errorMessages | emptyReturn): result is errorMessages {
   return (result as errorMessages).error !== undefined;
 }
 
+/**
+ * given a number, return a number between 0 and the number
+ *
+ * @param {number} max - max number
+ * @returns {number} - random number between 0 and max
+ */
 export function random(max: number): number {
   return Math.floor(Math.random() * (max + 1)); // 包括 max
 }
