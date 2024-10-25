@@ -26,19 +26,22 @@ Example usage
 
 // Use getData() to access the data
 function getData() {
-  const fp = __dirname + '/dataStore.json';
+  const fp = './dataStore.json';
   if (fs.existsSync(fp)) {
+    console.log('work');
     const dataStoreBuffer = fs.readFileSync(fp);
     const jsonStr = String(dataStoreBuffer);
     data = JSON.parse(jsonStr);
+  } else {
+    console.log('not working');
   }
+  console.log(data);
   return data;
 }
 
 function setData(newData: dataStore) {
   const updateData = JSON.stringify(newData);
   fs.writeFileSync('./dataStore.json', updateData);
-  data = newData;
 }
 
 export { getData, setData };

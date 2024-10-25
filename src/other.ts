@@ -1,4 +1,4 @@
-import { getData } from './dataStore';
+import { getData, setData } from './dataStore';
 /**
   * Reset the state of the application back to the start.
   *
@@ -16,5 +16,6 @@ export const clear = () => {
   data.quizzes = [];
   data.sessions = [];
   data.trash = [];
+  setData(data);
   return {};
 };

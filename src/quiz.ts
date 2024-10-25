@@ -39,7 +39,7 @@ import {
 */
 export const adminQuizList = (token: string): errorMessages| quizList => {
   const data = getData();
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
 
   if ('error' in tokenValidation) {
     return { error: tokenValidation.error };
@@ -82,14 +82,14 @@ export const adminQuizCreate = (
 ): quizCreateResponse | errorMessages => {
   const data = getData();
   // get userId from token
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    return { error: 'invalid token' };
   }
   const authUserId = tokenValidation.authUserId;
 
   // checks if user is valid
-  if (!isUserValid(authUserId)) {
+  if (!isUserValid(authUserId, data)) {
     // if user not valid, return error
     return { error: 'AuthUserId is not a valid user.' };
   }
@@ -113,7 +113,7 @@ export const adminQuizCreate = (
   }
 
   // checks if quiz name is already used by another quiz the same user owns
-  if (isNameTaken(authUserId, name)) {
+  if (isNameTaken(authUserId, name, data)) {
     return {
       error: 'Name is already used by the' +
       ' current logged in user for another quiz.'
@@ -145,7 +145,7 @@ export const adminQuizQuestionCreate = (
 ): quizQuestionCreateResponse | errorMessages => {
   const data = getData();
 
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     return { error: 'INVALID_TOKEN' };
   }
@@ -203,7 +203,7 @@ export const adminQuizQuestionUpdate = (
 ): emptyReturn | errorMessages => {
   const data = getData();
 
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     return { error: 'INVALID_TOKEN' };
   }
@@ -264,7 +264,7 @@ export const adminMoveQuizQuestion = (
   const data = getData();
 
   // Validate token
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     return { error: 'INVALID_TOKEN' };
   }
@@ -317,9 +317,9 @@ export const adminQuizRemove = (
 ): errorMessages | emptyReturn => {
   const data = getData();
   // get userId from token
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    return { error: 'invalid token' };
   }
   const authUserId = tokenValidation.authUserId;
 
@@ -350,7 +350,7 @@ export const adminQuizRemove = (
 export const adminQuizInfo = (token: string, quizId: number): errorMessages | quizInfo => {
   const data = getData();
   // get userId from token
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     return { error: 'INVALID_TOKEN' };
   }
@@ -396,13 +396,13 @@ export const adminQuizNameUpdate = (
 ): errorMessages | emptyReturn => {
   const data = getData();
   // get userId from token
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    return { error: 'invalid token' };
   }
   const authUserId = tokenValidation.authUserId;
 
-  if (!isUserValid(authUserId)) {
+  if (!isUserValid(authUserId, data)) {
     return { error: 'AuthUserId is not a valid user.' };
   }
 
@@ -426,7 +426,7 @@ export const adminQuizNameUpdate = (
     return isNameLengthValid(name);
   }
   // check if user has duplicate quiz names
-  if (isNameTaken(authUserId, name)) {
+  if (isNameTaken(authUserId, name, data)) {
     return {
       error: 'Name is already used by the current' +
               ' logged in user for another quiz.'
@@ -456,7 +456,7 @@ export const adminQuizDescriptionUpdate = (
 ): errorMessages | emptyReturn => {
   const data = getData();
   // get userId from token
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     return { error: 'INVALID_TOKEN' };
   }
@@ -493,7 +493,7 @@ export const adminQuizDescriptionUpdate = (
 export const adminTrashList = (token: string): errorMessages | quizList => {
   const data = getData();
 
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     return { error: tokenValidation.error };
   }
@@ -525,10 +525,10 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
 export const adminQuizRestore = (quizId: number, token: string) => {
   const data = getData();
 
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   // invalid token
   if ('error' in tokenValidation) {
-    return { error: 'INVALID_TOKEN' };
+    return { error: 'invalid token' };
   }
   const authUserId = tokenValidation.authUserId;
 
@@ -574,7 +574,7 @@ export const adminQuizQuestionRemove = (
   const data = getData();
 
   // Token is empty or invalid (does not refer to valid logged in user session)
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     return { error: 'token is empty or invalid' };
   }
@@ -613,10 +613,10 @@ export const adminQuizQuestionRemove = (
 export const adminQuizDuplicate = (quizId: number, questionId: number, token: string) => {
   const data = getData();
 
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   // invalid token
   if ('error' in tokenValidation) {
-    return { error: 'INVALID_TOKEN' };
+    return { error: 'invalid token' };
   }
   const authUserId = tokenValidation.authUserId;
 
@@ -651,7 +651,7 @@ export const adminQuizDuplicate = (quizId: number, questionId: number, token: st
 export const adminQuizTransfer = (quizId: number, token: string, userEmail: string) => {
   const data = getData();
   const receiver = data.users.find((user) => user.email === userEmail);
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
   if ('error' in tokenValidation) {
@@ -671,7 +671,7 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   }
 
   // if receiver already has quiz with same name
-  if (isNameTaken(receiverId, transferredQuiz.name)) {
+  if (isNameTaken(receiverId, transferredQuiz.name, data)) {
     return {
       error: 'DUPLICATE_QUIZNAME'
     };
@@ -693,7 +693,7 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
 export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
   // Validate inputs
   const data = getData();
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     return { error: tokenValidation.error };
   }
