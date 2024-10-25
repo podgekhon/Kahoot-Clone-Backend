@@ -1,7 +1,7 @@
 import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
 import { requestAdminAuthRegister, requestAdminQuizCreate, requestAdminQuizQuestionDuplicate, requestAdminQuizQuestionCreate, requestAdminQuizInfo } from '../src/helperfunctiontests';
-import { quizCreateResponse, quizQuestionCreateResponse, tokenReturn } from '../src/interface';
+import { quizCreateResponse, quizQuestionCreateResponse, quizDuplicateResponse, tokenReturn } from '../src/interface';
 import { httpStatus } from './adminAuthRegister.test';
 
 const SERVER_URL = `${url}:${port}`;
@@ -111,7 +111,7 @@ describe('test for quiz duplicate', () => {
       expect(res.body).toStrictEqual(
         { duplicatedquestionId: expect.any(Number) }
       );
-      const question2Id = res.body.duplicatedquestionId;
+      const question2Id = (res.body as quizDuplicateResponse).duplicatedquestionId;
 
       // list the info in the quiz, should be two exactly same question in the list
       const quizInfoRes = requestAdminQuizInfo(quiz1Id, user1token);
@@ -192,7 +192,7 @@ describe('test for quiz duplicate', () => {
       const question2Id = (question2.body as quizQuestionCreateResponse).questionId;
       // duplicate question1
       const res = requestAdminQuizQuestionDuplicate(quiz1Id, question1Id, user1token);
-      const duplicateId = res.body.duplicatedquestionId;
+      const duplicateId = (res.body as quizDuplicateResponse).duplicatedquestionId;
 
       expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
       expect(res.body).toStrictEqual(
