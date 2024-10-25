@@ -39,15 +39,30 @@ describe('Test for adminQuizTransfer', () => {
   let quizTransferResponse: quizTransfer;
 
   beforeEach(() => {
-    user1Response = requestAdminAuthRegister('user1@gmail.com', 'validPassword1', 'User', 'One');
+    user1Response = requestAdminAuthRegister(
+      'user1@gmail.com',
+      'validPassword1',
+      'User',
+      'One'
+    );
     user1Token = (user1Response.body as tokenReturn).token;
     expect(user1Response.statusCode).toStrictEqual(200);
 
-    user2Response = requestAdminAuthRegister('user2@gmail.com', 'validPassword2', 'User', 'Two');
+    user2Response = requestAdminAuthRegister(
+      'user2@gmail.com',
+      'validPassword2',
+      'User',
+      'Two'
+    );
     expect(user2Response.statusCode).toStrictEqual(200);
     user2Token = (user2Response.body as tokenReturn).token;
 
-    user3Response = requestAdminAuthRegister('user3@gmail.com', 'validPassword3', 'User', 'Three');
+    user3Response = requestAdminAuthRegister(
+      'user3@gmail.com',
+      'validPassword3',
+      'User',
+      'Three'
+    );
     expect(user3Response.statusCode).toStrictEqual(200);
     user3Token = (user3Response.body as tokenReturn).token;
 
@@ -57,7 +72,12 @@ describe('Test for adminQuizTransfer', () => {
       quizzes: []
     });
 
-    quizCreateResponse = requestAdminQuizCreate(user1Token, 'Math Quiz', 'this is a math quiz');
+
+    quizCreateResponse = requestAdminQuizCreate(
+      user1Token,
+      'Math Quiz',
+      'this is a math quiz'
+    );
     expect(quizCreateResponse.statusCode).toStrictEqual(200);
     quizId = (quizCreateResponse.body as quizCreateResponse).quizId;
   });
