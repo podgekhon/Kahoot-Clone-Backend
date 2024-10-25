@@ -25,14 +25,16 @@ import validator from 'validator';
 // assume white space is kept
 
 /**
- * Register a user with an email, password, and names,
- * then returns their authUserId value.
+ * Register a user with an email, password, and names, then returns their token.
  *
- * @param {string} email
- * @param {string} password
- *
- * @returns {integer} authUserId
-*/
+ * @param {string} email - The user's email address
+ * @param {string} password - The user's password
+ * @param {string} nameFirst - The user's first name
+ * @param {string} nameLast - The user's last name
+ * 
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {tokenReturn} - An object containing a token upon successful registration
+ */
 
 export const adminAuthRegister = (
   email: string,
@@ -88,18 +90,15 @@ export const adminAuthRegister = (
 };
 
 /**
-  * Given a registered user's email and password returns their authUserId value.
-  *
-  * @param {string} email - description of paramter
-  * @param {string} password - description of parameter
-  *
-  *
-  * @returns {integer} - UserId
-*/
-export const adminAuthLogin = (
-  email: string,
-  password: string
-): errorMessages | tokenReturn => {
+ * Given a registered user's email and password, returns their token upon successful login.
+ *
+ * @param {string} email - The user's email address
+ * @param {string} password - The user's password
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {tokenReturn} - An object containing a token upon successful registration
+ */
+export const adminAuthLogin = (email: string, password: string): errorMessages | tokenReturn => {
   const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
@@ -123,22 +122,13 @@ export const adminAuthLogin = (
 };
 
 /**
-  * Given an admin user's authUserId, return details about the user.
-  * "name" is the first and last name concatenated
-  * with a single space between them.
-  *
-  * @param {string} token - description of paramter
-  *
-  * @returns { user:
-  *    {
-  *     userId: Integers,
-  *     name: string,
-  *     email: string,
-  *     numSuccessfulLogins: Integers,
-  *     numFailedPasswordsSinceLastLogin: Integers,
-  *  }
-  *}
-*/
+ * Given a user's token, returns detailed information about the user.
+ *
+ * @param {string} token - The authentication token of the user
+ * 
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {userDetails} - An empty containting the user's details upon successful registration
+ */
 export const adminUserDetails = (token: string): errorMessages | userDetails => {
   const data = getData();
   // get userId
@@ -165,16 +155,16 @@ export const adminUserDetails = (token: string): errorMessages | userDetails => 
 };
 
 /**
- * Given an admin user's authUserId and a set of properties,
- * update the properties of this logged in admin user.
+ * Update the email, first name, and last name of a logged-in user.
  *
- * @param {string} token - token of a logged in user
- * @param {string} email - email
- * @param {string} nameFirst - First name
- * @param {string} nameLast - Last name
- * ...
- * @return {} no return;
-*/
+ * @param {string} token - The authentication token of the logged-in user
+ * @param {string} email - The new email address to be set
+ * @param {string} nameFirst - The new first name to be set
+ * @param {string} nameLast - The new last name to be set
+ * 
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - An empty upon successful registration
+ */
 export const adminUserDetailsUpdate = (
   token: string,
   email: string,
@@ -225,15 +215,15 @@ export const adminUserDetailsUpdate = (
 };
 
 /**
-  * Given details relating to a password change,
-  * update the password of a logged in user.
-  *
-  * @param {string} token - description of paramter
-  * @param {string} oldPassword - oldPassword
-  * @param {string} newPassword - newPassword
-  * ...
-  * @return {} no return;
-*/
+ * Update the password of a logged-in user.
+ *
+ * @param {string} token - The authentication token of the logged-in user
+ * @param {string} oldPassword - The user's current password
+ * @param {string} newPassword - The new password to be set
+ * 
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - An empty upon successful registration
+ */
 export const adminUserPasswordUpdate = (
   token: string,
   oldPassword: string,
@@ -282,13 +272,13 @@ export const adminUserPasswordUpdate = (
 };
 
 /**
-  * Given userID,
-  * logout and delete token.
-  *
-  * @param {string} token - description of paramter
-  * ...
-  * @return {} no return;
-*/
+ * Logs out a user by deleting their session token.
+ *
+ * @param {string} token - The authentication token of the user
+ * 
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - An empty upon successful registration
+ */
 export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
   const data = getData();
 

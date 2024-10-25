@@ -29,14 +29,10 @@ import {
   * Provide a list of all quizzes that are owned by
   * the currently logged in user.
   *
-  * @param {string} token - authUserId
+  * @param {string} token - a unique session id for user
   *
-  * @return {quizzes : [
-  *     {
-  *       quizId : integer
-  *       name : string
-  *     }
-  * ]}
+  * @return {quizList}  - returns list of quizzes if no errors
+  * @return {errorMessages} - returns error messages if error
 */
 export const adminQuizList = (token: string): errorMessages| quizList => {
   const data = getData();
@@ -70,11 +66,12 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
 /**
   * Given basic details about a new quiz, create one for the logged in user.
   *
-  * @param {string} token - id of authUser
+  * @param {string} token - a unique session id for user
   * @param {string} name - name of new quiz
   * @param {string} description - description of new quiz for logged in user
   *
-  * @returns {integer} - id of quiz
+  * @returns {quizCreateResponse} - returns id of quiz if no errors
+  * @returns {errorMessages} - returns error messaeg if error
 */
 export const adminQuizCreate = (
   token: string,
@@ -139,6 +136,17 @@ export const adminQuizCreate = (
   return { quizId: newQuiz.quizId };
 };
 
+
+  /**
+  * Create a new stub question for a particular quiz.
+  *
+  * @param {number} quizId - an unique id of a quiz
+  * @param {string} token - a unique session id for user
+  * @param {question} questionBody - informatoion of a question
+  *
+  * @returns {quizQuestionCreateResponse} - returns id of created question
+  * @returns {errorMessages} - returns error message if error
+*/
 export const adminQuizQuestionCreate = (
   quizId: number,
   questionBody: question,
@@ -196,6 +204,18 @@ export const adminQuizQuestionCreate = (
   return { questionId: newQuestion.questionId };
 };
 
+
+/**
+  * Update the relevant details of a particular question within a quiz.
+  *
+  * @param {number} quizId - an unique id of a quiz
+  * @param {number} questionId - an unique id of a question in quiz
+  * @param {string} token - a unique session id for user
+  * @param {question} updatedQuestionBody - informatoion of a question
+  *
+  * @returns {errorMessages} - An object containing an error message if registration fails
+  * @returns {emptyReturn} - An empty upon successful registration
+*/
 export const adminQuizQuestionUpdate = (
   quizId: number,
   questionId: number,
@@ -256,6 +276,18 @@ export const adminQuizQuestionUpdate = (
   return { };
 };
 
+
+/**
+  * Move a question from one particular position in the quiz to another
+  *
+  * @param {number} quizId - an unique id of a quiz
+  * @param {number} questionId - an unique id of a question in quiz
+  * @param {string} token - a unique session id for user
+  * @param {number} newPosition - index of a question in the quiz
+  *
+  * @returns {errorMessages} - An object containing an error message if registration fails
+  * @returns {emptyReturn} - An empty upon successful registration
+*/
 export const adminMoveQuizQuestion = (
   quizId: number,
   questionId: number,
@@ -307,10 +339,11 @@ export const adminMoveQuizQuestion = (
 /**
   * Given a particular quiz, permanently remove the quiz.
   *
-  * @param {string} token - id of authUser
-  * @param {integer} quizId - id of quiz
+  * @param {string} token - a unique session id for user
+  * @param {integer} quizId - a unique id of quiz
   *
-  * @returns {} - empty object
+  * @returns {errorMessages} - An object containing an error message if registration fails
+  * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizRemove = (
   token: string,
@@ -343,10 +376,11 @@ export const adminQuizRemove = (
 /**
   * Get all of the relevant information about the current quiz.
   *
-  * @param {string} token - id of authUser
-  * @param {integer} quizId - id of quiz
+  * @param {string} token - a unique session id for user
+  * @param {integer} quizId - a unique id of quiz
   *
-  * @returns {object} - struct containing info for quiz
+  * @returns {quizInfo} - struct containing info for quiz
+  * @returns {errorMessages} - returns error message if error
 */
 export const adminQuizInfo = (token: string, quizId: number): errorMessages | quizInfo => {
   const data = getData();
@@ -384,11 +418,12 @@ export const adminQuizInfo = (token: string, quizId: number): errorMessages | qu
 /**
   * Update the name of the relevant quiz
   *
-  * @param {integestringr} token - id of authUser
-  * @param {integer} quizId - id of quiz
+  * @param {string} token - a unique session id for user
+  * @param {number} quizId - id of quiz
   * @param {string} name - quiz name
   *
-  * @returns {} - empty object
+  * @returns {errorMessages} - An object containing an error message if registration fails
+  * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizNameUpdate = (
   token: string,
@@ -441,14 +476,16 @@ export const adminQuizNameUpdate = (
   return { };
 };
 
+
 /**
   * Update the description of the relevant quiz
   *
-  * @param {string} token - id of authUser
-  * @param {integer} quizId - id of quiz
-  * @param {string} description - quiz name
+  * @param {string} token - a unique session id for user
+  * @param {integer} quizId - a unque id of quiz
+  * @param {string} description - deccription of a quiz belonging to a user
   *
-  * @returns {} - empty object
+  * @returns {errorMessages} - An object containing an error message if registration fails
+  * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizDescriptionUpdate = (
   token: string,
@@ -485,11 +522,14 @@ export const adminQuizDescriptionUpdate = (
   return { };
 };
 
+
 /**
  * View the quiz trash
  *
- * @param {string } token - user token
- * @returns {quizList}  - list of quizzes
+ * @param {string} token - a unique session id for user
+ * 
+ * @returns {quizList}  - list of quizzes in trash
+ * @returns {errorMessages} - returns error message if error
  */
 export const adminTrashList = (token: string): errorMessages | quizList => {
   const data = getData();
@@ -516,18 +556,18 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
   return { quizzes: userTrashQuizzes };
 };
 
+
 /**
  * Restore a quiz from trash
  *
- * @param {number} quizId - quizId
- * @param {string} token - user token
- * @returns {emptyReturn | errorMessages} - Empty object on success or an error
- *
+ * @param {number} quizId - an unique id of a quiz
+ * @param {string} token - a unique session id for user
+ * 
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - An empty upon successful registration
  */
-export const adminQuizRestore = (
-  quizId: number,
-  token: string
-):emptyReturn | errorMessages => {
+
+export const adminQuizRestore = (quizId: number, token: string): errorMessages | emptyReturn  => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -569,13 +609,16 @@ export const adminQuizRestore = (
   return {};
 };
 
+
 /**
- * Removes a question from a quiz
- *
- * @param {number} quizId - Id of the quiz to modify
- * @param {number} questionId - Id of the question to remove
- * @param {string} token - User's session token
- * @returns {emptyReturn | errorMessages} - Empty object on success or an error
+  * Delete a particular question from a quiz
+  *
+  * @param {number} quizId - an unique id of a quiz
+  * @param {number} questionId - an unique id of a question in quiz
+  * @param {string} token - a unique session id for user
+  *
+  * @returns {errorMessages} - An object containing an error message if registration fails
+  * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizQuestionRemove = (
   quizId: number,
@@ -615,20 +658,18 @@ export const adminQuizQuestionRemove = (
   return {};
 };
 
+
 /**
- * Duplicates a question within a quiz.
- *
- * @param {number} quizId - Id of the quiz
- * @param {number} questionId - Id of the question to duplicate
- * @param {string} token - User's session token
- * @returns {quizQuestionDuplicateResponse | errorMessages}
- * - The new question ID on success, or an error message
+  * A particular question gets duplicated to immediately after where the source question is
+  *
+  * @param {number} quizId - an unique id of a quiz
+  * @param {number} questionId - an unique id of a question in quiz
+  * @param {string} token - a unique session id for user
+  *
+  * @returns {quizDuplicateResponse} - returns an object containing the duplicated quizid if no error
+  * @returns {errorMessages} - returns error message if error
 */
-export const adminQuizQuestionDuplicate = (
-  quizId: number,
-  questionId: number,
-  token: string
-) : quizQuestionDuplicateResponse | errorMessages => {
+export const adminQuizDuplicate = (quizId: number, questionId: number, token: string): quizDuplicateResponse | errorMessages => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -669,19 +710,16 @@ export const adminQuizQuestionDuplicate = (
 };
 
 /**
- * Transfers ownership of a quiz to another user
+ * Transfer ownership of a quiz to a different user based on their email
  *
- * @param {number} quizId - Id of the quiz to be transferred
- * @param {string} token - User's session token for authorization
- * @param {string} userEmail - Email of the user to whom the quiz will be transferred
- * @returns {emptyReturn | errorMessages}
- * - Returns an empty object on success, or an error message
-*/
-export const adminQuizTransfer = (
-  quizId: number,
-  token: string,
-  userEmail: string
-) => {
+ * @param {number} quizId - an unique id of a quiz
+ * @param {string} token - a unique session id for user
+ * @param {string} userEmail - email of user
+ * 
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - An empty upon successful registration
+ */
+export const adminQuizTransfer = (quizId: number, token: string, userEmail: string): errorMessages | emptyReturn => {
   const data = getData();
   const receiver = data.users.find((user) => user.email === userEmail);
   const tokenValidation = validateToken(token, data);
@@ -722,18 +760,17 @@ export const adminQuizTransfer = (
   return {};
 };
 
+
 /**
- * Empties the trash by permanently removing specified quizzes.
+ * Permanently delete specific quizzes currently sitting in the trash
  *
- * @param {string} token - User's session token for authentication
- * @param {number[]} quizIds - Array of quiz Ids to be removed from the trash
- * @returns {errorMessages | emptyReturn} - Returns an empty object on success,
- * or an error message
-*/
-export const adminTrashEmpty = (
-  token: string,
-  quizIds: number[]
-): errorMessages | emptyReturn => {
+ * @param {number[]} quizIds - an array of existing quizIds owned by user
+ * @param {string} token - a unique session id for user
+ * 
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - An empty upon successful registration
+ */
+export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
   // Validate inputs
   const data = getData();
   const tokenValidation = validateToken(token, data);

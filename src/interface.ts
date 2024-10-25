@@ -105,6 +105,10 @@ export interface quizInfo {
   timeLimit: number
 }
 
+export interface quizDuplicateResponse {
+  duplicatedquestionId: number, 
+}
+
 export interface quizTransfer {
   body: ReturnType<typeof adminQuizTransfer>;
   statusCode: number;
