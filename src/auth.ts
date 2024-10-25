@@ -295,7 +295,7 @@ export const adminUserPasswordUpdate = (
 */
 export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
   const data = getData();
-  
+
   const validation = validateToken(token, data);
   if ('error' in validation) {
     return { error: 'invalid token' };

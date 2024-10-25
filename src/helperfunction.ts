@@ -1,5 +1,3 @@
-import { getData } from './dataStore';
-
 import {
   token,
   errorMessages,
@@ -10,7 +8,6 @@ import {
   dataStore as data,
   dataStore
 } from './interface';
-
 
 /**
  * Generates a random hexadecimal color code.
@@ -35,7 +32,12 @@ export function generateRandomColour(): string {
   * @returns {{ authUserId: number } | { error: string }} - an object
   * containing authUserId if valid, or an error message if invalid
   */
-export function validateToken(token: string, data: dataStore): { authUserId: number } | { error: string } {
+export function validateToken(
+  token: string,
+  data: dataStore
+): {
+  authUserId: number
+} | { error: string } {
   let decodedToken;
   try {
     // Try to decode and parse the token as a valid JSON string

@@ -59,10 +59,8 @@ import {
 } from './quiz';
 
 import { clear } from './other';
-import { validateToken, isErrorMessages } from './helperfunction';
-import { error } from 'console';
+import { isErrorMessages } from './helperfunction';
 import { errorMessages } from './interface';
-import e from 'express';
 
 export enum httpStatus {
   UNAUTHORIZED = 401,
@@ -116,7 +114,6 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
 
-
   const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
   if ('error' in result) {
     if (result.error === 'Invalid token') {
@@ -152,14 +149,13 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, name } = req.body;
-  
+
   const result = adminQuizNameUpdate(token, parseInt(quizid), name);
   if ((result as errorMessages).error === 'invalid token') {
     return res.status(httpStatus.UNAUTHORIZED).json({
       error: 'Token is empty or invalid',
     });
-
-  };
+  }
   if (isErrorMessages(result) &&
     (result.error === 'Quiz ID does not refer to a valid quiz.' ||
      result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
@@ -399,9 +395,8 @@ app.put('/v1/admin/user/details', (req, res) => {
 
   const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
   if ('error' in updateResult) {
-    if (updateResult.error === 'invalid token' ) {
+    if (updateResult.error === 'invalid token') {
       return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
-
     }
     return res.status(httpStatus.BAD_REQUEST).json({ error: 'Unknown Type: string - error' });
   }
@@ -412,7 +407,6 @@ app.put('/v1/admin/user/details', (req, res) => {
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { token } = req.query;
   const { quizid } = req.params;
-
 
   const removeResult = adminQuizRemove(token as string, Number(quizid));
   if ('error' in removeResult) {
@@ -482,7 +476,6 @@ app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
   const { token } = req.body;
   const quizId = parseInt(req.params.quizId as string);
 
-
   const result = adminQuizRestore(quizId, token);
   if ('error' in result) {
     if (result.error === 'invalid token') {
@@ -547,7 +540,7 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
 
   const result = adminAuthLogout(token);
   if ('error' in result) {
-    if (result.error === 'invalid token' ) {
+    if (result.error === 'invalid token') {
       return res.status(httpStatus.UNAUTHORIZED).json(result);
     }
     if (result.error === 'Session not found.') {
@@ -564,7 +557,6 @@ app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate', (req: Request,
   const { token } = req.body;
   const quizId = parseInt(req.params.quizId as string);
   const questionId = parseInt(req.params.questionId as string);
-
 
   const result = adminQuizDuplicate(quizId, questionId, token);
   if ('error' in result) {

@@ -28,14 +28,10 @@ Example usage
 function getData() {
   const fp = './dataStore.json';
   if (fs.existsSync(fp)) {
-    console.log('work');
     const dataStoreBuffer = fs.readFileSync(fp);
     const jsonStr = String(dataStoreBuffer);
     data = JSON.parse(jsonStr);
-  } else {
-    console.log('not working');
-  }
-  console.log(data);
+  } 
   return data;
 }
 
