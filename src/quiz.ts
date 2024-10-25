@@ -9,8 +9,8 @@ import {
   isValidQuiz,
   isValidQuestion,
   validateAnswers,
-  random
-} from './helperfunction';
+  randomId
+} from './helperFunctions';
 
 import {
   emptyReturn,
@@ -18,7 +18,7 @@ import {
   quizList,
   quizCreateResponse,
   quizQuestionCreateResponse,
-  quizDuplicateResponse,
+  quizQuestionDuplicateResponse,
   quizInfo,
   quiz,
   question,
@@ -120,14 +120,14 @@ export const adminQuizCreate = (
 
   // push new quiz object into db & return quizId
   const newQuiz: quiz = {
-    quizId: random(500),
+    quizId: randomId(10000),
     ownerId: authUserId,
     name: name,
     description: description,
     numQuestions: 0,
     questions: [],
-    timeCreated: Math.floor(Date.now()),
-    timeLastEdited: Math.floor(Date.now()),
+    timeCreated: Math.floor(Date.now() / 1000),
+    timeLastEdited: Math.floor(Date.now() / 1000),
     timeLimit: 0
   };
 
@@ -136,8 +136,7 @@ export const adminQuizCreate = (
   return { quizId: newQuiz.quizId };
 };
 
-
-  /**
+/**
   * Create a new stub question for a particular quiz.
   *
   * @param {number} quizId - an unique id of a quiz
@@ -181,12 +180,12 @@ export const adminQuizQuestionCreate = (
   }
 
   const newQuestion: question = {
-    questionId: Math.floor(Math.random() * 1000000),
+    questionId: randomId(100000),
     question: questionBody.question,
     timeLimit: questionBody.timeLimit,
     points: questionBody.points,
     answerOptions: questionBody.answerOptions.map((answer: answerOption) => ({
-      answerId: Math.floor(Math.random() * 1000000),
+      answerId: randomId(100000),
       answer: answer.answer,
       colour: generateRandomColour(),
       correct: answer.correct
@@ -203,7 +202,6 @@ export const adminQuizQuestionCreate = (
 
   return { questionId: newQuestion.questionId };
 };
-
 
 /**
   * Update the relevant details of a particular question within a quiz.
@@ -270,12 +268,11 @@ export const adminQuizQuestionUpdate = (
     )
   );
 
-  quiz.timeLastEdited = Math.floor(Date.now());
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   setData(data);
 
   return { };
 };
-
 
 /**
   * Move a question from one particular position in the quiz to another
@@ -329,7 +326,7 @@ export const adminMoveQuizQuestion = (
   const [questionToMove] = quiz.questions.splice(currentIndex, 1);
   quiz.questions.splice(newPosition, 0, questionToMove);
 
-  quiz.timeLastEdited = Math.floor(Date.now());
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
   setData(data);
 
@@ -365,7 +362,7 @@ export const adminQuizRemove = (
   // remove the correct quiz
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   const removeQuiz = data.quizzes[quizIndex];
-  removeQuiz.timeLastEdited = Math.floor(Date.now());
+  removeQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
   data.trash.push(removeQuiz);
   data.quizzes.splice(quizIndex, 1);
 
@@ -471,11 +468,10 @@ export const adminQuizNameUpdate = (
 
   quiz.name = name;
   // Update timeLastEdited
-  quiz.timeLastEdited = Math.floor(Date.now());
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   setData(data);
   return { };
 };
-
 
 /**
   * Update the description of the relevant quiz
@@ -516,18 +512,17 @@ export const adminQuizDescriptionUpdate = (
   // update description and timeLastEdited
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
   validQuizId.description = description;
-  validQuizId.timeLastEdited = Math.floor(Date.now());
+  validQuizId.timeLastEdited = Math.floor(Date.now() / 1000);
 
   setData(data);
   return { };
 };
 
-
 /**
- * view the quiz from trash
+ * View the quiz trash
  *
  * @param {string} token - a unique session id for user
- * 
+ *
  * @returns {quizList}  - list of quizzes in trash
  * @returns {errorMessages} - returns error message if error
  */
@@ -556,22 +551,20 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
   return { quizzes: userTrashQuizzes };
 };
 
-
 /**
- * restore a quiz from trash
+ * Restore a quiz from trash
  *
  * @param {number} quizId - an unique id of a quiz
  * @param {string} token - a unique session id for user
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
 
-export const adminQuizRestore = (quizId: number, token: string): errorMessages | emptyReturn  => {
+export const adminQuizRestore = (quizId: number, token: string): errorMessages | emptyReturn => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  // invalid token
   if ('error' in tokenValidation) {
     return { error: 'invalid token' };
   }
@@ -581,36 +574,34 @@ export const adminQuizRestore = (quizId: number, token: string): errorMessages |
   const quiz = data.trash.find(q => q.quizId === quizId);
   const quizIsActive = data.quizzes.find(q => q.quizId === quizId);
   if (quiz) {
-    // not owned by user
     if (quiz.ownerId !== authUserId) {
       return { error: 'user is not the owner of this quiz' };
     }
   }
-  // if quiz is not in the trash
+  // If quiz is not in the trash
   if (!quiz) {
     // quiz doesnt exist
     if (!quizIsActive) {
       return { error: 'quiz doesnt exist' };
     }
-    return { error: 'quizId refer to a quiz not currently in the trash' };
+    return { error: 'quizId refers to a quiz not currently in the trash' };
   }
 
   const activeQuiz = data.quizzes.find(q => q.name === quiz.name);
-  // quiz name used
+  // Quiz name used
   if (activeQuiz) {
     return { error: 'quiz name used by active quiz' };
   }
-  // restore the quiz
-  quiz.timeLastEdited = Math.floor(Date.now());
+  // Restore the quiz
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   data.quizzes.push(quiz);
-  // delete the quiz in trash
+  // Delete the quiz in trash
   const quizIndex = data.trash.findIndex(q => q.quizId === quizId);
   data.trash.splice(quizIndex, 1);
 
   setData(data);
   return {};
 };
-
 
 /**
   * Delete a particular question from a quiz
@@ -654,12 +645,11 @@ export const adminQuizQuestionRemove = (
 
   quiz.questions.splice(questionIndex, 1);
   quiz.numQuestions--;
-  quiz.timeLastEdited = Math.floor(Date.now());
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
   setData(data);
   return {};
 };
-
 
 /**
   * A particular question gets duplicated to immediately after where the source question is
@@ -668,10 +658,15 @@ export const adminQuizQuestionRemove = (
   * @param {number} questionId - an unique id of a question in quiz
   * @param {string} token - a unique session id for user
   *
-  * @returns {quizDuplicateResponse} - returns an object containing the duplicated quizid if no error
+  * @returns {quizQuestionDuplicateResponse} - returns an object containing
+  * the duplicated quizid if no error
   * @returns {errorMessages} - returns error message if error
 */
-export const adminQuizDuplicate = (quizId: number, questionId: number, token: string): quizDuplicateResponse | errorMessages => {
+export const adminQuizQuestionDuplicate = (
+  quizId: number,
+  questionId: number,
+  token: string
+): quizQuestionDuplicateResponse | errorMessages => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -700,13 +695,15 @@ export const adminQuizDuplicate = (quizId: number, questionId: number, token: st
   // make a copy
   const newQuestion = { ...validQuestion };
   newQuestion.questionId = newQuestionId;
-  validQuiz.timeLastEdited = Date.now();
+  validQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
 
   validQuiz.questions.splice(validQuestionIndex + 1, 0, newQuestion);
-  validQuiz.timeLastEdited = Math.floor(Date.now());
+  validQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
   validQuiz.numQuestions += 1;
+  // Add the timeLimit of the duplicated question to the quiz
+  validQuiz.timeLimit = validQuiz.timeLimit + validQuestion.timeLimit;
   setData(data);
-  return { duplicatedquestionId: newQuestionId };
+  return { duplicatedQuestionId: newQuestionId };
 };
 
 /**
@@ -715,11 +712,15 @@ export const adminQuizDuplicate = (quizId: number, questionId: number, token: st
  * @param {number} quizId - an unique id of a quiz
  * @param {string} token - a unique session id for user
  * @param {string} userEmail - email of user
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
-export const adminQuizTransfer = (quizId: number, token: string, userEmail: string): errorMessages | emptyReturn => {
+export const adminQuizTransfer = (
+  quizId: number,
+  token: string,
+  userEmail: string
+): errorMessages | emptyReturn => {
   const data = getData();
   const receiver = data.users.find((user) => user.email === userEmail);
   const tokenValidation = validateToken(token, data);
@@ -760,13 +761,12 @@ export const adminQuizTransfer = (quizId: number, token: string, userEmail: stri
   return {};
 };
 
-
 /**
  * Permanently delete specific quizzes currently sitting in the trash
  *
  * @param {number[]} quizIds - an array of existing quizIds owned by user
  * @param {string} token - a unique session id for user
- * 
+ *
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */

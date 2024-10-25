@@ -7,7 +7,7 @@ import {
   requestAdminTrashList,
   requestAdminAuthLogout,
   requestAdminAuthLogin
-} from '../src/helperfunctiontests';
+} from '../src/requestHelperFunctions';
 import { quizCreateResponse, tokenReturn } from '../src/interface';
 
 beforeEach(() => {

@@ -48,15 +48,11 @@ export function validateToken(
   }
 
   const session = data.sessions.find(s => s.sessionId === decodedToken.sessionId);
-
   if (session) {
     return { authUserId: session.userId };
   }
-
   return { error: 'Invalid token: session does not exist.' };
 }
-
-let lastSessionId = 0;
 
 /**
   * Generates a session token for a given userId and stores the session
@@ -67,7 +63,7 @@ let lastSessionId = 0;
   * @returns {string} - A URL-encoded token containing the session ID
   */
 export function generateToken(userId: number, data: dataStore): string {
-  const sessionId = lastSessionId++;
+  const sessionId = randomId(1000000);
   const session: token = {
     sessionId,
     userId
@@ -109,7 +105,9 @@ export const isNameValid = (name: string): boolean => {
  * { valid: true } if the password is valid.
  *
  */
-export const isValidPassword = (password: string): { valid?: boolean; error?: string } => {
+export const isValidPassword = (
+  password: string
+): { valid?: boolean; error?: string } => {
   // Check if password length is at least 8 characters
   if (password.length < 8) {
     return { error: 'Password is less than 8 characters.' };
@@ -167,10 +165,6 @@ export const isStringValid = (string: string): boolean => {
   return true;
 };
 
-// helper function: checks for valid name length
-// function will return false if name length is < 3 or > 30
-// return true if otherwise
-
 /**
   * checks for length of name, returns error if name < 3 or > 30
   *
@@ -189,10 +183,6 @@ export const isNameLengthValid = (name: string): errorMessages | null => {
 
   return undefined;
 };
-
-// helper function: checks if the user has quizzes with same name
-// function willl return true if they do
-// return false if otherwise
 
 /**
   * checks if name is already taken
@@ -331,6 +321,6 @@ export function isErrorMessages(result: errorMessages | emptyReturn): result is 
  * @param {number} max - max number
  * @returns {number} - random number between 0 and max
  */
-export function random(max: number): number {
-  return Math.floor(Math.random() * (max + 1)); // 包括 max
+export function randomId(max: number): number {
+  return Math.floor(Math.random() * (max + 1));
 }

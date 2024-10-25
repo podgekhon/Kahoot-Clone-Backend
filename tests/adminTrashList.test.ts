@@ -4,7 +4,7 @@ import {
   requestAdminQuizRemove,
   requestAdminTrashList,
   requestClear
-} from '../src/helperfunctiontests';
+} from '../src/requestHelperFunctions';
 import {
   quizCreateResponse,
   tokenReturn,

@@ -3,7 +3,7 @@ import {
   requestAdminQuizCreate,
   requestAdminQuizList,
   requestClear
-} from '../src/helperfunctiontests';
+} from '../src/requestHelperFunctions';
 
 import { tokenReturn, quizCreateResponse, userAuthRegister } from '../src/interface';
 

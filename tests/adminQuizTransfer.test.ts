@@ -5,7 +5,7 @@ import {
   requestAdminQuizList,
   requestAdminQuizCreate,
   requestAdminQuizTransfer,
-} from '../src/helperfunctiontests';
+} from '../src/requestHelperFunctions';
 import {
   quizCreateResponse,
   tokenReturn,

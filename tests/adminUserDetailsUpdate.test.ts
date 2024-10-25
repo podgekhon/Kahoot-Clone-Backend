@@ -3,7 +3,7 @@ import {
   requestAdminAuthRegister,
   requestAdminUserDetailsUpdate,
   requestAdminUserDetails
-} from '../src/helperfunctiontests';
+} from '../src/requestHelperFunctions';
 import { tokenReturn } from '../src/interface';
 
 beforeEach(() => {

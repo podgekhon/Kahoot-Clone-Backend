@@ -1,6 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
-import { requestAdminAuthLogout, requestAdminAuthRegister, requestAdminQuizCreate, requestAdminQuizList, requestAdminQuizRemove, requestAdminQuizRestore, requestAdminTrashList } from '../src/helperfunctiontests';
+import { requestAdminAuthLogout, requestAdminAuthRegister, requestAdminQuizCreate, requestAdminQuizList, requestAdminQuizRemove, requestAdminQuizRestore, requestAdminTrashList } from '../src/requestHelperFunctions';
 import { quizCreateResponse, tokenReturn } from '../src/interface';
 import { httpStatus } from './adminAuthRegister.test';
 

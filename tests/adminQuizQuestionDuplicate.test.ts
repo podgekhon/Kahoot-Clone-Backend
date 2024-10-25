@@ -1,25 +1,33 @@
-import request from 'sync-request-curl';
-import { port, url } from '../src/config.json';
-import { requestAdminAuthRegister, requestAdminQuizCreate, requestAdminQuizQuestionDuplicate, requestAdminQuizQuestionCreate, requestAdminQuizInfo } from '../src/helperfunctiontests';
-import { quizCreateResponse, quizQuestionCreateResponse, quizDuplicateResponse, tokenReturn } from '../src/interface';
+import { 
+  requestAdminAuthRegister, 
+  requestAdminQuizCreate, 
+  requestAdminQuizQuestionDuplicate, 
+  requestAdminQuizQuestionCreate, 
+  requestAdminQuizInfo,
+  requestClear 
+} from '../src/requestHelperFunctions';
+
+import { 
+  quizCreateResponse, 
+  quizQuestionCreateResponse, 
+  quizQuestionDuplicateResponse, 
+  tokenReturn,
+} from '../src/interface';
+
 import { httpStatus } from './adminAuthRegister.test';
 
-const SERVER_URL = `${url}:${port}`;
-const TIMEOUT_MS = 100 * 1000;
-
 beforeEach(() => {
-  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
+  requestClear();
 });
 
 describe('test for quiz duplicate', () => {
   let user1token: string;
   let quiz1Id: number;
   let question1Id: number;
-  // register a user, create a quiz, create a question
+  
   beforeEach(() => {
     const user1 = requestAdminAuthRegister('ericMa@unsw.edu.au', 'EricMa1234', 'Eric', 'Ma');
     user1token = (user1.body as tokenReturn).token;
-    // create a quiz
     const quiz1 = requestAdminQuizCreate(user1token, 'quiz1', 'quiz1');
     quiz1Id = (quiz1.body as quizCreateResponse).quizId;
     const questionBody = {
@@ -40,7 +48,11 @@ describe('test for quiz duplicate', () => {
         ],
       },
     };
-    const question = requestAdminQuizQuestionCreate(quiz1Id, questionBody.token, questionBody.questionBody);
+    const question = requestAdminQuizQuestionCreate(
+      quiz1Id, 
+      questionBody.token, 
+      questionBody.questionBody
+    );
     question1Id = (question.body as quizQuestionCreateResponse).questionId;
   });
 
@@ -95,7 +107,11 @@ describe('test for quiz duplicate', () => {
         ],
       },
     };
-    const question2 = requestAdminQuizQuestionCreate(quiz2Id, questionBody.token, questionBody.questionBody);
+    const question2 = requestAdminQuizQuestionCreate(
+      quiz2Id, 
+      questionBody.token, 
+      questionBody.questionBody
+    );
     const question2Id = (question2.body as quizQuestionCreateResponse).questionId;
     // duplicate
     const res = requestAdminQuizQuestionDuplicate(quiz1Id, question2Id, user1token);
@@ -109,9 +125,9 @@ describe('test for quiz duplicate', () => {
       const res = requestAdminQuizQuestionDuplicate(quiz1Id, question1Id, user1token);
       expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
       expect(res.body).toStrictEqual(
-        { duplicatedquestionId: expect.any(Number) }
+        { duplicatedQuestionId: expect.any(Number) }
       );
-      const question2Id = (res.body as quizDuplicateResponse).duplicatedquestionId;
+      const question2Id = (res.body as quizQuestionDuplicateResponse).duplicatedQuestionId;
 
       // list the info in the quiz, should be two exactly same question in the list
       const quizInfoRes = requestAdminQuizInfo(quiz1Id, user1token);
@@ -188,15 +204,19 @@ describe('test for quiz duplicate', () => {
           ],
         },
       };
-      const question2 = requestAdminQuizQuestionCreate(quiz1Id, user1token, questionBody.questionBody);
+      const question2 = requestAdminQuizQuestionCreate(
+        quiz1Id, 
+        user1token, 
+        questionBody.questionBody
+      );
       const question2Id = (question2.body as quizQuestionCreateResponse).questionId;
       // duplicate question1
       const res = requestAdminQuizQuestionDuplicate(quiz1Id, question1Id, user1token);
-      const duplicateId = (res.body as quizDuplicateResponse).duplicatedquestionId;
+      const duplicateId = (res.body as quizQuestionDuplicateResponse).duplicatedQuestionId;
 
       expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
       expect(res.body).toStrictEqual(
-        { duplicatedquestionId: expect.any(Number) }
+        { duplicatedQuestionId: expect.any(Number) }
       );
 
       // list the info in the quiz, should be 3 questions in the list

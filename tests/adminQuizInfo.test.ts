@@ -4,7 +4,8 @@ import {
   requestAdminQuizInfo,
   requestAdminQuizQuestionCreate,
   requestClear,
-} from '../src/helperfunctiontests';
+  httpStatus
+} from '../src/requestHelperFunctions';
 
 import { 
   quizInfo,
@@ -12,10 +13,6 @@ import {
   quizCreateResponse,
   quizQuestionCreateResponse
 } from '../src/interface';
-
-import {
-  httpStatus
-} from '../src/helperfunctiontests';
 
 beforeEach(() => {
   requestClear();

@@ -6,7 +6,7 @@ import {
   requestAdminUserPasswordUpdate,
   httpStatus,
   requestAdminAuthLogin
-} from '../src/helperfunctiontests';
+} from '../src/requestHelperFunctions';
 import { tokenReturn } from '../src/interface';
 
 const SERVER_URL = `${url}:${port}`;
