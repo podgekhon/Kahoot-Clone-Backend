@@ -15,7 +15,8 @@ import {
   generateToken,
   isEmailUsed,
   isNameValid,
-  isValidPassword
+  isValidPassword,
+  random
 } from './helperfunction';
 
 import validator from 'validator';
@@ -41,7 +42,7 @@ export const adminAuthRegister = (
 ): errorMessages | tokenReturn => {
   const data = getData();
   // Check if Email address is used by another user.
-  if (isEmailUsed(email)) {
+  if (isEmailUsed(email, data)) {
     return { error: 'Email already used' };
   }
 
@@ -69,7 +70,7 @@ export const adminAuthRegister = (
   }
 
   // 7. Register the user and update the data
-  const authUserId = data.users.length + 1;
+  const authUserId = random(500);
 
   data.users.push({
     userId: authUserId,
@@ -83,7 +84,7 @@ export const adminAuthRegister = (
     numFailedPasswordsSinceLastLogin: 0,
   });
 
-  const token = generateToken(authUserId);
+  const token = generateToken(authUserId, data);
   setData(data);
 
   return { token };
@@ -116,7 +117,7 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   // Reset numFailedPasswordsSinceLastLogin and increment numSuccessfulLogins
   user.numFailedPasswordsSinceLastLogin = 0;
   user.numSuccessfulLogins += 1;
-  const token = generateToken(user.userId);
+  const token = generateToken(user.userId, data);
   setData(data);
   return { token };
 };
@@ -141,9 +142,9 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
 export const adminUserDetails = (token: string): errorMessages | userDetails => {
   const data = getData();
   // get userId
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    return { error: 'invalid token' };
   }
   const authUserId = tokenValidation.authUserId;
 
@@ -182,9 +183,9 @@ export const adminUserDetailsUpdate = (
 ): errorMessages | emptyReturn => {
   const data = getData();
   // get userId from token
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    return { error: 'invalid token' };
   }
   const authUserId = tokenValidation.authUserId;
 
@@ -244,9 +245,9 @@ export const adminUserPasswordUpdate = (
 ): errorMessages | emptyReturn => {
   const data = getData();
   // get userId from token
-  const tokenValidation = validateToken(token);
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    return { error: 'Invalid token' };
   }
   const authUserId = tokenValidation.authUserId;
 
@@ -293,13 +294,13 @@ export const adminUserPasswordUpdate = (
   * @return {} no return;
 */
 export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
-  const validation = validateToken(token);
+  const data = getData();
 
+  const validation = validateToken(token, data);
   if ('error' in validation) {
-    return { error: validation.error };
+    return { error: 'invalid token' };
   }
 
-  const data = getData();
   const sessionIndex = data.sessions.findIndex(
     (session) => session.userId === validation.authUserId);
 

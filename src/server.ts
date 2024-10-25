@@ -59,7 +59,8 @@ import {
 } from './quiz';
 
 import { clear } from './other';
-import { validateToken, isErrorMessages } from './helperfunction';
+import { isErrorMessages } from './helperfunction';
+import { errorMessages } from './interface';
 
 export enum httpStatus {
   UNAUTHORIZED = 401,
@@ -112,17 +113,16 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 // adminUserPasswordUpdate
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
-  const validtoken = validateToken(token);
-  // invalid token
-  if ('error' in validtoken) {
-    return res.status(httpStatus.UNAUTHORIZED).json({
-      error: 'token is empty or invalid'
-    });
-  }
 
   const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
   if ('error' in result) {
-    return res.status(httpStatus.BAD_REQUEST).json(result);
+    if (result.error === 'Invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'token is empty or invalid'
+      });
+    } else {
+      return res.status(httpStatus.BAD_REQUEST).json(result);
+    }
   }
 
   return res.json(result);
@@ -131,17 +131,16 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
-  const validtoken = validateToken(token);
-  // invalid token
-  if ('error' in validtoken) {
-    return res.status(httpStatus.UNAUTHORIZED).json({
-      error: 'token is empty or invalid'
-    });
-  }
 
   const result = adminQuizCreate(token, name, description);
   if ('error' in result) {
-    return res.status(httpStatus.BAD_REQUEST).json(result);
+    if (result.error === 'invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json({
+        error: 'token is empty or invalid'
+      });
+    } else {
+      return res.status(httpStatus.BAD_REQUEST).json(result);
+    }
   }
   return res.json(result);
 });
@@ -150,15 +149,13 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, name } = req.body;
-  // Validate the token
-  const validToken = validateToken(token);
-  if ('error' in validToken) {
+
+  const result = adminQuizNameUpdate(token, parseInt(quizid), name);
+  if ((result as errorMessages).error === 'invalid token') {
     return res.status(httpStatus.UNAUTHORIZED).json({
       error: 'Token is empty or invalid',
     });
   }
-
-  const result = adminQuizNameUpdate(token, parseInt(quizid), name);
   if (isErrorMessages(result) &&
     (result.error === 'Quiz ID does not refer to a valid quiz.' ||
      result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
@@ -395,12 +392,12 @@ app.get('/v1/admin/user/details', (req, res) => {
 // adminUserDetailsUpdate
 app.put('/v1/admin/user/details', (req, res) => {
   const { token, email, nameFirst, nameLast } = req.body;
-  const result = validateToken(token);
-  if ('error' in result) {
-    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
-  }
+
   const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
   if ('error' in updateResult) {
+    if (updateResult.error === 'invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
+    }
     return res.status(httpStatus.BAD_REQUEST).json({ error: 'Unknown Type: string - error' });
   }
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
@@ -411,13 +408,11 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { token } = req.query;
   const { quizid } = req.params;
 
-  const result = validateToken(token as string);
-  if ('error' in result) {
-    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Unknown Type: string - error' });
-  }
-
   const removeResult = adminQuizRemove(token as string, Number(quizid));
   if ('error' in removeResult) {
+    if (removeResult.error === 'invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json(removeResult);
+    }
     return res.status(httpStatus.FORBIDDEN).json({ error: 'Unknown Type: string - error' });
   }
 
@@ -480,17 +475,12 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
   const { token } = req.body;
   const quizId = parseInt(req.params.quizId as string);
-  const validtoken = validateToken(token);
-  // invalid token
-  if ('error' in validtoken) {
-    return res.status(httpStatus.UNAUTHORIZED).json({
-      error: 'token is empty or invalid'
-    });
-  }
 
   const result = adminQuizRestore(quizId, token);
   if ('error' in result) {
-    if (
+    if (result.error === 'invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json(result);
+    } else if (
       result.error === 'user is not the owner of this quiz' ||
       result.error === 'quiz doesnt exist'
     ) {
@@ -547,14 +537,12 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
 // adminAuthLogout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
   const { token } = req.body;
-  const validToken = validateToken(token);
-  if ('error' in validToken) {
-    return res.status(httpStatus.UNAUTHORIZED).json({
-      error: 'Token is empty or invalid'
-    });
-  }
+
   const result = adminAuthLogout(token);
   if ('error' in result) {
+    if (result.error === 'invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json(result);
+    }
     if (result.error === 'Session not found.') {
       return res.status(httpStatus.FORBIDDEN).json(result);
     }
@@ -569,17 +557,12 @@ app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate', (req: Request,
   const { token } = req.body;
   const quizId = parseInt(req.params.quizId as string);
   const questionId = parseInt(req.params.questionId as string);
-  const validToken = validateToken(token);
-
-  if ('error' in validToken) {
-    return res.status(httpStatus.UNAUTHORIZED).json({
-      error: 'Token is empty or invalid'
-    });
-  }
 
   const result = adminQuizDuplicate(quizId, questionId, token);
   if ('error' in result) {
-    if (
+    if (result.error === 'invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json(result);
+    } else if (
       result.error === 'quiz does not exist' ||
       result.error === 'user is not owner of this quiz'
     ) {

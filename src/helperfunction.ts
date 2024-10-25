@@ -1,5 +1,3 @@
-import { getData } from './dataStore';
-
 import {
   token,
   errorMessages,
@@ -7,7 +5,8 @@ import {
   question,
   quiz,
   answerOption,
-  dataStore as data
+  dataStore as data,
+  dataStore
 } from './interface';
 
 /**
@@ -33,7 +32,12 @@ export function generateRandomColour(): string {
   * @returns {{ authUserId: number } | { error: string }} - an object
   * containing authUserId if valid, or an error message if invalid
   */
-export function validateToken(token: string): { authUserId: number } | { error: string } {
+export function validateToken(
+  token: string,
+  data: dataStore
+): {
+  authUserId: number
+} | { error: string } {
   let decodedToken;
   try {
     // Try to decode and parse the token as a valid JSON string
@@ -43,7 +47,6 @@ export function validateToken(token: string): { authUserId: number } | { error: 
     return { error: 'Invalid token format.' };
   }
 
-  const data = getData();
   const session = data.sessions.find(s => s.sessionId === decodedToken.sessionId);
 
   if (session) {
@@ -62,15 +65,13 @@ let lastSessionId = 0;
   *
   * @returns {string} - A URL-encoded token containing the session ID
   */
-export function generateToken(userId: number): string {
-  const data = getData();
+export function generateToken(userId: number, data: dataStore): string {
   const sessionId = lastSessionId++;
   const session: token = {
     sessionId,
     userId
   };
   data.sessions.push(session);
-  // setData(data);
   return encodeURIComponent(JSON.stringify({ sessionId: sessionId }));
 }
 
@@ -83,8 +84,7 @@ export function generateToken(userId: number): string {
  * @param {string} email - email use to register
  * @returns {boolean} - return true if valid
  */
-export const isEmailUsed = (email: string): boolean => {
-  const data = getData();
+export const isEmailUsed = (email: string, data: dataStore): boolean => {
   return data.users.some(user => user.email === email);
 };
 
@@ -135,9 +135,8 @@ export const isValidPassword = (password: string): { valid?: boolean; error?: st
  * @returns {boolean} - returns true if the user exists, false otherwise.
  *
  */
-export const isUserValid = (authUserId: number): boolean => {
+export const isUserValid = (authUserId: number, data: dataStore): boolean => {
   // loop thru users array and match authUserId
-  const data = getData();
   const user = data.users.find(users => users.userId === authUserId);
 
   // check if user valid
@@ -200,8 +199,7 @@ export const isNameLengthValid = (name: string): errorMessages | null => {
   *
   * @returns {boolean} - returns false if name is already taken
 */
-export const isNameTaken = (authUserId: number, name: string): boolean => {
-  const data = getData();
+export const isNameTaken = (authUserId: number, name: string, data: dataStore): boolean => {
   return data.quizzes.some((quiz) => {
     return (quiz.ownerId === authUserId &&
     name === quiz.name);
