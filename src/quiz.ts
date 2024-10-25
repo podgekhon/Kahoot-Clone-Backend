@@ -10,7 +10,7 @@ import {
   isValidQuestion,
   validateAnswers,
   randomId
-} from './helperfunction';
+} from './helperFunctions';
 
 import {
   emptyReturn,

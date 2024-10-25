@@ -17,7 +17,7 @@ import {
   isNameValid,
   isValidPassword,
   randomId
-} from './helperfunction';
+} from './helperFunctions';
 
 import validator from 'validator';
 /// //------ASSUMPTIONS----//////

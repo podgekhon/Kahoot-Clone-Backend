@@ -59,7 +59,7 @@ import {
 } from './quiz';
 
 import { clear } from './other';
-import { isErrorMessages } from './helperfunction';
+import { isErrorMessages } from './helperFunctions';
 import { errorMessages } from './interface';
 import { errorMap } from './errorMap';
 
