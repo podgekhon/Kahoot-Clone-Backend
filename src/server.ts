@@ -115,34 +115,33 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 // adminUserPasswordUpdate
 app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   const { token, oldPassword, newPassword } = req.body;
-
-  const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
-  if ('error' in result) {
-    if (result.error === 'Invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json(result);
+  try {
+    const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch ( error ) {
+    if (error.message === 'Invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
     } else {
-      return res.status(httpStatus.BAD_REQUEST).json(result);
+      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
     }
   }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizCreate
 app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   const { token, name, description } = req.body;
-
-  const result = adminQuizCreate(token, name, description);
-  if ('error' in result) {
-    if (result.error === 'invalid token') {
+  try {
+    const result = adminQuizCreate(token, name, description);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch ( error ) {
+    if (error.message === 'invalid token') {
       return res.status(httpStatus.UNAUTHORIZED).json({
-        error: 'token is empty or invalid'
+        error: error.message
       });
     } else {
-      return res.status(httpStatus.BAD_REQUEST).json(result);
+      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
     }
   }
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizNameUpdate
@@ -310,21 +309,21 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
   const { token } = req.body;
   const quizId = parseInt(req.params.quizId as string);
-
-  const result = adminQuizRestore(quizId, token);
-  if ('error' in result) {
-    if (result.error === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json(result);
+  try {
+    const result = adminQuizRestore(quizId, token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch ( error ) {
+    if (error.message === 'invalid token') {
+      return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
     } else if (
-      result.error === 'user is not the owner of this quiz' ||
-      result.error === 'quiz doesnt exist'
+      error.message === 'user is not the owner of this quiz' ||
+      error.message === 'quiz doesnt exist'
     ) {
-      return res.status(httpStatus.FORBIDDEN).json(result);
+      return res.status(httpStatus.FORBIDDEN).json({ error: error.message });
     }
-    return res.status(httpStatus.BAD_REQUEST).json(result);
-  }
+    return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
 
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  }
 });
 
 // adminQuizQuestionMove
@@ -371,20 +370,21 @@ app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate',
     const { token } = req.body;
     const quizId = parseInt(req.params.quizId as string);
     const questionId = parseInt(req.params.questionId as string);
-
-    const result = adminQuizQuestionDuplicate(quizId, questionId, token);
-    if ('error' in result) {
-      if (result.error === 'invalid token') {
-        return res.status(httpStatus.UNAUTHORIZED).json(result);
+    try {
+      const result = adminQuizQuestionDuplicate(quizId, questionId, token);
+      return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+    } catch ( error ) {
+      if (error.message === 'invalid token') {
+        return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
       } else if (
-        result.error === 'quiz does not exist' ||
-      result.error === 'user is not owner of this quiz'
+        error.message === 'quiz does not exist' ||
+        error.message === 'user is not owner of this quiz'
       ) {
-        return res.status(httpStatus.FORBIDDEN).json(result);
+        return res.status(httpStatus.FORBIDDEN).json({ error: error.message});
       }
-      return res.status(httpStatus.BAD_REQUEST).json(result);
+      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
+
     }
-    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   });
 
 // adminQuizQuestionRemove
