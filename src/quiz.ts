@@ -492,21 +492,19 @@ export const adminQuizDescriptionUpdate = (
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'INVALID_TOKEN' };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 
   // error checkings for invalid userId, quizId
   const error = isValidQuiz(authUserId, quizId, data);
   if (error) {
-    return { error: 'INVALID_QUIZ' };
+    throw new Error('INVALID_QUIZ');
   }
 
   // new description should be less than 100 characters
   if (description.length > 100) {
-    return {
-      error: 'DESCRIPTION_TOO_LONG',
-    };
+      throw new Error('DESCRIPTION_TOO_LONG');
   }
 
   // update description and timeLastEdited

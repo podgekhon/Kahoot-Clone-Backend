@@ -170,18 +170,17 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, description } = req.body;
 
-  const result = adminQuizDescriptionUpdate(
-    token,
-    parseInt(quizid),
-    description
-  );
-
-  if ('error' in result) {
-    const { status, message } = errorMap[result.error];
-    return res.status(status).json({ error: message });
+  try {
+    const result = adminQuizDescriptionUpdate(
+      token,
+      parseInt(quizid),
+      description
+    );
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
   }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
 // adminQuizQuestionCreate
