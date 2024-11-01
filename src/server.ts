@@ -189,18 +189,17 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, questionBody } = req.body;
 
-  const result = adminQuizQuestionCreate(
-    parseInt(quizid),
-    questionBody,
-    token
-  );
-
-  if ('error' in result) {
-    const { status, message } = errorMap[result.error];
-    return res.status(status).json({ error: message });
+  try {
+    const result = adminQuizQuestionCreate(
+      parseInt(quizid),
+      questionBody,
+      token
+    );
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
   }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizQuestionUpdate
