@@ -93,11 +93,8 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
     const result = adminAuthRegister(email, password, nameFirst, nameLast);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    res.status(httpStatus.BAD_REQUEST).json({ error: error.message});
-    return;
+    res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
   }
-
-
 });
 
 // adminAuthLogin
@@ -118,7 +115,7 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
   try {
     const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-  } catch ( error ) {
+  } catch (error) {
     if (error.message === 'Invalid token') {
       return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
     } else {
@@ -133,7 +130,7 @@ app.post('/v1/admin/quiz', (req: Request, res: Response) => {
   try {
     const result = adminQuizCreate(token, name, description);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-  } catch ( error ) {
+  } catch (error) {
     if (error.message === 'invalid token') {
       return res.status(httpStatus.UNAUTHORIZED).json({
         error: error.message
@@ -312,7 +309,7 @@ app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
   try {
     const result = adminQuizRestore(quizId, token);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-  } catch ( error ) {
+  } catch (error) {
     if (error.message === 'invalid token') {
       return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
     } else if (
@@ -322,7 +319,6 @@ app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
       return res.status(httpStatus.FORBIDDEN).json({ error: error.message });
     }
     return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-
   }
 });
 
@@ -373,17 +369,16 @@ app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate',
     try {
       const result = adminQuizQuestionDuplicate(quizId, questionId, token);
       return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-    } catch ( error ) {
+    } catch (error) {
       if (error.message === 'invalid token') {
         return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
       } else if (
         error.message === 'quiz does not exist' ||
         error.message === 'user is not owner of this quiz'
       ) {
-        return res.status(httpStatus.FORBIDDEN).json({ error: error.message});
+        return res.status(httpStatus.FORBIDDEN).json({ error: error.message });
       }
       return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-
     }
   });
 

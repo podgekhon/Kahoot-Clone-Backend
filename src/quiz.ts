@@ -82,24 +82,24 @@ export const adminQuizCreate = (
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    throw new Error ( 'invalid token' );
+    throw new Error('invalid token');
   }
   const authUserId = tokenValidation.authUserId;
 
   // checks if user is valid
   if (!isUserValid(authUserId, data)) {
     // if user not valid, return error
-    throw new Error ( 'AuthUserId is not a valid user.' );
+    throw new Error('AuthUserId is not a valid user.');
   }
 
   // checks for name length
   if (isNameLengthValid(name) !== undefined) {
-    throw new Error (isNameLengthValid(name).error);
+    throw new Error(isNameLengthValid(name).error);
   }
 
   // checks if check contains invalid characters
   if (!isStringValid(name)) {
-    throw new Error (
+    throw new Error(
       'Name contains invalid characters.' +
       'Valid characters are alphanumeric and spaces.'
     );
@@ -107,12 +107,12 @@ export const adminQuizCreate = (
 
   // checks for description is more than 100 characters
   if (description.length > 100) {
-    throw new Error ( 'Description is more than 100 characters in length.' );
+    throw new Error('Description is more than 100 characters in length.');
   }
 
   // checks if quiz name is already used by another quiz the same user owns
   if (isNameTaken(authUserId, name, data)) {
-    throw new Error (
+    throw new Error(
       'Name is already used by the' +
       ' current logged in user for another quiz.'
     );
@@ -566,7 +566,7 @@ export const adminQuizRestore = (quizId: number, token: string): errorMessages |
 
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    throw new Error ( 'invalid token' );
+    throw new Error('invalid token');
   }
   const authUserId = tokenValidation.authUserId;
 
@@ -575,22 +575,22 @@ export const adminQuizRestore = (quizId: number, token: string): errorMessages |
   const quizIsActive = data.quizzes.find(q => q.quizId === quizId);
   if (quiz) {
     if (quiz.ownerId !== authUserId) {
-      throw new Error ( 'user is not the owner of this quiz' );
+      throw new Error('user is not the owner of this quiz');
     }
   }
   // If quiz is not in the trash
   if (!quiz) {
     // quiz doesnt exist
     if (!quizIsActive) {
-      throw new Error ( 'quiz doesnt exist' );
+      throw new Error('quiz doesnt exist');
     }
-    throw new Error ( 'quizId refers to a quiz not currently in the trash' );
+    throw new Error('quizId refers to a quiz not currently in the trash');
   }
 
   const activeQuiz = data.quizzes.find(q => q.name === quiz.name);
   // Quiz name used
   if (activeQuiz) {
-    throw new Error ( 'quiz name used by active quiz' );
+    throw new Error('quiz name used by active quiz');
   }
   // Restore the quiz
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
@@ -672,20 +672,20 @@ export const adminQuizQuestionDuplicate = (
   const tokenValidation = validateToken(token, data);
   // invalid token
   if ('error' in tokenValidation) {
-    throw new Error ( 'invalid token' );
+    throw new Error('invalid token');
   }
   const authUserId = tokenValidation.authUserId;
 
   const validQuiz = data.quizzes.find(q => q.quizId === quizId);
   if (!validQuiz) {
-    throw new Error ( 'quiz does not exist' );
+    throw new Error('quiz does not exist');
   }
   if (validQuiz.ownerId !== authUserId) {
-    throw new Error ( 'user is not owner of this quiz' );
+    throw new Error('user is not owner of this quiz');
   }
   const validQuestion = validQuiz.questions.find(q => q.questionId === questionId);
   if (!validQuestion) {
-    throw new Error ( 'question Id does not refer to a valid question within this quiz' );
+    throw new Error('question Id does not refer to a valid question within this quiz');
   }
   // get the index of question
   const validQuestionIndex = validQuiz.questions.findIndex(q => q.questionId === questionId);
