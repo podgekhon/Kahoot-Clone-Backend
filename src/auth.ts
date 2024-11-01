@@ -45,19 +45,19 @@ export const adminAuthRegister = (
   const data = getData();
 
   if (isEmailUsed(email, data)) {
-    return { error: 'Email already used' };
+    throw new Error('Email already used');
   }
 
   if (!validator.isEmail(email)) {
-    return { error: 'Invalid email format' };
+    throw new Error('Invalid email format');
   }
 
   if (!isNameValid(nameFirst)) {
-    return { error: 'First name invalid' };
+    throw new Error('First name invalid');
   }
 
   if (!isNameValid(nameLast)) {
-    return { error: 'Last name invalid' };
+    throw new Error('Last name invalid');
   }
 
   const passwordValidation = isValidPassword(password);
@@ -65,7 +65,7 @@ export const adminAuthRegister = (
   // error field
   if (passwordValidation.error) {
     // Return the error if validation fails
-    return { error: 'password invalid' };
+    throw new Error('password invalid');
   }
 
   // Register the user and update the data
@@ -233,27 +233,27 @@ export const adminUserPasswordUpdate = (
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'Invalid token' };
+    throw new Error('Invalid token');
   }
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find(user => user.userId === authUserId);
 
   if (!user) {
-    return { error: 'AuthUserId is not a valid user.' };
+    throw new Error('AuthUserId is not a valid user.');
   }
 
   if (user.currentPassword !== oldPassword) {
-    return { error: 'Old Password is not the correct old password' };
+    throw new Error('Old Password is not the correct old password');
   }
 
   if (oldPassword === newPassword) {
-    return { error: 'Old Password and New Password match exactly' };
+    throw new Error('Old Password and New Password match exactly');
   }
 
   // Check if the newPassword has been used before
   if (user.oldPasswords.includes(newPassword)) {
-    return { error: 'New Password has already been used before by this user.' };
+    throw new Error('New Password has already been used before by this user.');
   }
 
   const passwordValidation = isValidPassword(newPassword);
@@ -261,7 +261,7 @@ export const adminUserPasswordUpdate = (
   // error field
   if (passwordValidation.error) {
     // Return the error if validation fails
-    return passwordValidation;
+    throw new Error(passwordValidation.error);
   }
 
   // Add the current password to oldPasswords array
