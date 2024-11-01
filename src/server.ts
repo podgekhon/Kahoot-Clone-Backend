@@ -137,15 +137,10 @@ const handleAdminQuizCreate = (req: Request, res: Response) => {
     const result = adminQuizCreate(token, name, description);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    if (error.message === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: error.message
-      });
-    } else {
-      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-    }
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-}
+};
 
 app.post('/v1/admin/quiz', handleAdminQuizCreate);
 app.post('/v2/admin/quiz', handleAdminQuizCreate);
