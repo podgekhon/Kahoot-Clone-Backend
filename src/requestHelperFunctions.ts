@@ -245,6 +245,36 @@ export const requestAdminQuizCreate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+/**
+ * Makes http request to create a quiz
+ *
+ * @param { string } token
+ * @param { string} name
+ * @param { string} description
+ * @returns { Response }
+ */
+export const requestAdminQuizCreateV2 = (
+  token: string, name: string, description: string
+): {
+  body: ReturnType <typeof adminQuizCreate>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v2/admin/quiz',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        name: name,
+        description: description,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
 // adminQuizRemove
 /**
  * Makes http request to remove a quiz
