@@ -102,6 +102,7 @@ describe('adminQuizCreate', () => {
 
   describe('tests for v2', () => {
     test('valid inputs', () => {
+      console.log(user1Token);
       const result = requestAdminQuizCreateV2(user1Token, 'quiz1', 'This is quiz 1');
   
       expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
@@ -127,6 +128,13 @@ describe('adminQuizCreate', () => {
     const result = requestAdminQuizCreateV2('', 'Quiz1', 'Empty token');
 
     expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('name contains invalid characters', () => {
+    const result = requestAdminQuizCreateV2(user1Token, '~invalidname', 'Invalid characters');
+
+    expect(result.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(result.body).toStrictEqual({ error: expect.any(String) });
   });
 
