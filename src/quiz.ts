@@ -82,28 +82,40 @@ export const adminQuizCreate = (
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
+    throw new Error('invalid token');
   }
   const authUserId = tokenValidation.authUserId;
 
+  // checks if user is valid
+  if (!isUserValid(authUserId, data)) {
+    // if user not valid, return error
+    throw new Error('AuthUserId is not a valid user.');
+  }
+
   // checks for name length
   if (isNameLengthValid(name) !== undefined) {
-    throw new Error('QUIZ_NAME_TOO_LONG');
+    throw new Error(isNameLengthValid(name).error);
   }
 
   // checks if check contains invalid characters
   if (!isStringValid(name)) {
-    throw new Error('INVALID_QUIZ_NAME');
+    throw new Error(
+      'Name contains invalid characters.' +
+      'Valid characters are alphanumeric and spaces.'
+    );
   }
 
   // checks for description is more than 100 characters
   if (description.length > 100) {
-    throw new Error('DESCRIPTION_TOO_LONG');
+    throw new Error('Description is more than 100 characters in length.');
   }
 
   // checks if quiz name is already used by another quiz the same user owns
   if (isNameTaken(authUserId, name, data)) {
-    throw new Error('DUPLICATE_QUIZNAME');
+    throw new Error(
+      'Name is already used by the' +
+      ' current logged in user for another quiz.'
+    );
   }
 
   // push new quiz object into db & return quizId
