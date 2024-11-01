@@ -219,7 +219,7 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid',
       const mappedError = errorMap[error.message];
       return res.status(mappedError.status).json({ error: mappedError.message });
     }
-});
+  });
 
 // adminUserDetails
 app.get('/v1/admin/user/details', (req, res) => {
@@ -323,25 +323,24 @@ app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
-// adminQuizQuestionMove
-app.put('/v1/admin/quiz/:quizid/question/:questionid/move',
-  (req: Request, res: Response) => {
-    const { quizid, questionid } = req.params;
-    const { token, newPosition } = req.body;
+// adminMoveQuizQuestion
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+  const { quizid, questionid } = req.params;
+  const { token, newPosition } = req.body;
 
+  try {
     const result = adminMoveQuizQuestion(
       parseInt(quizid),
       parseInt(questionid),
       token,
       newPosition
     );
-
-    if ('error' in result) {
-      const { status, message } = errorMap[result.error];
-      return res.status(status).json({ error: message });
-    }
-    return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
-  });
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
 
 // adminAuthLogout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
