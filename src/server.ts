@@ -207,20 +207,19 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid',
     const { quizid, questionid } = req.params;
     const { token, questionBody } = req.body;
 
-    const result = adminQuizQuestionUpdate(
-      parseInt(quizid),
-      parseInt(questionid),
-      questionBody,
-      token
-    );
-
-    if ('error' in result) {
-      const { status, message } = errorMap[result.error];
-      return res.status(status).json({ error: message });
+    try {
+      const result = adminQuizQuestionUpdate(
+        parseInt(quizid),
+        parseInt(questionid),
+        questionBody,
+        token
+      );
+      return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+    } catch (error) {
+      const mappedError = errorMap[error.message];
+      return res.status(mappedError.status).json({ error: mappedError.message });
     }
-
-    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-  });
+});
 
 // adminUserDetails
 app.get('/v1/admin/user/details', (req, res) => {

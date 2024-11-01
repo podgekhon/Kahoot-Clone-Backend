@@ -224,33 +224,33 @@ export const adminQuizQuestionUpdate = (
 
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'INVALID_TOKEN' };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((q: quiz) => q.quizId === quizId);
   if (!quiz) {
-    return { error: 'INVALID_QUIZ' };
+    throw new Error('INVALID_QUIZ');
   }
 
   if (quiz.ownerId !== authUserId) {
-    return { error: 'INVALID_OWNER' };
+    throw new Error('INVALID_OWNER');
   }
 
   const questionToUpdate = quiz.questions.find((q: question) => q.questionId === questionId);
   if (!questionToUpdate) {
-    return { error: 'INVALID_QUESTION_ID' };
+    throw new Error('INVALID_QUESTION_ID');
   }
 
   const validationError = isValidQuestion(updatedQuestionBody, quiz);
   if (validationError) {
-    return validationError;
+    throw new Error(validationError.error);
   }
 
   const { answerOptions } = updatedQuestionBody;
   const answerValidationError = validateAnswers(answerOptions);
   if (answerValidationError) {
-    return answerValidationError;
+    throw new Error(answerValidationError.error);
   }
 
   // Update question details
