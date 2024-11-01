@@ -72,5 +72,13 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   DESCRIPTION_TOO_LONG: {
     status: httpStatus.BAD_REQUEST,
     message: 'Description is more than 100 characters in length.'
-  }
+  },
+  QUIZ_NAME_TOO_LONG: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Quiz name is either less than 3 characters long or more than 30 characters long.'
+  },
+  INVALID_QUIZ_NAME: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Quiz name contains invalid characters. Valid characters are alphanumeric and spaces.'
+  },
 };
