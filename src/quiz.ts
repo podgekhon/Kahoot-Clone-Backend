@@ -25,6 +25,53 @@ import {
   answerOption
 } from './interface';
 
+
+/**
+ * Update the thumbnail for a specific quiz.
+ *
+ * @param {number} quizId - unique id for the quiz
+ * @param {string} token - session token for the user
+ * @param {string} thumbnailUrl - URL of the new thumbnail image
+ *
+ * @returns {emptyReturn} - Returns an empty object if successful
+ */
+export const adminQuizUpdateThumbnail = (
+  quizId: number,
+  token: string,
+  thumbnailUrl: string
+): emptyReturn => {
+  const data = getData();
+
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const quiz = data.quizzes.find((q) => q.quizId === quizId);
+  if (!quiz) {
+    throw new Error('INVALID_QUIZ');
+  }
+  if (quiz.ownerId !== authUserId) {
+    throw new Error('INVALID_OWNER');
+  }
+
+  const validFileTypes = /\.(jpg|jpeg|png)$/i;
+  if (!thumbnailUrl.startsWith('http://') && !thumbnailUrl.startsWith('https://')) {
+    throw new Error('INVALID_THUMBNAIL_URL_START');
+  }
+  if (!validFileTypes.test(thumbnailUrl)) {
+    throw new Error('INVALID_THUMBNAIL_URL_END');
+  }
+
+  quiz.thumbnailUrl = thumbnailUrl;
+  quiz.timeLastEdited = Math.floor(Date.now() / 1000);
+
+  setData(data);
+
+  return {};
+};
+
 /**
   * Provide a list of all quizzes that are owned by
   * the currently logged in user.
