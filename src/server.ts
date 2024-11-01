@@ -411,14 +411,13 @@ app.delete('/v1/admin/quiz/:quizId/question/:questionId',
 app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, userEmail } = req.body;
-
-  const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
-
-  if ('error' in result) {
-    const { status, message } = errorMap[result.error];
-    return res.status(status).json({ error: message });
+  try {
+    const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (err) {
+    const mappedError = errorMap[err.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
   }
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // Empty trash

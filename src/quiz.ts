@@ -727,31 +727,29 @@ export const adminQuizTransfer = (
   const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
   if ('error' in tokenValidation) {
-    return { error: 'INVALID_TOKEN' };
+    throw new Error('INVALID_TOKEN');
   }
   const senderId = tokenValidation.authUserId;
 
   // checks if receiver is a real user
   if (!receiver) {
-    return { error: 'INVALID_USEREMAIL' };
+    throw new Error('INVALID_USEREMAIL');
   }
   const receiverId = receiver.userId;
 
   // checks if userEmail is the current logged in user
   if (senderId === receiverId) {
-    return { error: 'ALREADY_OWNS' };
+    throw new Error('ALREADY_OWNS');
   }
 
   // if receiver already has quiz with same name
   if (isNameTaken(receiverId, transferredQuiz.name, data)) {
-    return {
-      error: 'DUPLICATE_QUIZNAME'
-    };
+    throw new Error('DUPLICATE_QUIZNAME');
   }
 
   // if sender does not own quiz
   if (senderId !== transferredQuiz.ownerId) {
-    return { error: 'INVALID_OWNER' };
+    throw new Error('INVALID_OWNER');
   }
 
   // update new owner
