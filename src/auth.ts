@@ -45,19 +45,19 @@ export const adminAuthRegister = (
   const data = getData();
 
   if (isEmailUsed(email, data)) {
-    return { error: 'Email already used' };
+    throw new Error ( 'Email already used' );
   }
 
   if (!validator.isEmail(email)) {
-    return { error: 'Invalid email format' };
+    throw new Error ( 'Invalid email format' );
   }
 
   if (!isNameValid(nameFirst)) {
-    return { error: 'First name invalid' };
+    throw new Error ( 'First name invalid' );
   }
 
   if (!isNameValid(nameLast)) {
-    return { error: 'Last name invalid' };
+    throw new Error ( 'Last name invalid' );
   }
 
   const passwordValidation = isValidPassword(password);
@@ -65,7 +65,7 @@ export const adminAuthRegister = (
   // error field
   if (passwordValidation.error) {
     // Return the error if validation fails
-    return { error: 'password invalid' };
+    throw new Error ( 'password invalid' );
   }
 
   // Register the user and update the data

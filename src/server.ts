@@ -89,14 +89,15 @@ app.delete('/v1/clear', (req: Request, res: Response) => {
 // adminAuthRegister
 app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
   const { email, password, nameFirst, nameLast } = req.body;
-
-  const result = adminAuthRegister(email, password, nameFirst, nameLast);
-
-  if ('error' in result) {
-    res.status(httpStatus.BAD_REQUEST).json(result);
+  try {
+    const result = adminAuthRegister(email, password, nameFirst, nameLast);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    res.status(httpStatus.BAD_REQUEST).json({ error: error.message});
     return;
   }
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+
+
 });
 
 // adminAuthLogin
