@@ -125,21 +125,25 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 });
 
 // adminQuizCreate
-app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  const { token, name, description } = req.body;
+const handleAdminQuizCreate = (req: Request, res: Response) => {
+  const { name, description } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
+  }
   try {
     const result = adminQuizCreate(token, name, description);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    if (error.message === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: error.message
-      });
-    } else {
-      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-    }
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-});
+};
+
+app.post('/v1/admin/quiz', handleAdminQuizCreate);
+app.post('/v2/admin/quiz', handleAdminQuizCreate);
 
 // adminQuizNameUpdate
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
