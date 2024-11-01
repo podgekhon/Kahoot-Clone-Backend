@@ -295,13 +295,13 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token } = req.query;
 
-  const result = adminQuizInfo(token as string, parseInt(quizid));
-  if ('error' in result) {
-    const { status, message } = errorMap[result.error];
-    return res.status(status).json({ error: message });
+  try {
+    const result = adminQuizInfo(token as string, parseInt(quizid));
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
   }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizRestore

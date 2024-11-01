@@ -384,19 +384,19 @@ export const adminQuizInfo = (token: string, quizId: number): errorMessages | qu
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'INVALID_TOKEN' };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 
   // Check if quizId refers to a valid quiz
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    return { error: 'INVALID_QUIZ' };
+    throw new Error('INVALID_QUIZ');
   }
 
   // Check if the quiz belongs to the given user
   if (quiz.ownerId !== authUserId) {
-    return { error: 'INVALID_OWNER' };
+    throw new Error('INVALID_OWNER');
   }
 
   // Return the quiz information
