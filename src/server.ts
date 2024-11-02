@@ -124,11 +124,8 @@ const requestAdminUserPasswordUpdate = (req: Request, res: Response) => {
     const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    if (error.message === 'Invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
-    } else {
-      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-    }
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
 };
 

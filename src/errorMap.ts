@@ -104,5 +104,23 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   INVALID_QUIZ_NAME: {
     status: httpStatus.BAD_REQUEST,
     message: 'Quiz name contains invalid characters. Valid characters are alphanumeric and spaces.'
+  },
+  WRONG_PASSWORD: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Old Password is not the correct old password.'
+  },
+  OLD_PASSWORD_REUSE: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Old Password and New Password match exactly.'
+  },
+  NEW_PASSWORD_USED: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'New Password has already been used before by this user.'
+  },
+  INVALID_PASSWORD: {
+    status: httpStatus.BAD_REQUEST,
+    message:
+    'New Password is less than 8 characters or' +
+    'does not contain at least one number and at least one letter.'
   }
 };
