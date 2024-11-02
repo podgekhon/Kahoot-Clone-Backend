@@ -218,7 +218,6 @@ export const requestAdminUserDetailsUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 // adminUserDetailsUpdateV2
 /**
  * Makes http request to update user details
@@ -251,8 +250,6 @@ export const requestAdminUserDetailsUpdateV2 = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
-
-
 
 // adminQuizList
 /**
