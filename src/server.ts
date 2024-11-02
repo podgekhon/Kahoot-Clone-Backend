@@ -236,19 +236,27 @@ app.get('/v1/admin/user/details', (req, res) => {
 });
 
 // adminUserDetailsUpdate
-app.put('/v1/admin/user/details', (req, res) => {
-  const { token, email, nameFirst, nameLast } = req.body;
-
-  const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
-  if ('error' in updateResult) {
-    if (updateResult.error === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json(updateResult);
-    }
-    return res.status(httpStatus.BAD_REQUEST).json(updateResult);
+const handleAdminUserDetailsUpdate = (req: Request, res: Response) => {
+  const { email, nameFirst, nameLast } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
   }
+  try {
+    const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(updateResult);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
 
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(updateResult);
-});
+app.put('/v1/admin/user/details', handleAdminUserDetailsUpdate);
+app.put('/v2/admin/user/details', handleAdminUserDetailsUpdate);
+
+
 
 // delete Quiz
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {

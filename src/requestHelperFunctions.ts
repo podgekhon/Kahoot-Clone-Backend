@@ -192,6 +192,42 @@ export const requestAdminUserDetailsUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+
+// adminUserDetailsUpdateV2
+/**
+ * Makes http request to update user details
+ * @param { string } token
+ * @param { string } email
+ * @param { string } nameFirst
+ * @param { string } nameLast
+ * @returns { Response }
+ */
+export const requestAdminUserDetailsUpdateV2 = (
+  token: string, email: string, nameFirst: string, nameLast: string
+): {
+  body: ReturnType <typeof adminUserDetailsUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v2/admin/user/details',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast
+      },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+
+
 // adminQuizList
 /**
  * Makes http request to get list of quizzes
