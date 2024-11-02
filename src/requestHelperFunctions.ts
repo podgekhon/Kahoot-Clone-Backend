@@ -37,7 +37,8 @@ import {
   adminQuizRestore,
   adminQuizTransfer,
   adminTrashEmpty,
-  adminTrashList
+  adminTrashList,
+  adminQuizUpdateThumbnail
 } from './quiz';
 
 // clear
@@ -191,6 +192,42 @@ export const requestAdminUserDetailsUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+
+// adminUserDetailsUpdateV2
+/**
+ * Makes http request to update user details
+ * @param { string } token
+ * @param { string } email
+ * @param { string } nameFirst
+ * @param { string } nameLast
+ * @returns { Response }
+ */
+export const requestAdminUserDetailsUpdateV2 = (
+  token: string, email: string, nameFirst: string, nameLast: string
+): {
+  body: ReturnType <typeof adminUserDetailsUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v2/admin/user/details',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast
+      },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+
+
 // adminQuizList
 /**
  * Makes http request to get list of quizzes
@@ -234,6 +271,39 @@ export const requestAdminQuizCreate = (
     'POST',
     SERVER_URL + '/v1/admin/quiz',
     {
+      json: {
+        token: token,
+        name: name,
+        description: description,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizCreate
+/**
+ * Makes http request to create a quiz
+ *
+ * @param { string } token
+ * @param { string} name
+ * @param { string} description
+ * @returns { Response }
+ */
+export const requestAdminQuizCreateV2 = (
+  token: string, name: string, description: string
+): {
+  body: ReturnType <typeof adminQuizCreate>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v2/admin/quiz',
+    {
+      headers: {
+        token: token
+      },
       json: {
         token: token,
         name: name,
@@ -296,6 +366,32 @@ export const requestAdminQuizInfo = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// adminQuizInfoV2
+/**
+ * Makes http request to get quiz information v2
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminQuizInfoV2 = (
+  quizId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizInfo>,
+  statusCode: number,
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v2/admin/quiz/${quizId}`,
+    {
+      headers: { token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminQuizNameUpdate
 /**
  * Makes http request to update quiz name
@@ -332,7 +428,7 @@ export const requestAdminQuizNameUpdate = (
  * @param { number } quizId
  * @param { string } token
  * @param { string } description
- * @returns
+ * @returns { Response }
  */
 export const requestAdminQuizDescriptionUpdate = (
   quizId: number, token: string, description: string
@@ -347,6 +443,38 @@ export const requestAdminQuizDescriptionUpdate = (
       json: {
         token: token,
         description: description,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Makes HTTP request to update a quiz thumbnail URL
+ *
+ * @param {number} quizId
+ * @param {string} token
+ * @param {string} thumbnailUrl
+ * @returns { Response }
+ */
+export const requestAdminQuizUpdateThumbnail = (
+  quizId: number,
+  token: string,
+  thumbnailUrl: string
+): {
+  body: ReturnType<typeof adminQuizUpdateThumbnail>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/thumbnail`,
+    {
+      headers: {
+        token: token,
+      },
+      json: {
+        thumbnailUrl: thumbnailUrl,
       },
       timeout: TIMEOUT_MS,
     }

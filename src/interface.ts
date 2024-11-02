@@ -45,6 +45,8 @@ export interface quiz {
   timeCreated: number;
   timeLastEdited: number;
   timeLimit: number;
+  // Optional property
+  thumbnailUrl?: string;
 }
 
 export interface token {
@@ -107,6 +109,8 @@ export interface quizInfo {
   numQuestions: number,
   questions: question[],
   timeLimit: number
+  // Optional property
+  thumbnailUrl?: string;
 }
 
 export interface quizDuplicateResponse {

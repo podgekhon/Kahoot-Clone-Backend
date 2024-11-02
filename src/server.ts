@@ -55,7 +55,8 @@ import {
   adminMoveQuizQuestion,
   adminQuizQuestionDuplicate,
   adminQuizTransfer,
-  adminTrashEmpty
+  adminTrashEmpty,
+  adminQuizUpdateThumbnail
 } from './quiz';
 
 import { clear } from './other';
@@ -125,21 +126,25 @@ app.put('/v1/admin/user/password', (req: Request, res: Response) => {
 });
 
 // adminQuizCreate
-app.post('/v1/admin/quiz', (req: Request, res: Response) => {
-  const { token, name, description } = req.body;
+const handleAdminQuizCreate = (req: Request, res: Response) => {
+  const { name, description } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
+  }
   try {
     const result = adminQuizCreate(token, name, description);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    if (error.message === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({
-        error: error.message
-      });
-    } else {
-      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-    }
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-});
+};
+
+app.post('/v1/admin/quiz', handleAdminQuizCreate);
+app.post('/v2/admin/quiz', handleAdminQuizCreate);
 
 // adminQuizNameUpdate
 app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
@@ -167,18 +172,17 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, description } = req.body;
 
-  const result = adminQuizDescriptionUpdate(
-    token,
-    parseInt(quizid),
-    description
-  );
-
-  if ('error' in result) {
-    const { status, message } = errorMap[result.error];
-    return res.status(status).json({ error: message });
+  try {
+    const result = adminQuizDescriptionUpdate(
+      token,
+      parseInt(quizid),
+      description
+    );
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
   }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
 });
 
 // adminQuizQuestionCreate
@@ -186,18 +190,17 @@ app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token, questionBody } = req.body;
 
-  const result = adminQuizQuestionCreate(
-    parseInt(quizid),
-    questionBody,
-    token
-  );
-
-  if ('error' in result) {
-    const { status, message } = errorMap[result.error];
-    return res.status(status).json({ error: message });
+  try {
+    const result = adminQuizQuestionCreate(
+      parseInt(quizid),
+      questionBody,
+      token
+    );
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
   }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminQuizQuestionUpdate
@@ -206,19 +209,18 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid',
     const { quizid, questionid } = req.params;
     const { token, questionBody } = req.body;
 
-    const result = adminQuizQuestionUpdate(
-      parseInt(quizid),
-      parseInt(questionid),
-      questionBody,
-      token
-    );
-
-    if ('error' in result) {
-      const { status, message } = errorMap[result.error];
-      return res.status(status).json({ error: message });
+    try {
+      const result = adminQuizQuestionUpdate(
+        parseInt(quizid),
+        parseInt(questionid),
+        questionBody,
+        token
+      );
+      return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+    } catch (error) {
+      const mappedError = errorMap[error.message];
+      return res.status(mappedError.status).json({ error: mappedError.message });
     }
-
-    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   });
 
 // adminUserDetails
@@ -234,19 +236,27 @@ app.get('/v1/admin/user/details', (req, res) => {
 });
 
 // adminUserDetailsUpdate
-app.put('/v1/admin/user/details', (req, res) => {
-  const { token, email, nameFirst, nameLast } = req.body;
-
-  const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
-  if ('error' in updateResult) {
-    if (updateResult.error === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json(updateResult);
-    }
-    return res.status(httpStatus.BAD_REQUEST).json(updateResult);
+const handleAdminUserDetailsUpdate = (req: Request, res: Response) => {
+  const { email, nameFirst, nameLast } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
   }
+  try {
+    const updateResult = adminUserDetailsUpdate(token, email, nameFirst, nameLast);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(updateResult);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
 
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(updateResult);
-});
+app.put('/v1/admin/user/details', handleAdminUserDetailsUpdate);
+app.put('/v2/admin/user/details', handleAdminUserDetailsUpdate);
+
+
 
 // delete Quiz
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
@@ -289,17 +299,45 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
 });
 
 // adminQuizInfo
-app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+const handleAdminQuizInfo = (req: Request, res: Response, version: string) => {
   const { quizid } = req.params;
-  const { token } = req.query;
-
-  const result = adminQuizInfo(token as string, parseInt(quizid));
-  if ('error' in result) {
-    const { status, message } = errorMap[result.error];
-    return res.status(status).json({ error: message });
+  let token;
+  if (version === 'v1') {
+    token = req.query.token;
+  } else {
+    token = req.headers.token;
   }
 
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  try {
+    const result = adminQuizInfo(token as string, parseInt(quizid), version);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+};
+
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  handleAdminQuizInfo(req, res, 'v1');
+});
+
+app.get('/v2/admin/quiz/:quizid', (req: Request, res: Response) => {
+  handleAdminQuizInfo(req, res, 'v2');
+});
+
+// adminQuizUpdateThumbnail
+app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token } = req.headers;
+  const { thumbnailUrl } = req.body;
+
+  try {
+    const result = adminQuizUpdateThumbnail(parseInt(quizid), token as string, thumbnailUrl);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
 });
 
 // adminQuizRestore
@@ -322,25 +360,24 @@ app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
   }
 });
 
-// adminQuizQuestionMove
-app.put('/v1/admin/quiz/:quizid/question/:questionid/move',
-  (req: Request, res: Response) => {
-    const { quizid, questionid } = req.params;
-    const { token, newPosition } = req.body;
+// adminMoveQuizQuestion
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+  const { quizid, questionid } = req.params;
+  const { token, newPosition } = req.body;
 
+  try {
     const result = adminMoveQuizQuestion(
       parseInt(quizid),
       parseInt(questionid),
       token,
       newPosition
     );
-
-    if ('error' in result) {
-      const { status, message } = errorMap[result.error];
-      return res.status(status).json({ error: message });
-    }
-    return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
-  });
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
 
 // adminAuthLogout
 app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
