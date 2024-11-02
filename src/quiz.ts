@@ -601,7 +601,7 @@ export const adminQuizRestore = (quizId: number, token: string): errorMessages |
 
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    throw new Error('invalid token');
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 
@@ -610,22 +610,22 @@ export const adminQuizRestore = (quizId: number, token: string): errorMessages |
   const quizIsActive = data.quizzes.find(q => q.quizId === quizId);
   if (quiz) {
     if (quiz.ownerId !== authUserId) {
-      throw new Error('user is not the owner of this quiz');
+      throw new Error('INVALID_OWNER');
     }
   }
   // If quiz is not in the trash
   if (!quiz) {
     // quiz doesnt exist
     if (!quizIsActive) {
-      throw new Error('quiz doesnt exist');
+      throw new Error('INVALID_QUIZ');
     }
-    throw new Error('quizId refers to a quiz not currently in the trash');
+    throw new Error('QUIZ_NOT_IN_TRASH');
   }
 
   const activeQuiz = data.quizzes.find(q => q.name === quiz.name);
   // Quiz name used
   if (activeQuiz) {
-    throw new Error('quiz name used by active quiz');
+    throw new Error('DUPLICATE_QUIZNAME');
   }
   // Restore the quiz
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);

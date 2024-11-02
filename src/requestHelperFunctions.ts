@@ -648,6 +648,31 @@ export const requestAdminQuizRestore = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+/**
+ * Makes http request to restore a quiz
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @returns
+ */
+export const requestAdminQuizRestoreV2 = (
+  quizId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizRestore>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/restore`,
+    {
+      headers: {
+        token: token
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
 
 // adminTrashEmpty
 /**

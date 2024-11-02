@@ -122,5 +122,9 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     message:
     'New Password is less than 8 characters or' +
     'does not contain at least one number and at least one letter.'
+  },
+  QUIZ_NOT_IN_TRASH: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Quiz ID refers to a quiz that is not currently in the trash.'
   }
 };
