@@ -111,8 +111,9 @@ describe('test for adminTrashList v2', () => {
   });
 
   test('Get trash list success', () => {
+    requestAdminQuizRemove(quizID, user1token);
     trashList = requestAdminTrashListv2(user1token);
-    //expect(trashList.statusCode).toStrictEqual(200);
+    expect(trashList.statusCode).toStrictEqual(200);
     expect(trashList.body).toHaveProperty('quizzes');
   });
 

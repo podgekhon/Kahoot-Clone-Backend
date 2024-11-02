@@ -25,7 +25,6 @@ describe('POST /v1/admin/auth/logout', () => {
     expect(result.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  
   test('invalid token', () => {
     const result = requestAdminAuthLogout('abcd');
     expect(result.statusCode).toStrictEqual(401);
@@ -54,7 +53,6 @@ describe('POST /v1/admin/auth/logout', () => {
     expect(result.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  
   test('invalid token', () => {
     const result = requestAdminAuthLogoutv2('abcd');
     expect(result.statusCode).toStrictEqual(401);

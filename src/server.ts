@@ -307,9 +307,13 @@ app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 });
 
 // get trash list
-app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
+const handleAdminTrashList = (req: Request, res: Response) => {
   let token;
-  token = req.query.token as string;
+  if (req.headers.token) {
+    token = req.headers.token as string;
+  } else if (req.query.token) {
+    token = req.query.token as string;
+  }
   try {
     const result = adminTrashList(token);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
@@ -317,20 +321,10 @@ app.get('/v1/admin/quiz/trash', (req: Request, res: Response) => {
     const { status, message } = errorMap[error.message];
     return res.status(status).json({ error: message });
   }
-});
+};
 
-// get trash list
-app.get('/v2/admin/quiz/trash', (req: Request, res: Response) => {
-  let token;
-  token = req.headers.token as string;
-  try {
-    const result = adminTrashList(token);
-    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-  } catch (error) {
-    const { status, message } = errorMap[error.message];
-    return res.status(status).json({ error: message });
-  }
-});
+app.get('/v1/admin/quiz/trash', handleAdminTrashList);
+app.get('/v2/admin/quiz/trash', handleAdminTrashList);
 
 // adminQuizList
 app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
