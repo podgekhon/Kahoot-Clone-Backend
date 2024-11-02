@@ -330,6 +330,32 @@ export const requestAdminQuizInfo = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// adminQuizInfoV2
+/**
+ * Makes http request to get quiz information v2
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminQuizInfoV2 = (
+  quizId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizInfo>,
+  statusCode: number,
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v2/admin/quiz/${quizId}`,
+    {
+      headers: { token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminQuizNameUpdate
 /**
  * Makes http request to update quiz name

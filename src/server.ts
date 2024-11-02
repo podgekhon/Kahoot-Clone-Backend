@@ -291,17 +291,30 @@ app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
 });
 
 // adminQuizInfo
-app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+const handleAdminQuizInfo = (req: Request, res: Response, version: string) => {
   const { quizid } = req.params;
-  const { token } = req.query;
+  let token;
+  if (version === 'v1') {
+    token = req.query.token
+  } else {
+    token = req.headers.token;
+  }
 
   try {
-    const result = adminQuizInfo(token as string, parseInt(quizid));
+    const result = adminQuizInfo(token as string, parseInt(quizid), version);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
     const mappedError = errorMap[error.message];
     return res.status(mappedError.status).json({ error: mappedError.message });
   }
+};
+
+app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
+  handleAdminQuizInfo(req, res, 'v1');
+});
+
+app.get('/v2/admin/quiz/:quizid', (req: Request, res: Response) => {
+  handleAdminQuizInfo(req, res, 'v2');
 });
 
 // adminQuizUpdateThumbnail

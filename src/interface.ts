@@ -109,6 +109,8 @@ export interface quizInfo {
   numQuestions: number,
   questions: question[],
   timeLimit: number
+  // Optional property
+  thumbnailUrl?: string;
 }
 
 export interface quizDuplicateResponse {
