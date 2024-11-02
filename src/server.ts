@@ -256,8 +256,6 @@ const handleAdminUserDetailsUpdate = (req: Request, res: Response) => {
 app.put('/v1/admin/user/details', handleAdminUserDetailsUpdate);
 app.put('/v2/admin/user/details', handleAdminUserDetailsUpdate);
 
-
-
 // delete Quiz
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { token } = req.query;
@@ -447,17 +445,16 @@ app.delete('/v1/admin/quiz/:quizId/question/:questionId',
 // adminQuizTransfer
 const handleAdminQuizTransfer = (
   req: Request,
-  res: Response,
-  version: string
+  res: Response
 ) => {
   const { quizid } = req.params;
   const { userEmail } = req.body;
 
   let token;
-  if (version === 'v1') {
+  if (req.body.token) {
     token = req.body.token;
-  } else {
-    token = req.headers.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
   }
 
   try {
@@ -469,13 +466,9 @@ const handleAdminQuizTransfer = (
   }
 };
 
-app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
-  handleAdminQuizTransfer(req, res, 'v1');
-});
+app.post('/v1/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
 
-app.post('/v2/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
-  handleAdminQuizTransfer(req, res, 'v2');
-});
+app.post('/v2/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
 
 // Empty trash
 app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
