@@ -5,7 +5,8 @@ import {
   requestAdminAuthRegister,
   requestAdminUserPasswordUpdate,
   httpStatus,
-  requestAdminAuthLogin
+  requestAdminAuthLogin,
+  requestAdminUserPasswordUpdateV2
 } from '../src/requestHelperFunctions';
 import { tokenReturn } from '../src/interface';
 
@@ -97,4 +98,38 @@ describe('test for adminUserPasswordUpdate', () => {
     expect(res.statusCode).toStrictEqual(200);
     expect(res.body).toStrictEqual({ token: expect.any(String) });
   });
+  describe('tests for v2 routes', () => {
+    test('success case', () => {
+      // update the password, using v2 route
+      const result = requestAdminUserPasswordUpdateV2(user1token, 'EricMa1234', '1234EricMa');
+      expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(result.body).toStrictEqual({});
+  
+      // try to login by using the old password
+      // should fail
+      let res = requestAdminAuthLogin('ericMa@unsw.edu.au', 'EricMa1234');
+      expect(res.statusCode).toStrictEqual(400);
+      expect(res.body).toStrictEqual({ error: expect.any(String) });
+  
+      // try to login with the new password
+      // should success
+      res = requestAdminAuthLogin('ericMa@unsw.edu.au', '1234EricMa');
+      expect(res.statusCode).toStrictEqual(200);
+      expect(res.body).toStrictEqual({ token: expect.any(String) });
+    });
+    
+    // authUserId is not valid user
+    test('invalid token', () => {
+      const result = requestAdminUserPasswordUpdateV2(JSON.stringify('abcd'), 'EricMa1234', '1234EricMa');
+      expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(result.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('empty token', () => {
+      const result = requestAdminUserPasswordUpdateV2(JSON.stringify(''), 'EricMa1234', '1234EricMa');
+      expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(result.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+  })
 });
