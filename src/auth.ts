@@ -277,15 +277,11 @@ export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
 
   const validation = validateToken(token, data);
   if ('error' in validation) {
-    return { error: 'invalid token' };
+    throw new Error ( 'INVALID_TOKEN' );
   }
 
   const sessionIndex = data.sessions.findIndex(
     (session) => session.userId === validation.authUserId);
-
-  if (sessionIndex === -1) {
-    return { error: 'Session not found.' };
-  }
 
   data.sessions.splice(sessionIndex, 1);
   setData(data);
