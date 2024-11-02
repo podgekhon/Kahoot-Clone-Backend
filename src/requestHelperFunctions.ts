@@ -192,7 +192,6 @@ export const requestAdminUserDetailsUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 // adminUserDetailsUpdateV2
 /**
  * Makes http request to update user details
@@ -225,8 +224,6 @@ export const requestAdminUserDetailsUpdateV2 = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
-
-
 
 // adminQuizList
 /**
@@ -471,10 +468,10 @@ export const requestAdminQuizDescriptionUpdateV2 = (
     SERVER_URL + `/v2/admin/quiz/${quizId}/description`,
     {
       headers: {
-        token: token,  
+        token: token,
       },
       json: {
-        description: description,  
+        description: description,
       },
       timeout: TIMEOUT_MS,
     }
