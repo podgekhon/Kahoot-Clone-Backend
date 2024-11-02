@@ -3,6 +3,8 @@ import {
   requestAdminQuizCreate,
   requestAdminQuizInfo,
   requestAdminQuizQuestionCreate,
+  requestAdminQuizUpdateThumbnail,
+  requestAdminQuizInfoV2,
   requestClear,
   httpStatus
 } from '../src/requestHelperFunctions';
@@ -191,5 +193,25 @@ describe('HTTP tests for getting quiz info', () => {
     const resQuizInfo = requestAdminQuizInfo(invalidQuizId, user.token);
     expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  describe('test for adminQuizInfoV2 route', () => {
+    test('successfully fetches quiz thumbnail URL using requestAdminQuizInfoV2', () => {
+      const newThumbnailUrl = 'http://example.com/image.jpg';
+      const resUpdateThumbnail = requestAdminQuizUpdateThumbnail(
+        quiz.quizId,
+        user.token,
+        newThumbnailUrl
+      );
+      expect(resUpdateThumbnail.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+  
+      // Fetch the updated quiz info
+      const resQuizInfo = requestAdminQuizInfoV2(quiz.quizId, user.token);
+      expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      const quizInfo = resQuizInfo.body as quizInfo;
+  
+      // Check if the thumbnail URL was updated correctly
+      expect(quizInfo.thumbnailUrl).toStrictEqual(newThumbnailUrl);
+    });
   });
 });
