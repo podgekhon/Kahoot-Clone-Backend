@@ -411,12 +411,11 @@ describe('test for quiz duplicate', () => {
       expect(res.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
       expect(res.body).toStrictEqual({ error: expect.any(String) });
     });
-  
+
     test('empty token', () => {
       const res = requestAdminQuizQuestionDuplicateV2(quiz1Id, question1Id, JSON.stringify(''));
       expect(res.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
       expect(res.body).toStrictEqual({ error: expect.any(String) });
     });
-  
   });
 });

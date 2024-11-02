@@ -414,26 +414,33 @@ app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
 });
 
 // adminQuizQuestionDuplicate
-app.post('/v1/admin/quiz/:quizId/question/:questionId/duplicate',
-  (req: Request, res: Response) => {
-    const { token } = req.body;
-    const quizId = parseInt(req.params.quizId as string);
-    const questionId = parseInt(req.params.questionId as string);
-    try {
-      const result = adminQuizQuestionDuplicate(quizId, questionId, token);
-      return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-    } catch (error) {
-      if (error.message === 'invalid token') {
-        return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
-      } else if (
-        error.message === 'quiz does not exist' ||
-        error.message === 'user is not owner of this quiz'
-      ) {
-        return res.status(httpStatus.FORBIDDEN).json({ error: error.message });
-      }
-      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-    }
-  });
+const requestAdminQuizQuestionDuplicate = (req: Request, res: Response) => {
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token;
+  }
+
+  const quizId = parseInt(req.params.quizId as string);
+  const questionId = parseInt(req.params.questionId as string);
+  try {
+    const result = adminQuizQuestionDuplicate(quizId, questionId, token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+};
+
+app.post(
+  '/v1/admin/quiz/:quizId/question/:questionId/duplicate',
+  requestAdminQuizQuestionDuplicate
+);
+app.post(
+  '/v2/admin/quiz/:quizId/question/:questionId/duplicate',
+  requestAdminQuizQuestionDuplicate
+);
 
 // adminQuizQuestionRemove
 app.delete('/v1/admin/quiz/:quizId/question/:questionId',
