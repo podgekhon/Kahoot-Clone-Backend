@@ -134,14 +134,11 @@ export const adminUserDetails = (token: string): errorMessages | userDetails => 
   // get userId
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'invalid token' };
+    return { error: 'Token is empty or invalid (does not refer to valid logged in user session)' };
   }
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find((user) => user.userId === authUserId);
-  if (!user) {
-    return { error: 'AuthUserId is not a valid user.' };
-  }
 
   const userDetails = {
     userId: user.userId,
@@ -276,15 +273,11 @@ export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
 
   const validation = validateToken(token, data);
   if ('error' in validation) {
-    return { error: 'invalid token' };
+    throw new Error('INVALID_TOKEN');
   }
 
   const sessionIndex = data.sessions.findIndex(
     (session) => session.userId === validation.authUserId);
-
-  if (sessionIndex === -1) {
-    return { error: 'Session not found.' };
-  }
 
   data.sessions.splice(sessionIndex, 1);
   setData(data);

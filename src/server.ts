@@ -240,7 +240,7 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid',
     }
   });
 
-// adminUserDetails
+// adminUserDetails v1
 app.get('/v1/admin/user/details', (req, res) => {
   const { token } = req.query;
 
@@ -250,6 +250,23 @@ app.get('/v1/admin/user/details', (req, res) => {
   }
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+});
+
+// adminUserDetails v2
+app.get('/v2/admin/user/details', (req, res) => {
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
+  }
+  try {
+    const updateResult = adminUserDetails(token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(updateResult);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
 });
 
 // adminUserDetailsUpdate
@@ -396,22 +413,24 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
 });
 
 // adminAuthLogout
-app.post('/v1/admin/auth/logout', (req: Request, res: Response) => {
-  const { token } = req.body;
-
-  const result = adminAuthLogout(token);
-  if ('error' in result) {
-    if (result.error === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json(result);
-    }
-    if (result.error === 'Session not found.') {
-      return res.status(httpStatus.FORBIDDEN).json(result);
-    }
-    return res.status(httpStatus.BAD_REQUEST).json(result);
+const handleadminAuthLogout = (req: Request, res: Response) => {
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
   }
+  try {
+    const result = adminAuthLogout(token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
 
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
-});
+app.post('/v1/admin/auth/logout', handleadminAuthLogout);
+app.post('/v2/admin/auth/logout', handleadminAuthLogout);
 
 // adminQuizQuestionDuplicate
 const requestAdminQuizQuestionDuplicate = (req: Request, res: Response) => {

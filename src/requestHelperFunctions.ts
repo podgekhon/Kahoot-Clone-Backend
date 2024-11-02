@@ -192,6 +192,32 @@ export const requestAdminUserDetails = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// adminUserDetails
+/**
+ * Makes http request to get user details
+ *
+ * @param { string } token
+ * @returns
+ */
+export const requestAdminUserDetailsupdatev2 = (
+  token: string
+): {
+  body: ReturnType <typeof adminUserDetails>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/user/details',
+    {
+      headers: {
+        token: token
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminUserDetailsUpdate
 /**
  * Makes http request to update user details
@@ -572,7 +598,7 @@ export const requestAdminQuizUpdateThumbnail = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminAuthLogout
+// adminAuthLogout v1
 /**
  * Makes http request to log out a user
  *
@@ -589,6 +615,35 @@ export const requestAdminAuthLogout = (
     'POST',
     SERVER_URL + '/v1/admin/auth/logout',
     {
+      json: {
+        token: token,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminAuthLogout v2
+/**
+ * Makes http request to log out a user
+ *
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminAuthLogoutv2 = (
+  token: string
+): {
+  body: ReturnType <typeof adminAuthLogout>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v1/admin/auth/logout',
+    {
+      headers: {
+        token: token,
+      },
       json: {
         token: token,
       },
