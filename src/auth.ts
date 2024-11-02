@@ -134,14 +134,11 @@ export const adminUserDetails = (token: string): errorMessages | userDetails => 
   // get userId
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'invalid token' };
+    return { error: 'Token is empty or invalid (does not refer to valid logged in user session)' };
   }
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find((user) => user.userId === authUserId);
-  if (!user) {
-    return { error: 'AuthUserId is not a valid user.' };
-  }
 
   const userDetails = {
     userId: user.userId,

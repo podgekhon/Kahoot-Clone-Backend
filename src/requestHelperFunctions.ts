@@ -161,6 +161,32 @@ export const requestAdminUserDetails = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// adminUserDetails
+/**
+ * Makes http request to get user details
+ *
+ * @param { string } token
+ * @returns
+ */
+export const requestAdminUserDetailsupdatev2 = (
+  token: string
+): {
+  body: ReturnType <typeof adminUserDetails>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/user/details',
+    {
+      headers: {
+        token: token
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminUserDetailsUpdate
 /**
  * Makes http request to update user details
