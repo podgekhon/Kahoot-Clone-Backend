@@ -295,7 +295,7 @@ const handleAdminQuizInfo = (req: Request, res: Response, version: string) => {
   const { quizid } = req.params;
   let token;
   if (version === 'v1') {
-    token = req.query.token
+    token = req.query.token;
   } else {
     token = req.headers.token;
   }
