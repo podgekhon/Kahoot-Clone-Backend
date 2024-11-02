@@ -235,10 +235,6 @@ export const adminUserPasswordUpdate = (
 
   const user = data.users.find(user => user.userId === authUserId);
 
-  if (!user) {
-    throw new Error('AuthUserId is not a valid user.');
-  }
-
   if (user.currentPassword !== oldPassword) {
     throw new Error('Old Password is not the correct old password');
   }
