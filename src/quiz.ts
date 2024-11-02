@@ -707,20 +707,20 @@ export const adminQuizQuestionDuplicate = (
   const tokenValidation = validateToken(token, data);
   // invalid token
   if ('error' in tokenValidation) {
-    throw new Error('invalid token');
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 
   const validQuiz = data.quizzes.find(q => q.quizId === quizId);
   if (!validQuiz) {
-    throw new Error('quiz does not exist');
+    throw new Error('INVALID_QUIZ');
   }
   if (validQuiz.ownerId !== authUserId) {
-    throw new Error('user is not owner of this quiz');
+    throw new Error('INVALID_OWNER');
   }
   const validQuestion = validQuiz.questions.find(q => q.questionId === questionId);
   if (!validQuestion) {
-    throw new Error('question Id does not refer to a valid question within this quiz');
+    throw new Error('INVALID_QUESTION_ID');
   }
   // get the index of question
   const validQuestionIndex = validQuiz.questions.findIndex(q => q.questionId === questionId);
