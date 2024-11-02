@@ -5,6 +5,14 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.UNAUTHORIZED,
     message: 'Token is empty or invalid (does not refer to valid logged in user session)'
   },
+  INVALID_NAMEFIRST: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'First name has an invalid format'
+  },
+  INVALID_NAMELAST: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Last name has an invalid format'
+  },
   INVALID_QUIZ: {
     status: httpStatus.FORBIDDEN,
     message: 'Valid token is provided, but quiz doesn\'t exist.'
@@ -60,6 +68,14 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   INVALID_USEREMAIL: {
     status: httpStatus.BAD_REQUEST,
     message: 'Email is not registered.'
+  },
+  BAD_USEREMAIL_FORMAT: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Invalid email format.'
+  },
+  USEREMAIL_INUSE: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Email is already used by another user.'
   },
   ALREADY_OWNS: {
     status: httpStatus.BAD_REQUEST,

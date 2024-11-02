@@ -175,17 +175,13 @@ export const adminUserDetailsUpdate = (
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'invalid token' };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
-
   const currentUser = data.users.find(user => user.userId === authUserId);
-  if (!currentUser) {
-    return { error: 'AuthUserId is not a valid user.' };
-  }
 
   if (!validator.isEmail(email)) {
-    return { error: 'Invalid email format.' };
+    throw new Error('BAD_USEREMAIL_FORMAT');
   }
 
   // Check if email is already used by another user
@@ -196,15 +192,15 @@ export const adminUserDetailsUpdate = (
   );
 
   if (emailInUse) {
-    return { error: 'Email is currently used by another user.' };
+    throw new Error('USEREMAIL_INUSE');
   }
 
   if (!isNameValid(nameFirst)) {
-    return { error: 'First name invalid' };
+    throw new Error('INVALID_NAMEFIRST');
   }
 
   if (!isNameValid(nameLast)) {
-    return { error: 'Last name invalid' };
+    throw new Error('INVALID_NAMELAST');
   }
 
   currentUser.email = email;
