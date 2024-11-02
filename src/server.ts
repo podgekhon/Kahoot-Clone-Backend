@@ -61,7 +61,6 @@ import {
 
 import { clear } from './other';
 import { isErrorMessages } from './helperFunctions';
-import { errorMessages } from './interface';
 import { errorMap } from './errorMap';
 
 enum httpStatus {
@@ -154,25 +153,26 @@ app.post('/v1/admin/quiz', handleAdminQuizCreate);
 app.post('/v2/admin/quiz', handleAdminQuizCreate);
 
 // adminQuizNameUpdate
-app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
+const handleAdminQuizNameUpdate = (req: Request, res: Response) => {
   const { quizid } = req.params;
-  const { token, name } = req.body;
+  const { name } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
+  }
+  try {
+    const result = adminQuizNameUpdate(token, parseInt(quizid), name);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
 
-  const result = adminQuizNameUpdate(token, parseInt(quizid), name);
-  if ((result as errorMessages).error === 'invalid token') {
-    return res.status(httpStatus.UNAUTHORIZED).json({
-      error: 'Token is empty or invalid',
-    });
-  }
-  if (isErrorMessages(result) &&
-    (result.error === 'Quiz ID does not refer to a valid quiz.' ||
-     result.error === 'Quiz ID does not refer to a quiz that this user owns.')) {
-    return res.status(httpStatus.FORBIDDEN).json(result);
-  } else if ('error' in result) {
-    return res.status(httpStatus.BAD_REQUEST).json(result);
-  }
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-});
+app.put('/v1/admin/quiz/:quizid/name', handleAdminQuizNameUpdate);
+app.put('/v2/admin/quiz/:quizid/name', handleAdminQuizNameUpdate);
 
 // adminQuizDescriptionUpdate
 const handleAdminQuizDescriptionUpdate = (req: Request, res: Response) => {
