@@ -1,6 +1,6 @@
-import { 
-  requestAdminAuthRegister, 
-  requestClear 
+import {
+  requestAdminAuthRegister,
+  requestClear
 } from '../src/requestHelperFunctions';
 import { userAuthRegister } from '../src/interface';
 

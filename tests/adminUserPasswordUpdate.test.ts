@@ -1,5 +1,3 @@
-import request from 'sync-request-curl';
-import { port, url } from '../src/config.json';
 import {
   requestClear,
   requestAdminAuthRegister,
@@ -9,9 +7,6 @@ import {
   requestAdminUserPasswordUpdateV2
 } from '../src/requestHelperFunctions';
 import { tokenReturn } from '../src/interface';
-
-const SERVER_URL = `${url}:${port}`;
-const TIMEOUT_MS = 100 * 1000;
 
 const invalidPasswords = [
   { password: '12345678' },
@@ -29,7 +24,7 @@ beforeEach(() => {
 describe('test for adminUserPasswordUpdate', () => {
   let user1;
   let user1token: string;
-  
+
   beforeEach(() => {
     user1 = requestAdminAuthRegister('ericMa@unsw.edu.au', 'EricMa1234', 'Eric', 'Ma');
     user1token = (user1.body as tokenReturn).token;
@@ -37,7 +32,10 @@ describe('test for adminUserPasswordUpdate', () => {
 
   // authUserId is not valid user
   test('invalid token', () => {
-    const result = requestAdminUserPasswordUpdate(JSON.stringify('abcd'), 'EricMa1234', '1234EricMa');
+    const result = requestAdminUserPasswordUpdate(
+      JSON.stringify('abcd'),
+      'EricMa1234',
+      '1234EricMa');
     expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
     expect(result.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -104,32 +102,37 @@ describe('test for adminUserPasswordUpdate', () => {
       const result = requestAdminUserPasswordUpdateV2(user1token, 'EricMa1234', '1234EricMa');
       expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
       expect(result.body).toStrictEqual({});
-  
+
       // try to login by using the old password
       // should fail
       let res = requestAdminAuthLogin('ericMa@unsw.edu.au', 'EricMa1234');
       expect(res.statusCode).toStrictEqual(400);
       expect(res.body).toStrictEqual({ error: expect.any(String) });
-  
+
       // try to login with the new password
       // should success
       res = requestAdminAuthLogin('ericMa@unsw.edu.au', '1234EricMa');
       expect(res.statusCode).toStrictEqual(200);
       expect(res.body).toStrictEqual({ token: expect.any(String) });
     });
-    
+
     // authUserId is not valid user
     test('invalid token', () => {
-      const result = requestAdminUserPasswordUpdateV2(JSON.stringify('abcd'), 'EricMa1234', '1234EricMa');
+      const result = requestAdminUserPasswordUpdateV2(
+        JSON.stringify('abcd'),
+        'EricMa1234',
+        '1234EricMa');
       expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
       expect(result.body).toStrictEqual({ error: expect.any(String) });
     });
 
     test('empty token', () => {
-      const result = requestAdminUserPasswordUpdateV2(JSON.stringify(''), 'EricMa1234', '1234EricMa');
+      const result = requestAdminUserPasswordUpdateV2(
+        JSON.stringify(''),
+        'EricMa1234',
+        '1234EricMa');
       expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
       expect(result.body).toStrictEqual({ error: expect.any(String) });
     });
-
-  })
+  });
 });

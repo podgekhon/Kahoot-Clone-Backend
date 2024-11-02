@@ -168,7 +168,6 @@ export const requestAdminUserPasswordUpdateV2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 // adminUserDetails
 /**
  * Makes http request to get user details

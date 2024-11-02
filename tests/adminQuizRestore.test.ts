@@ -1,6 +1,14 @@
 import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
-import { requestAdminAuthLogout, requestAdminAuthRegister, requestAdminQuizCreate, requestAdminQuizList, requestAdminQuizRemove, requestAdminQuizRestore, requestAdminTrashList } from '../src/requestHelperFunctions';
+import {
+  requestAdminAuthLogout,
+  requestAdminAuthRegister,
+  requestAdminQuizCreate,
+  requestAdminQuizList,
+  requestAdminQuizRemove,
+  requestAdminQuizRestore,
+  requestAdminTrashList
+} from '../src/requestHelperFunctions';
 import { quizCreateResponse, tokenReturn } from '../src/interface';
 import { httpStatus } from './adminAuthRegister.test';
 
@@ -29,7 +37,7 @@ describe('test for quiz restore', () => {
     // list the trash and quiz Info
     let result = requestAdminTrashList(user1token);
     expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-      // quiz1 should be in the trash now
+    // quiz1 should be in the trash now
     expect(result.body).toStrictEqual(
       {
         quizzes: [
@@ -70,7 +78,7 @@ describe('test for quiz restore', () => {
 
   test('Quiz name of the restored quiz is already used by another active quiz', () => {
     // create quiz2 which name is 'quiz1'
-    requestAdminQuizCreate(user1token, 'quiz1', 'this is quiz 2 actually')
+    requestAdminQuizCreate(user1token, 'quiz1', 'this is quiz 2 actually');
     // restore quiz1
     const res = requestAdminQuizRestore(quiz1Id, user1token);
     expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);

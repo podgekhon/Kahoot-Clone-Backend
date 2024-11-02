@@ -1,4 +1,4 @@
-import { 
+import {
   requestAdminAuthRegister,
   requestAdminMoveQuizQuestion,
   requestAdminQuizCreate,
@@ -7,7 +7,7 @@ import {
   requestClear,
 } from '../src/requestHelperFunctions';
 
-import { 
+import {
   tokenReturn,
   quizCreateResponse,
   quizQuestionCreateResponse,
@@ -39,9 +39,9 @@ describe('HTTP tests for quiz question move', () => {
     user = resRegister.body as tokenReturn;
 
     const resCreateQuiz = requestAdminQuizCreate(
-      user.token,                 
-      'validQuizName',           
-      'validQuizDescription'     
+      user.token,
+      'validQuizName',
+      'validQuizDescription'
     );
     quiz = resCreateQuiz.body as quizCreateResponse;
 
@@ -119,7 +119,7 @@ describe('HTTP tests for quiz question move', () => {
     const resMoveQuestion = requestAdminMoveQuizQuestion(
       quiz.quizId,
       question1.questionId,
-      user.token, 
+      user.token,
       -1
     );
     expect(resMoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
@@ -131,7 +131,7 @@ describe('HTTP tests for quiz question move', () => {
       quiz.quizId,
       // 99999 is an arbitrary questionId, hence invalid
       99999,
-      user.token, 
+      user.token,
       1
     );
     expect(resMoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);

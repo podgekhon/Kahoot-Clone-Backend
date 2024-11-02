@@ -1,20 +1,15 @@
-import { 
+import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
-  requestAdminAuthLogout,
   requestAdminQuizNameUpdate,
   requestAdminQuizInfo,
   requestClear,
 } from '../src/requestHelperFunctions';
 
-import { 
+import {
   tokenReturn,
   quizCreateResponse
 } from '../src/interface';
-
-import {
-  httpStatus
-} from '../src/requestHelperFunctions';
 
 beforeEach(() => {
   requestClear();
@@ -26,17 +21,17 @@ describe('HTTP tests for quiz description update', () => {
   let user2: { token: string };
   beforeEach(() => {
     const resRegister = requestAdminAuthRegister(
-      'test@gmail.com',            
-      'validPassword5',             
-      'Guanlin',                    
-      'Kong'                        
+      'test@gmail.com',
+      'validPassword5',
+      'Guanlin',
+      'Kong'
     );
     user = resRegister.body as tokenReturn;
 
     const resCreateQuiz = requestAdminQuizCreate(
-      user.token,                 
-      'validQuizName',           
-      'validQuizDescription'     
+      user.token,
+      'validQuizName',
+      'validQuizDescription'
     );
     quiz = resCreateQuiz.body as quizCreateResponse;
   });
@@ -61,10 +56,10 @@ describe('HTTP tests for quiz description update', () => {
 
   test('user does not own quizId', () => {
     const resRegister2 = requestAdminAuthRegister(
-      'test2@gmail.com',            
-      'validPassword5',             
-      'Guanlin2',                    
-      'Kong2'                        
+      'test2@gmail.com',
+      'validPassword5',
+      'Guanlin2',
+      'Kong2'
     );
     user2 = resRegister2.body as tokenReturn;
     const result = requestAdminQuizNameUpdate(quiz.quizId, user2.token, 'newquizname');
@@ -85,15 +80,15 @@ describe('HTTP tests for quiz description update', () => {
   });
 
   test('name more than 30 characters', () => {
-    const result = requestAdminQuizNameUpdate(quiz.quizId, user2.token, 
+    const result = requestAdminQuizNameUpdate(quiz.quizId, user2.token,
       '12345678901234567890123456789012345');
     expect(result.statusCode).toStrictEqual(401);
     expect(result.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('duplicate quiz names owned by same user', () => {
-    const resCreateQuiz2 = requestAdminQuizCreate( user.token, 'quiz2', 'this is quiz 2' );
-    const quiz2 = resCreateQuiz2.body as quizCreateResponse;
+    const resCreateQuiz2 = requestAdminQuizCreate(user.token, 'quiz2', 'this is quiz 2');
+    resCreateQuiz2.body as quizCreateResponse;
     const result = requestAdminQuizNameUpdate(quiz.quizId, user2.token, 'validQuizName');
     expect(result.statusCode).toStrictEqual(401);
     expect(result.body).toStrictEqual({ error: expect.any(String) });
@@ -109,6 +104,6 @@ describe('HTTP tests for quiz description update', () => {
     // name should be updated
     const resQuizInfo = requestAdminQuizInfo(quiz.quizId, user.token);
     expect(resQuizInfo.statusCode).toStrictEqual(200);
-    expect(resQuizInfo.body).toMatchObject({ name: 'newquizname'});
+    expect(resQuizInfo.body).toMatchObject({ name: 'newquizname' });
   });
 });
