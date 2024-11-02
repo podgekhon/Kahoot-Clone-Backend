@@ -882,3 +882,30 @@ export const requestAdminQuizQuestionDuplicate = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+/**
+ * Makes http request to duplicate a quiz
+ *
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminQuizQuestionDuplicateV2 = (
+  quizId: number, questionId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizQuestionDuplicate>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}/duplicate`,
+    {
+      headers: {
+        token: token,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
