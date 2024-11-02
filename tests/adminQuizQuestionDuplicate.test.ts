@@ -1,16 +1,16 @@
-import { 
-  requestAdminAuthRegister, 
-  requestAdminQuizCreate, 
-  requestAdminQuizQuestionDuplicate, 
-  requestAdminQuizQuestionCreate, 
+import {
+  requestAdminAuthRegister,
+  requestAdminQuizCreate,
+  requestAdminQuizQuestionDuplicate,
+  requestAdminQuizQuestionCreate,
   requestAdminQuizInfo,
-  requestClear 
+  requestClear
 } from '../src/requestHelperFunctions';
 
-import { 
-  quizCreateResponse, 
-  quizQuestionCreateResponse, 
-  quizQuestionDuplicateResponse, 
+import {
+  quizCreateResponse,
+  quizQuestionCreateResponse,
+  quizQuestionDuplicateResponse,
   tokenReturn,
 } from '../src/interface';
 
@@ -24,7 +24,7 @@ describe('test for quiz duplicate', () => {
   let user1token: string;
   let quiz1Id: number;
   let question1Id: number;
-  
+
   beforeEach(() => {
     const user1 = requestAdminAuthRegister('ericMa@unsw.edu.au', 'EricMa1234', 'Eric', 'Ma');
     user1token = (user1.body as tokenReturn).token;
@@ -49,8 +49,8 @@ describe('test for quiz duplicate', () => {
       },
     };
     const question = requestAdminQuizQuestionCreate(
-      quiz1Id, 
-      questionBody.token, 
+      quiz1Id,
+      questionBody.token,
       questionBody.questionBody
     );
     question1Id = (question.body as quizQuestionCreateResponse).questionId;
@@ -108,8 +108,8 @@ describe('test for quiz duplicate', () => {
       },
     };
     const question2 = requestAdminQuizQuestionCreate(
-      quiz2Id, 
-      questionBody.token, 
+      quiz2Id,
+      questionBody.token,
       questionBody.questionBody
     );
     const question2Id = (question2.body as quizQuestionCreateResponse).questionId;
@@ -205,8 +205,8 @@ describe('test for quiz duplicate', () => {
         },
       };
       const question2 = requestAdminQuizQuestionCreate(
-        quiz1Id, 
-        user1token, 
+        quiz1Id,
+        user1token,
         questionBody.questionBody
       );
       const question2Id = (question2.body as quizQuestionCreateResponse).questionId;

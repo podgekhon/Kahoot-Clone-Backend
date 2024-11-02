@@ -110,19 +110,26 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 });
 
 // adminUserPasswordUpdate
-app.put('/v1/admin/user/password', (req: Request, res: Response) => {
-  const { token, oldPassword, newPassword } = req.body;
+const requestAdminUserPasswordUpdate = (req: Request, res: Response) => {
+  const { oldPassword, newPassword } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token;
+  }
+
   try {
     const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    if (error.message === 'Invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
-    } else {
-      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-    }
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-});
+};
+
+app.put('/v1/admin/user/password', requestAdminUserPasswordUpdate);
+app.put('/v2/admin/user/password', requestAdminUserPasswordUpdate);
 
 // adminQuizCreate
 const handleAdminQuizCreate = (req: Request, res: Response) => {

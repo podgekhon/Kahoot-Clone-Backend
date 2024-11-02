@@ -137,6 +137,37 @@ export const requestAdminUserPasswordUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+/**
+ * Makes http request to update password
+ *
+ * @param { string } token
+ * @param { string } oldPassword
+ * @param { string } newPassword
+ * @returns { Response }
+ */
+export const requestAdminUserPasswordUpdateV2 = (
+  token: string, oldPassword: string, newPassword: string
+): {
+  body: ReturnType <typeof adminUserPasswordUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v2/admin/user/password',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        oldPassword: oldPassword,
+        newPassword: newPassword
+      },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminUserDetails
 /**
  * Makes http request to get user details
@@ -302,7 +333,6 @@ export const requestAdminQuizCreateV2 = (
         token: token
       },
       json: {
-        token: token,
         name: name,
         description: description,
       },

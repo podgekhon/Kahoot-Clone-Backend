@@ -13,7 +13,7 @@ import {
 
 import {
   httpStatus
-} from '../src/requestHelperFunctions'
+} from '../src/requestHelperFunctions';
 
 beforeEach(() => {
   requestClear();
@@ -81,7 +81,7 @@ describe('Tests for adminTrashEmpty', () => {
       });
     });
 
-    test('returns httpStatus.FORBIDDEN error for quiz ID that does not belong to the current user', () => {
+    test('quiz ID that does not belong to the current user', () => {
       // Create a new admin user
       const resRegisterNewAdmin = requestAdminAuthRegister(
         'newadmin@unsw.edu.au',
@@ -104,7 +104,7 @@ describe('Tests for adminTrashEmpty', () => {
   describe('Tests for adminTrashEmpty with Multiple Quiz IDs', () => {
     let admin: { token: string };
     let quizIds: number[] = [];
-    
+
     beforeEach(() => {
       quizIds = [];
       // Register an admin user
@@ -122,7 +122,7 @@ describe('Tests for adminTrashEmpty', () => {
           `Sample Quiz ${i + 1}`,
           `This is sample quiz number ${i + 1}.`
         );
-        const quizId = (resCreateQuiz.body as quizCreateResponse).quizId
+        const quizId = (resCreateQuiz.body as quizCreateResponse).quizId;
         quizIds.push(quizId);
 
         // Simulate moving the quiz to trash

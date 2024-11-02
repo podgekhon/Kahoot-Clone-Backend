@@ -1,20 +1,18 @@
-import { 
+import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
-  requestAdminQuizDescriptionUpdate,
   requestAdminQuizInfo,
   requestAdminQuizQuestionCreate,
   requestAdminQuizQuestionUpdate,
   requestClear,
 } from '../src/requestHelperFunctions';
 
-import { 
+import {
   tokenReturn,
   quizCreateResponse,
   quizQuestionCreateResponse,
   question,
   quizInfo,
-  token
 } from '../src/interface';
 
 import {
@@ -32,17 +30,17 @@ describe('HTTP tests for quiz question update', () => {
 
   beforeEach(() => {
     const resRegister = requestAdminAuthRegister(
-      'test@gmail.com',            
-      'validPassword5',             
-      'Patrick',                    
-      'Chen'                        
+      'test@gmail.com',
+      'validPassword5',
+      'Patrick',
+      'Chen'
     );
     user = resRegister.body as tokenReturn;
 
     const resCreateQuiz = requestAdminQuizCreate(
-      user.token,                 
-      'validQuizName',           
-      'validQuizDescription'     
+      user.token,
+      'validQuizName',
+      'validQuizDescription'
     );
     quiz = resCreateQuiz.body as quizCreateResponse;
 
@@ -101,7 +99,7 @@ describe('HTTP tests for quiz question update', () => {
       updatedQuestion1.token,
       updatedQuestion1.questionBody
     );
-    
+
     expect(resUpdateQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(resUpdateQuestion.body).toStrictEqual({});
 
@@ -163,7 +161,7 @@ describe('HTTP tests for quiz question update', () => {
       invalidQuestion.token,
       invalidQuestion.questionBody
     );
-    
+
     expect(resUpdateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resUpdateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -470,7 +468,6 @@ describe('HTTP tests for quiz question update', () => {
       question1.token,
       question1.questionBody
     );
-
 
     expect(resUpdateQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resUpdateQuestion.body).toStrictEqual({ error: expect.any(String) });

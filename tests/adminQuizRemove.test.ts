@@ -36,7 +36,7 @@ describe('test for adminQuizRemove', () => {
     expect(quizList.body).toStrictEqual({
       quizzes: []
     });
-    
+
     // one quiz in the trash list
     const trashList = requestAdminTrashList(user1token);
     expect(trashList.body).toStrictEqual({
@@ -69,7 +69,12 @@ describe('test for adminQuizRemove', () => {
   });
 
   test('Attempt to delete quiz by non-admin user', () => {
-    const newuser = requestAdminAuthRegister('test1@gmail.com', 'validPassword5', 'Guanlin1', 'Kong1');
+    const newuser = requestAdminAuthRegister(
+      'test1@gmail.com',
+      'validPassword5',
+      'Guanlin1',
+      'Kong1'
+    );
     const newtoken = (newuser.body as tokenReturn).token;
     const deleteResponse = requestAdminQuizRemove(quizID, newtoken);
     expect(deleteResponse.statusCode).toStrictEqual(401);

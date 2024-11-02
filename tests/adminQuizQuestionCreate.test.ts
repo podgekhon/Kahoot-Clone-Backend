@@ -1,4 +1,4 @@
-import { 
+import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizInfo,
@@ -6,7 +6,7 @@ import {
   requestClear,
 } from '../src/requestHelperFunctions';
 
-import { 
+import {
   tokenReturn,
   quizCreateResponse,
   quizQuestionCreateResponse,
@@ -36,9 +36,9 @@ describe('HTTP tests for quiz question create', () => {
     user = resRegister.body as tokenReturn;
 
     const resCreateQuiz = requestAdminQuizCreate(
-      user.token,                 
-      'validQuizName',           
-      'validQuizDescription'     
+      user.token,
+      'validQuizName',
+      'validQuizDescription'
     );
     quiz = resCreateQuiz.body as quizCreateResponse;
   });
@@ -204,7 +204,7 @@ describe('HTTP tests for quiz question create', () => {
       'User',
       'Two'
     );
-    
+
     const user2 = resRegisterUser2.body as tokenReturn;
 
     const question1 = {
@@ -231,8 +231,8 @@ describe('HTTP tests for quiz question create', () => {
       quiz.quizId,
       question1.token,
       question1.questionBody
-    )
-    
+    );
+
     expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });

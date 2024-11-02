@@ -16,7 +16,7 @@ import {
 
 import {
   httpStatus
-} from '../src/requestHelperFunctions'
+} from '../src/requestHelperFunctions';
 
 beforeEach(() => {
   requestClear();
@@ -72,7 +72,6 @@ describe('Tests for adminQuizQuestionRemove', () => {
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(resRemoveQuestion.body).toStrictEqual({});
   });
-
 
   test('returns error when user is not the quiz owner', () => {
     const resRegisterUser2 = requestAdminAuthRegister(
@@ -156,12 +155,13 @@ describe('Tests for adminQuizQuestionRemove', () => {
     requestAdminQuizRemove(quiz.quizId, user.token);
 
     const quizlist = requestAdminTrashList(user.token);
-    expect(quizlist.body).toEqual({ quizzes: [
-      {
-        quizId: quiz.quizId,
-        name: 'validQuizName'
-      }
-    ]
+    expect(quizlist.body).toEqual({
+      quizzes: [
+        {
+          quizId: quiz.quizId,
+          name: 'validQuizName'
+        }
+      ]
     });
     const resRemoveQuestion = requestAdminQuizQuestionRemove(
       quiz.quizId,
@@ -174,4 +174,3 @@ describe('Tests for adminQuizQuestionRemove', () => {
     );
   });
 });
-

@@ -103,14 +103,14 @@ describe('adminQuizCreate', () => {
     test('valid inputs', () => {
       console.log(user1Token);
       const result = requestAdminQuizCreateV2(user1Token, 'quiz1', 'This is quiz 1');
-  
+
       expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
       expect(result.body).toStrictEqual({ quizId: expect.any(Number) });
-  
+
       // Validate quiz is in the quiz list
       const quizList = requestAdminQuizList(user1Token);
       const quizId = (result.body as quizCreateResponse).quizId;
-  
+
       expect(quizList.body).toStrictEqual({
         quizzes: [{ quizId: quizId, name: 'quiz1' }]
       });

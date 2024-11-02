@@ -1,4 +1,4 @@
-import { 
+import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizInfo,
@@ -9,7 +9,7 @@ import {
   httpStatus
 } from '../src/requestHelperFunctions';
 
-import { 
+import {
   quizInfo,
   tokenReturn,
   quizCreateResponse,
@@ -26,17 +26,17 @@ describe('HTTP tests for getting quiz info', () => {
 
   beforeEach(() => {
     const resRegister = requestAdminAuthRegister(
-      'test@gmail.com',            
-      'validPassword5',             
-      'Patrick',                    
-      'Chen'                        
+      'test@gmail.com',
+      'validPassword5',
+      'Patrick',
+      'Chen'
     );
     user = resRegister.body as tokenReturn;
 
     const resCreateQuiz = requestAdminQuizCreate(
-      user.token,                 
-      'validQuizName',           
-      'validQuizDescription'     
+      user.token,
+      'validQuizName',
+      'validQuizDescription'
     );
     quiz = resCreateQuiz.body as quizCreateResponse;
   });
@@ -70,8 +70,8 @@ describe('HTTP tests for getting quiz info', () => {
     };
 
     const resCreateQuestion1 = requestAdminQuizQuestionCreate(
-      quiz.quizId, 
-      question1.token, 
+      quiz.quizId,
+      question1.token,
       question1.questionBody
     );
     expect(resCreateQuestion1.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
@@ -82,7 +82,7 @@ describe('HTTP tests for getting quiz info', () => {
       question2.token,
       question2.questionBody
     );
-    
+
     expect(resCreateQuestion2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     const createdQuestion2 = resCreateQuestion2.body as quizQuestionCreateResponse;
 
@@ -99,7 +99,7 @@ describe('HTTP tests for getting quiz info', () => {
       timeLimit: expect.any(Number),
     });
 
-    // Verify that the questions exist in the `questions` array, 
+    // Verify that the questions exist in the `questions` array,
     // without assuming order
     const questionIds = quizInfo.questions.map(
       (q: quizQuestionCreateResponse) => q.questionId
@@ -175,15 +175,15 @@ describe('HTTP tests for getting quiz info', () => {
 
   test('returns error when user is not the quiz owner', () => {
     const resRegisterUser2 = requestAdminAuthRegister(
-      'user2@gmail.com',            
-      'validPassword2',             
-      'User',                    
-      'Two'                        
+      'user2@gmail.com',
+      'validPassword2',
+      'User',
+      'Two'
     );
     const user2 = resRegisterUser2.body as tokenReturn;
 
     // User2 tries to access the quiz of original user
-    const resQuizInfo = requestAdminQuizInfo(quiz.quizId, user2.token)
+    const resQuizInfo = requestAdminQuizInfo(quiz.quizId, user2.token);
     expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -204,7 +204,7 @@ describe('HTTP tests for getting quiz info', () => {
         newThumbnailUrl
       );
       expect(resUpdateThumbnail.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-  
+
       const resQuizInfo = requestAdminQuizInfoV2(quiz.quizId, user.token);
       expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
       const quizInfo = resQuizInfo.body as quizInfo;
