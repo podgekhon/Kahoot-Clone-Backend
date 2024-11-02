@@ -5,6 +5,7 @@ import {
   requestAdminQuizList,
   requestAdminQuizCreate,
   requestAdminQuizTransfer,
+  requestAdminQuizTransferV2,
 } from '../src/requestHelperFunctions';
 import {
   quizCreateResponse,
@@ -101,6 +102,32 @@ describe('Test for adminQuizTransfer', () => {
       quizzes: []
     });
   });
+
+  // MODALISE THIS ---------------------------------------------------------------
+  // test('Valid adminQuizTransfer V2 ROUTE', () => {
+  //   quizTransferResponse = requestAdminQuizTransferV2(
+  //     quizId,
+  //     user1Token,
+  //     'user2@gmail.com'
+  //   );
+  //   expect(quizTransferResponse.statusCode).toStrictEqual(200);
+
+  //   User2QuizListResponse = requestAdminQuizList(user2Token);
+  //   expect(User2QuizListResponse.body).toStrictEqual({
+  //     quizzes: [
+  //       {
+  //         quizId: quizId,
+  //         name: 'Math Quiz',
+  //       }
+  //     ]
+  //   });
+
+  //   User2QuizListResponse = requestAdminQuizList(user1Token);
+  //   expect(User2QuizListResponse.statusCode).toStrictEqual(200);
+  //   expect(User2QuizListResponse.body).toStrictEqual({
+  //     quizzes: []
+  //   });
+  // });
 
   test('returns error receiver is not a real user', () => {
     quizTransferResponse = requestAdminQuizTransfer(

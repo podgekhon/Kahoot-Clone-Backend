@@ -408,9 +408,21 @@ app.delete('/v1/admin/quiz/:quizId/question/:questionId',
   });
 
 // adminQuizTransfer
-app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+const handleAdminQuizTransfer = (
+  req: Request,
+  res: Response,
+  version: string
+) => {
   const { quizid } = req.params;
-  const { token, userEmail } = req.body;
+  const { userEmail } = req.body;
+
+  let token;
+  if (version === 'v1') {
+    token = req.body.token;
+  } else {
+    token = req.headers.token;
+  }
+
   try {
     const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
@@ -418,6 +430,14 @@ app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
     const mappedError = errorMap[err.message];
     return res.status(mappedError.status).json({ error: mappedError.message });
   }
+};
+
+app.post('/v1/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  handleAdminQuizTransfer(req, res, 'v1');
+});
+
+app.post('/v2/admin/quiz/:quizid/transfer', (req: Request, res: Response) => {
+  handleAdminQuizTransfer(req, res, 'v2');
 });
 
 // Empty trash

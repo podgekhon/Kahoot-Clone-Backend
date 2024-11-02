@@ -465,16 +465,18 @@ export const requestAdminTrashEmpty = (
  * @param { string } userEmail
  * @returns { Response }
  */
-export const requestAdminQuizTransfer = (
-  quizId: number, token: string, userEmail: string
-): {
-  body: ReturnType <typeof adminQuizTransfer>,
-  statusCode: number
-} => {
+const makeQuizTransferRequest = (
+  quizId: number,
+  token: string,
+  userEmail: string,
+  version: string,
+  headers: Record<string, string> = {}
+): { body: ReturnType <typeof adminQuizTransfer>, statusCode: number } => {
   const res = request(
     'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
+    SERVER_URL + `/${version}/admin/quiz/${quizId}/transfer`,
     {
+      headers,
       json: {
         token: token,
         userEmail: userEmail,
@@ -484,6 +486,16 @@ export const requestAdminQuizTransfer = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+// v1 route
+export const requestAdminQuizTransfer = (
+  quizId: number, token: string, userEmail: string
+) => makeQuizTransferRequest(quizId, token, userEmail, 'v1');
+
+// v2 route
+export const requestAdminQuizTransferV2 = (
+  quizId: number, token: string, userEmail: string
+) => makeQuizTransferRequest(quizId, token, userEmail, 'v2');
 
 // adminQuizQuestionCreate
 /**
