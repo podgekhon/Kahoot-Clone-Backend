@@ -110,19 +110,26 @@ app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
 });
 
 // adminUserPasswordUpdate
-app.put('/v1/admin/user/password', (req: Request, res: Response) => {
-  const { token, oldPassword, newPassword } = req.body;
+const requestAdminUserPasswordUpdate = (req: Request, res: Response) => {
+  const { oldPassword, newPassword } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token;
+  }
+
   try {
     const result = adminUserPasswordUpdate(token, oldPassword, newPassword);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    if (error.message === 'Invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
-    } else {
-      return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
-    }
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-});
+};
+
+app.put('/v1/admin/user/password', requestAdminUserPasswordUpdate);
+app.put('/v2/admin/user/password', requestAdminUserPasswordUpdate);
 
 // adminQuizCreate
 const handleAdminQuizCreate = (req: Request, res: Response) => {
@@ -349,24 +356,25 @@ app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
 });
 
 // adminQuizRestore
-app.post('/v1/admin/quiz/:quizId/restore', (req: Request, res: Response) => {
-  const { token } = req.body;
+const requestAdminQuizRestore = (req: Request, res: Response) => {
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token;
+  }
   const quizId = parseInt(req.params.quizId as string);
   try {
     const result = adminQuizRestore(quizId, token);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    if (error.message === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json({ error: error.message });
-    } else if (
-      error.message === 'user is not the owner of this quiz' ||
-      error.message === 'quiz doesnt exist'
-    ) {
-      return res.status(httpStatus.FORBIDDEN).json({ error: error.message });
-    }
-    return res.status(httpStatus.BAD_REQUEST).json({ error: error.message });
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
   }
-});
+};
+
+app.post('/v1/admin/quiz/:quizId/restore', requestAdminQuizRestore);
+app.post('/v2/admin/quiz/:quizId/restore', requestAdminQuizRestore);
 
 // adminMoveQuizQuestion
 app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
