@@ -7,6 +7,7 @@ import {
   requestAdminQuizList,
   requestAdminQuizRemove,
   requestAdminQuizRestore,
+  requestAdminQuizRestoreV2,
   requestAdminTrashList
 } from '../src/requestHelperFunctions';
 import { quizCreateResponse, tokenReturn } from '../src/interface';
@@ -122,5 +123,63 @@ describe('test for quiz restore', () => {
     const result = requestAdminQuizRestore(quiz1Id, user2token);
     expect(result.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(result.body).toStrictEqual({ error: expect.any(String) });
+  });
+  describe('tests for v2 route', () => {
+    test('empty token', () => {
+      const result = requestAdminQuizRestoreV2(quiz1Id, JSON.stringify(''));
+      expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(result.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('invalid token(does not refer to a logged in user)', () => {
+      // log out user 1
+      requestAdminAuthLogout(user1token);
+      const result = requestAdminQuizRestoreV2(quiz1Id, user1token);
+      expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(result.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('restore successful', () => {
+      // list the trash and quiz Info
+      let result = requestAdminTrashList(user1token);
+      expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      // quiz1 should be in the trash now
+      expect(result.body).toStrictEqual(
+        {
+          quizzes: [
+            {
+              quizId: quiz1Id,
+              name: 'quiz1',
+            }
+          ]
+        }
+      );
+      // restore a quiz from the trash
+      const res = requestAdminQuizRestoreV2(quiz1Id, user1token);
+      // check status code and return type
+      expect(res.statusCode).toStrictEqual(200);
+      expect(res.body).toStrictEqual({});
+      // list the trash
+      result = requestAdminTrashList(user1token);
+      // nothing in the trash now
+      expect(result.body).toStrictEqual(
+        {
+          quizzes: []
+        }
+      );
+      // list the quiz list
+      result = requestAdminQuizList(user1token);
+      // quiz1 should be back in quiz list
+      expect(result.body).toStrictEqual(
+        {
+          quizzes: [
+            {
+              quizId: quiz1Id,
+              name: 'quiz1'
+            }
+          ]
+        }
+      );
+    });
   });
 });
