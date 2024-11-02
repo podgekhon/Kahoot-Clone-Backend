@@ -566,15 +566,10 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
 
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    throw new Error('INVALID_TOKEN');
   }
 
   const authUserId = tokenValidation.authUserId;
-
-  const user = data.users.find(user => user.userId === authUserId);
-  if (!user) {
-    return { error: 'AuthUserId is not a valid user.' };
-  }
 
   const userTrashQuizzes = data.trash
     .filter(quiz => quiz.ownerId === authUserId)
