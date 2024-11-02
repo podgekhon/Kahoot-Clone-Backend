@@ -72,7 +72,6 @@ describe('Test for adminQuizTransfer', () => {
       quizzes: []
     });
 
-
     quizCreateResponse = requestAdminQuizCreate(
       user1Token,
       'Math Quiz',

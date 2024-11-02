@@ -256,8 +256,6 @@ const handleAdminUserDetailsUpdate = (req: Request, res: Response) => {
 app.put('/v1/admin/user/details', handleAdminUserDetailsUpdate);
 app.put('/v2/admin/user/details', handleAdminUserDetailsUpdate);
 
-
-
 // delete Quiz
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   const { token } = req.query;
