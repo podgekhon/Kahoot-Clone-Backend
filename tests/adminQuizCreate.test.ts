@@ -2,7 +2,8 @@ import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizList,
-  requestClear
+  requestClear,
+  requestAdminQuizCreateV2
 } from '../src/requestHelperFunctions';
 
 import { tokenReturn, quizCreateResponse, userAuthRegister } from '../src/interface';
@@ -97,5 +98,42 @@ describe('adminQuizCreate', () => {
     expect(quizList.body).toStrictEqual({
       quizzes: [{ quizId: quizId, name: 'quiz1' }]
     });
+  });
+  describe('tests for v2', () => {
+    test('valid inputs', () => {
+      console.log(user1Token);
+      const result = requestAdminQuizCreateV2(user1Token, 'quiz1', 'This is quiz 1');
+  
+      expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(result.body).toStrictEqual({ quizId: expect.any(Number) });
+  
+      // Validate quiz is in the quiz list
+      const quizList = requestAdminQuizList(user1Token);
+      const quizId = (result.body as quizCreateResponse).quizId;
+  
+      expect(quizList.body).toStrictEqual({
+        quizzes: [{ quizId: quizId, name: 'quiz1' }]
+      });
+    });
+  });
+  test('invalid token', () => {
+    const result = requestAdminQuizCreateV2('hahainvalid', 'Quiz1', 'Invalid token');
+
+    expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('empty token', () => {
+    const result = requestAdminQuizCreateV2('', 'Quiz1', 'Empty token');
+
+    expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('name contains invalid characters', () => {
+    const result = requestAdminQuizCreateV2(user1Token, '~invalidname', 'Invalid characters');
+
+    expect(result.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(result.body).toStrictEqual({ error: expect.any(String) });
   });
 });
