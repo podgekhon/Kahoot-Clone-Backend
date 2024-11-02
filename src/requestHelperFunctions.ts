@@ -448,6 +448,38 @@ export const requestAdminQuizDescriptionUpdate = (
 };
 
 /**
+ * Makes HTTP request to update a quiz description using v2 route
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @param { string } description
+ * @returns { Response }
+ */
+export const requestAdminQuizDescriptionUpdateV2 = (
+  quizId: number,
+  token: string,
+  description: string
+): {
+  body: ReturnType<typeof adminQuizDescriptionUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/description`,
+    {
+      headers: {
+        token: token,
+      },
+      json: {
+        description: description,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
  * Makes HTTP request to update a quiz thumbnail URL
  *
  * @param {number} quizId
@@ -590,16 +622,18 @@ export const requestAdminTrashEmpty = (
  * @param { string } userEmail
  * @returns { Response }
  */
-export const requestAdminQuizTransfer = (
-  quizId: number, token: string, userEmail: string
-): {
-  body: ReturnType <typeof adminQuizTransfer>,
-  statusCode: number
-} => {
+const makeQuizTransferRequest = (
+  quizId: number,
+  token: string,
+  userEmail: string,
+  version: string,
+  headers: Record<string, string> = {}
+): { body: ReturnType <typeof adminQuizTransfer>, statusCode: number } => {
   const res = request(
     'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/transfer`,
+    SERVER_URL + `/${version}/admin/quiz/${quizId}/transfer`,
     {
+      headers,
       json: {
         token: token,
         userEmail: userEmail,
@@ -609,6 +643,16 @@ export const requestAdminQuizTransfer = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+// v1 route
+export const requestAdminQuizTransfer = (
+  quizId: number, token: string, userEmail: string
+) => makeQuizTransferRequest(quizId, token, userEmail, 'v1');
+
+// v2 route
+export const requestAdminQuizTransferV2 = (
+  quizId: number, token: string, userEmail: string
+) => makeQuizTransferRequest(quizId, token, userEmail, 'v2');
 
 // adminQuizQuestionCreate
 /**

@@ -1,13 +1,14 @@
-import { 
+import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizDescriptionUpdate,
+  requestAdminQuizDescriptionUpdateV2,
   requestAdminQuizInfo,
   requestClear,
   httpStatus
 } from '../src/requestHelperFunctions';
 
-import { 
+import {
   tokenReturn,
   quizCreateResponse
 } from '../src/interface';
@@ -22,17 +23,17 @@ describe('HTTP tests for quiz description update', () => {
 
   beforeEach(() => {
     const resRegister = requestAdminAuthRegister(
-      'test@gmail.com',            
-      'validPassword5',             
-      'Patrick',                    
-      'Chen'                        
+      'test@gmail.com',
+      'validPassword5',
+      'Patrick',
+      'Chen'
     );
     user = resRegister.body as tokenReturn;
 
     const resCreateQuiz = requestAdminQuizCreate(
-      user.token,                 
-      'validQuizName',           
-      'validQuizDescription'     
+      user.token,
+      'validQuizName',
+      'validQuizDescription'
     );
     quiz = resCreateQuiz.body as quizCreateResponse;
   });
@@ -86,7 +87,7 @@ describe('HTTP tests for quiz description update', () => {
       // Empty token, hence invalid
       '',
       'New description'
-    )
+    );
     expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -96,8 +97,8 @@ describe('HTTP tests for quiz description update', () => {
       -1,
       user.token,
       'New description'
-    )
-    
+    );
+
     expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -132,5 +133,27 @@ describe('HTTP tests for quiz description update', () => {
 
     expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  describe('tests for adminQuizDescriptionUpdate v2 route', () => {
+    test('successfully updates the quiz description using v2 route', () => {
+      const resUpdateQuizDescription = requestAdminQuizDescriptionUpdateV2(
+        quiz.quizId,
+        user.token,
+        'Updated description'
+      );
+      expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(resUpdateQuizDescription.body).toStrictEqual({});
+
+      // Get quiz info to confirm that description is updated
+      const resQuizInfo = requestAdminQuizInfo(
+        quiz.quizId,
+        user.token
+      );
+      expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(resQuizInfo.body).toMatchObject({
+        description: 'Updated description'
+      });
+    });
   });
 });
