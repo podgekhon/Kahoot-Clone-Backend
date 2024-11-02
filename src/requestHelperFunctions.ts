@@ -451,6 +451,38 @@ export const requestAdminQuizDescriptionUpdate = (
 };
 
 /**
+ * Makes HTTP request to update a quiz description using v2 route
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @param { string } description
+ * @returns { Response }
+ */
+export const requestAdminQuizDescriptionUpdateV2 = (
+  quizId: number,
+  token: string,
+  description: string
+): {
+  body: ReturnType<typeof adminQuizDescriptionUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/description`,
+    {
+      headers: {
+        token: token,  
+      },
+      json: {
+        description: description,  
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
  * Makes HTTP request to update a quiz thumbnail URL
  *
  * @param {number} quizId
