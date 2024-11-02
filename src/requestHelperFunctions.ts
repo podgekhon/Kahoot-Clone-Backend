@@ -389,7 +389,7 @@ export const requestAdminQuizInfoV2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminQuizNameUpdate
+// adminQuizNameUpdate v1
 /**
  * Makes http request to update quiz name
  *
@@ -410,6 +410,37 @@ export const requestAdminQuizNameUpdate = (
     {
       json: {
         token: token,
+        name: name,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizNameUpdate v2
+/**
+ * Makes http request to update quiz name
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @param { string } name
+ * @returns { Response }
+ */
+export const requestAdminQuizNameUpdateV2 = (
+  quizId: number, token: string, name: string
+): {
+  body: ReturnType <typeof adminQuizNameUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/name`,
+    {
+      headers: {
+        token: token
+      },
+      json: {
         name: name,
       },
       timeout: TIMEOUT_MS,

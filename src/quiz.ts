@@ -2,7 +2,6 @@ import { getData, setData } from './dataStore';
 import {
   generateRandomColour,
   validateToken,
-  isUserValid,
   isStringValid,
   isNameLengthValid,
   isNameTaken,
@@ -467,45 +466,43 @@ export const adminQuizNameUpdate = (
   quizId: number,
   name: string
 ): errorMessages | emptyReturn => {
+  console.log('HELLO 0');
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'invalid token' };
+    console.log('HELLO 1');
+    throw new Error('INVALID_TOKEN');
   }
+  console.log('HELLO 2');
   const authUserId = tokenValidation.authUserId;
-
-  if (!isUserValid(authUserId, data)) {
-    return { error: 'AuthUserId is not a valid user.' };
-  }
 
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    return { error: 'Quiz ID does not refer to a valid quiz.' };
+    console.log('HELLO 3');
+    throw new Error('INVALID_QUIZ');
   }
   if (quiz.ownerId !== authUserId) {
-    return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
+    console.log('HELLO 4');
+    throw new Error('INVALID_OWNER');
   }
 
   // check if name contains invalid characters
   if (!isStringValid(name)) {
-    return {
-      error: 'Name contains invalid characters.' +
-              'Valid characters are alphanumeric and spaces.'
-    };
+    console.log('HELLO 5');
+    throw new Error('INVALID_QUIZ_NAME');
   }
   // checks for name length
   if (isNameLengthValid(name) !== undefined) {
-    return isNameLengthValid(name);
+    console.log('HELLO 6');
+    throw new Error('QUIZ_NAME_TOO_LONG');
   }
   // check if user has duplicate quiz names
   if (isNameTaken(authUserId, name, data)) {
-    return {
-      error: 'Name is already used by the current' +
-              ' logged in user for another quiz.'
-    };
+    console.log('HELLO 7');
+    throw new Error('DUPLICATE_QUIZNAME');
   }
-
+  console.log('HELLO 8');
   quiz.name = name;
   // Update timeLastEdited
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
