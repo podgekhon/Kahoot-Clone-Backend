@@ -25,7 +25,6 @@ import {
   answerOption
 } from './interface';
 
-
 /**
  * Update the thumbnail for a specific quiz.
  *

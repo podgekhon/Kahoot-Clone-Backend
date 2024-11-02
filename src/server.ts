@@ -303,7 +303,7 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
   }
 });
 
-//adminQuizUpdateThumbnail
+// adminQuizUpdateThumbnail
 app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
   const { quizid } = req.params;
   const { token } = req.headers;

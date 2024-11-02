@@ -37,7 +37,8 @@ import {
   adminQuizRestore,
   adminQuizTransfer,
   adminTrashEmpty,
-  adminTrashList
+  adminTrashList,
+  adminQuizUpdateThumbnail
 } from './quiz';
 
 // clear
@@ -332,7 +333,7 @@ export const requestAdminQuizNameUpdate = (
  * @param { number } quizId
  * @param { string } token
  * @param { string } description
- * @returns
+ * @returns { Response }
  */
 export const requestAdminQuizDescriptionUpdate = (
   quizId: number, token: string, description: string
@@ -347,6 +348,38 @@ export const requestAdminQuizDescriptionUpdate = (
       json: {
         token: token,
         description: description,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Makes HTTP request to update a quiz thumbnail URL
+ *
+ * @param {number} quizId
+ * @param {string} token
+ * @param {string} thumbnailUrl
+ * @returns { Response }
+ */
+export const requestAdminQuizUpdateThumbnail = (
+  quizId: number,
+  token: string,
+  thumbnailUrl: string
+): {
+  body: ReturnType<typeof adminQuizUpdateThumbnail>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/thumbnail`,
+    {
+      headers: {
+        token: token,
+      },
+      json: {
+        thumbnailUrl: thumbnailUrl,
       },
       timeout: TIMEOUT_MS,
     }
