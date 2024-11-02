@@ -168,9 +168,16 @@ app.put('/v1/admin/quiz/:quizid/name', (req: Request, res: Response) => {
 });
 
 // adminQuizDescriptionUpdate
-app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
+const handleAdminQuizDescriptionUpdate = (req: Request, res: Response) => {
   const { quizid } = req.params;
-  const { token, description } = req.body;
+  const description = req.body.description;
+
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
+  }
 
   try {
     const result = adminQuizDescriptionUpdate(
@@ -180,10 +187,13 @@ app.put('/v1/admin/quiz/:quizid/description', (req: Request, res: Response) => {
     );
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    const mappedError = errorMap[error.message];
-    return res.status(mappedError.status).json({ error: mappedError.message });
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-});
+};
+
+app.put('/v1/admin/quiz/:quizid/description', handleAdminQuizDescriptionUpdate);
+app.put('/v2/admin/quiz/:quizid/description', handleAdminQuizDescriptionUpdate);
 
 // adminQuizQuestionCreate
 app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
@@ -255,8 +265,6 @@ const handleAdminUserDetailsUpdate = (req: Request, res: Response) => {
 
 app.put('/v1/admin/user/details', handleAdminUserDetailsUpdate);
 app.put('/v2/admin/user/details', handleAdminUserDetailsUpdate);
-
-
 
 // delete Quiz
 app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {

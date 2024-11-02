@@ -192,7 +192,6 @@ export const requestAdminUserDetailsUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 // adminUserDetailsUpdateV2
 /**
  * Makes http request to update user details
@@ -225,8 +224,6 @@ export const requestAdminUserDetailsUpdateV2 = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
-
-
 
 // adminQuizList
 /**
@@ -442,6 +439,38 @@ export const requestAdminQuizDescriptionUpdate = (
     {
       json: {
         token: token,
+        description: description,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Makes HTTP request to update a quiz description using v2 route
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @param { string } description
+ * @returns { Response }
+ */
+export const requestAdminQuizDescriptionUpdateV2 = (
+  quizId: number,
+  token: string,
+  description: string
+): {
+  body: ReturnType<typeof adminQuizDescriptionUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/description`,
+    {
+      headers: {
+        token: token,
+      },
+      json: {
         description: description,
       },
       timeout: TIMEOUT_MS,
