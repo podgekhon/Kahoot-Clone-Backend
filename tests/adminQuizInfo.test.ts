@@ -3,6 +3,8 @@ import {
   requestAdminQuizCreate,
   requestAdminQuizInfo,
   requestAdminQuizQuestionCreate,
+  requestAdminQuizUpdateThumbnail,
+  requestAdminQuizInfoV2,
   requestClear,
   httpStatus
 } from '../src/requestHelperFunctions';
@@ -191,5 +193,35 @@ describe('HTTP tests for getting quiz info', () => {
     const resQuizInfo = requestAdminQuizInfo(invalidQuizId, user.token);
     expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  describe('tests for adminQuizInfoV2 route', () => {
+    test('successfully fetches quiz thumbnail URL using requestAdminQuizInfoV2', () => {
+      const newThumbnailUrl = 'http://example.com/image.jpg';
+      const resUpdateThumbnail = requestAdminQuizUpdateThumbnail(
+        quiz.quizId,
+        user.token,
+        newThumbnailUrl
+      );
+      expect(resUpdateThumbnail.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+  
+      const resQuizInfo = requestAdminQuizInfoV2(quiz.quizId, user.token);
+      expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      const quizInfo = resQuizInfo.body as quizInfo;
+      expect(quizInfo.thumbnailUrl).toStrictEqual(newThumbnailUrl);
+    });
+
+    test('returns error for invalid token', () => {
+      const resQuizInfo = requestAdminQuizInfoV2(quiz.quizId, 'invalidToken');
+      expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('returns error for non existent quiz', () => {
+      const invalidQuizId = quiz.quizId + 1;
+      const resQuizInfo = requestAdminQuizInfoV2(invalidQuizId, user.token);
+      expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+      expect(resQuizInfo.body).toStrictEqual({ error: expect.any(String) });
+    });
   });
 });

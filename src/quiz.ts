@@ -411,9 +411,8 @@ export const adminQuizRemove = (
   * @param {integer} quizId - a unique id of quiz
   *
   * @returns {quizInfo} - struct containing info for quiz
-  * @returns {errorMessages} - returns error message if error
 */
-export const adminQuizInfo = (token: string, quizId: number): errorMessages | quizInfo => {
+export const adminQuizInfo = (token: string, quizId: number, version: string): quizInfo => {
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
@@ -433,8 +432,8 @@ export const adminQuizInfo = (token: string, quizId: number): errorMessages | qu
     throw new Error('INVALID_OWNER');
   }
 
-  // Return the quiz information
-  return {
+  // Construct the response
+  const response: quizInfo = {
     quizId: quiz.quizId,
     name: quiz.name,
     timeCreated: quiz.timeCreated,
@@ -444,6 +443,13 @@ export const adminQuizInfo = (token: string, quizId: number): errorMessages | qu
     questions: quiz.questions,
     timeLimit: quiz.timeLimit
   };
+
+  // Include thumbnailUrl if the version is v2
+  if (version === 'v2') {
+    response.thumbnailUrl = quiz.thumbnailUrl;
+  }
+
+  return response;
 };
 
 /**
