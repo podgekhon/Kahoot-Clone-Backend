@@ -73,6 +73,14 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Description is more than 100 characters in length.'
   },
+  INVALID_THUMBNAIL_URL_START: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Thumbnail URL must start with "http://" or "https://".'
+  },
+  INVALID_THUMBNAIL_URL_END: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Thumbnail URL must end with ".jpg", ".jpeg", or ".png".'
+  },
   QUIZ_NAME_TOO_LONG: {
     status: httpStatus.BAD_REQUEST,
     message: 'Quiz name is either less than 3 characters long or more than 30 characters long.'
@@ -80,6 +88,5 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   INVALID_QUIZ_NAME: {
     status: httpStatus.BAD_REQUEST,
     message: 'Quiz name contains invalid characters. Valid characters are alphanumeric and spaces.'
-  },
-
+  }
 };

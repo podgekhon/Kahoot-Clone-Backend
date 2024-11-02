@@ -55,7 +55,8 @@ import {
   adminMoveQuizQuestion,
   adminQuizQuestionDuplicate,
   adminQuizTransfer,
-  adminTrashEmpty
+  adminTrashEmpty,
+  adminQuizUpdateThumbnail
 } from './quiz';
 
 import { clear } from './other';
@@ -296,6 +297,21 @@ app.get('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
 
   try {
     const result = adminQuizInfo(token as string, parseInt(quizid));
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
+
+// adminQuizUpdateThumbnail
+app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
+  const { quizid } = req.params;
+  const { token } = req.headers;
+  const { thumbnailUrl } = req.body;
+
+  try {
+    const result = adminQuizUpdateThumbnail(parseInt(quizid), token as string, thumbnailUrl);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
     const mappedError = errorMap[error.message];
