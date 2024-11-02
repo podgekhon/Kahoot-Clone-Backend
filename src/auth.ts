@@ -277,7 +277,7 @@ export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
 
   const validation = validateToken(token, data);
   if ('error' in validation) {
-    throw new Error ( 'INVALID_TOKEN' );
+    throw new Error('INVALID_TOKEN');
   }
 
   const sessionIndex = data.sessions.findIndex(

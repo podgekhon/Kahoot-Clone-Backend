@@ -395,7 +395,7 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
 });
 
 // adminAuthLogout
-const  handleadminAuthLogout = (req: Request, res: Response) => {
+const handleadminAuthLogout = (req: Request, res: Response) => {
   let token;
   if (req.body.token) {
     token = req.body.token;
