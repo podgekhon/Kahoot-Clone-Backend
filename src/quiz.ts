@@ -254,15 +254,15 @@ export const adminQuizQuestionCreate = (
   * @param {string} token - a unique session id for user
   * @param {question} updatedQuestionBody - informatoion of a question
   *
-  * @returns {errorMessages} - An object containing an error message if registration fails
   * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizQuestionUpdate = (
   quizId: number,
   questionId: number,
   updatedQuestionBody: question,
-  token: string
-): emptyReturn | errorMessages => {
+  token: string,
+  version: string
+): emptyReturn => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -310,6 +310,13 @@ export const adminQuizQuestionUpdate = (
       }
     )
   );
+
+  if (version === 'v2') {
+    if (!validQuestionThumbnailUrl(updatedQuestionBody.thumbnailUrl)) {
+      throw new Error('INVALID_QUESTION_THUMBNAIL_URL');
+    }
+    questionToUpdate.thumbnailUrl = updatedQuestionBody.thumbnailUrl;
+  }
 
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
   setData(data);

@@ -237,24 +237,39 @@ app.post('/v2/admin/quiz/:quizid/question', (req: Request, res: Response) => {
 });
 
 // adminQuizQuestionUpdate
-app.put('/v1/admin/quiz/:quizid/question/:questionid',
-  (req: Request, res: Response) => {
-    const { quizid, questionid } = req.params;
-    const { token, questionBody } = req.body;
+function handleQuizQuestionUpdate(req: Request, res: Response, version: string) {
+  const { quizid, questionid } = req.params;
+  const { questionBody } = req.body;
 
-    try {
-      const result = adminQuizQuestionUpdate(
-        parseInt(quizid),
-        parseInt(questionid),
-        questionBody,
-        token
-      );
-      return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-    } catch (error) {
-      const mappedError = errorMap[error.message];
-      return res.status(mappedError.status).json({ error: mappedError.message });
-    }
-  });
+  let token;
+  if (version === 'v1') {
+    token = req.body.token;
+  } else {
+    token = req.headers.token as string;
+  }
+
+  try {
+    const result = adminQuizQuestionUpdate(
+      parseInt(quizid),
+      parseInt(questionid),
+      questionBody,
+      token,
+      version
+    );
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+}
+
+app.put('/v1/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  handleQuizQuestionUpdate(req, res, 'v1');
+});
+
+app.put('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Response) => {
+  handleQuizQuestionUpdate(req, res, 'v2');
+});
 
 // adminUserDetails v1
 app.get('/v1/admin/user/details', (req, res) => {
