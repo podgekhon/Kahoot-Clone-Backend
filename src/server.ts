@@ -508,29 +508,26 @@ app.post(
 );
 
 // adminQuizQuestionRemove
-app.delete('/v1/admin/quiz/:quizId/question/:questionId',
-  (req: Request, res: Response) => {
-    const { token } = req.query;
-    const quizId = parseInt(req.params.quizId as string);
-    const questionId = parseInt(req.params.questionId as string);
-
+const handleAdminQuizQuestionRemove = (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizId as string);
+  const questionId = parseInt(req.params.questionId as string);
+  let token;
+  if (req.query.token) {
+    token = req.query.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
+  }
+  try {
     const result = adminQuizQuestionRemove(quizId, questionId, token as string);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
 
-    if ('error' in result) {
-      if (
-        result.error === 'user is not the owner of this quiz' ||
-      result.error === 'quiz or question doesn\'t exist'
-      ) {
-        return res.status(httpStatus.FORBIDDEN).json(result);
-      } else if (result.error === 'token is empty or invalid') {
-        return res.status(httpStatus.UNAUTHORIZED).json(result);
-      } else {
-        return res.status(httpStatus.BAD_REQUEST).json(result);
-      }
-    }
-
-    return res.json(result);
-  });
+app.delete('/v1/admin/quiz/:quizId/question/:questionId', handleAdminQuizQuestionRemove);
+app.delete('/v2/admin/quiz/:quizId/question/:questionId', handleAdminQuizQuestionRemove);
 
 // adminQuizTransfer
 const handleAdminQuizTransfer = (

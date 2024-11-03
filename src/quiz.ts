@@ -483,43 +483,35 @@ export const adminQuizNameUpdate = (
   quizId: number,
   name: string
 ): errorMessages | emptyReturn => {
-  console.log('HELLO 0');
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    console.log('HELLO 1');
     throw new Error('INVALID_TOKEN');
   }
-  console.log('HELLO 2');
+
   const authUserId = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find(quiz => quiz.quizId === quizId);
   if (!quiz) {
-    console.log('HELLO 3');
     throw new Error('INVALID_QUIZ');
   }
   if (quiz.ownerId !== authUserId) {
-    console.log('HELLO 4');
     throw new Error('INVALID_OWNER');
   }
 
   // check if name contains invalid characters
   if (!isStringValid(name)) {
-    console.log('HELLO 5');
     throw new Error('INVALID_QUIZ_NAME');
   }
   // checks for name length
   if (isNameLengthValid(name) !== undefined) {
-    console.log('HELLO 6');
     throw new Error('QUIZ_NAME_TOO_LONG');
   }
   // check if user has duplicate quiz names
   if (isNameTaken(authUserId, name, data)) {
-    console.log('HELLO 7');
     throw new Error('DUPLICATE_QUIZNAME');
   }
-  console.log('HELLO 8');
   quiz.name = name;
   // Update timeLastEdited
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
@@ -666,28 +658,32 @@ export const adminQuizQuestionRemove = (
   token: string
 ): emptyReturn | errorMessages => {
   const data = getData();
-
   // Token is empty or invalid (does not refer to valid logged in user session)
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'token is empty or invalid' };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 
   //  Valid token is provided, but user is not an owner of this quiz or quiz doesn't exist
   const quiz = data.quizzes.find(q => q.quizId === quizId);
   if (!quiz) {
-    return { error: 'quiz or question doesn\'t exist' };
+    throw new Error('INVALID_QUIZ');
   }
 
   if (quiz.ownerId !== authUserId) {
-    return { error: 'user is not the owner of this quiz' };
+    throw new Error('INVALID_OWNER');
   }
+
+  // Any session for this quiz is not in END state
+  // if (quiz.state !== quizState.END) {
+  //   throw new Error('INVALID_OWNER');
+  // }
 
   // Question Id does not refer to a valid question within this quiz
   const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
   if (questionIndex === -1) {
-    return { error: 'Question Id does not refer to a valid question' };
+    throw new Error('INVALID_QUESTION_ID');
   }
 
   quiz.questions.splice(questionIndex, 1);
