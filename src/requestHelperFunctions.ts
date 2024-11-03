@@ -40,6 +40,7 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail
 } from './quiz';
+import { question } from './interface';
 
 // clear
 /**
@@ -849,6 +850,37 @@ export const requestAdminQuizQuestionCreate = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+/**
+ * Makes http request to create a question using v2 route
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @param { object } questionBody - an object containing question details
+ * @returns { Response }
+ */
+export const requestAdminQuizQuestionCreateV2 = (
+  quizId: number, token: string, questionBody: object
+): {
+  body: ReturnType <typeof adminQuizQuestionCreate>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question`,
+    { 
+      headers: {
+        token: token
+      },
+      json: {
+        questionBody: questionBody,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 
 // adminQuizQuestionUpdate
 /**

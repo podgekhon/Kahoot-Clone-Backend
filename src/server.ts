@@ -203,21 +203,37 @@ app.put('/v1/admin/quiz/:quizid/description', handleAdminQuizDescriptionUpdate);
 app.put('/v2/admin/quiz/:quizid/description', handleAdminQuizDescriptionUpdate);
 
 // adminQuizQuestionCreate
-app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+function handleQuizQuestionCreate(req: Request, res: Response, version: string) {
   const { quizid } = req.params;
-  const { token, questionBody } = req.body;
+  const { questionBody } = req.body;
+
+  let token;
+  if (version === 'v1') {
+    token = req.body.token;
+  } else {
+    token = req.headers.token as string;
+  }
 
   try {
     const result = adminQuizQuestionCreate(
       parseInt(quizid),
       questionBody,
-      token
+      token,
+      version
     );
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
     const mappedError = errorMap[error.message];
     return res.status(mappedError.status).json({ error: mappedError.message });
   }
+}
+
+app.post('/v1/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  handleQuizQuestionCreate(req, res, 'v1');
+});
+
+app.post('/v2/admin/quiz/:quizid/question', (req: Request, res: Response) => {
+  handleQuizQuestionCreate(req, res, 'v2');
 });
 
 // adminQuizQuestionUpdate

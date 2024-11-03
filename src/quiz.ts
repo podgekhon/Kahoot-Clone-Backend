@@ -8,6 +8,7 @@ import {
   isValidQuiz,
   isValidQuestion,
   validateAnswers,
+  validQuestionThumbnailUrl,
   randomId
 } from './helperFunctions';
 
@@ -55,11 +56,11 @@ export const adminQuizUpdateThumbnail = (
   }
 
   const validFileTypes = /\.(jpg|jpeg|png)$/i;
-  if (!thumbnailUrl.startsWith('http://') && !thumbnailUrl.startsWith('https://')) {
-    throw new Error('INVALID_THUMBNAIL_URL_START');
-  }
   if (!validFileTypes.test(thumbnailUrl)) {
-    throw new Error('INVALID_THUMBNAIL_URL_END');
+    throw new Error('INVALID_QUIZ_THUMBNAIL_URL_END');
+  }
+  if (!thumbnailUrl.startsWith('http://') && !thumbnailUrl.startsWith('https://')) {
+    throw new Error('INVALID_QUIZ_THUMBNAIL_URL_START');
   }
 
   quiz.thumbnailUrl = thumbnailUrl;
@@ -182,7 +183,8 @@ export const adminQuizCreate = (
 export const adminQuizQuestionCreate = (
   quizId: number,
   questionBody: question,
-  token: string
+  token: string,
+  version: string
 ): quizQuestionCreateResponse | errorMessages => {
   const data = getData();
 
@@ -212,6 +214,10 @@ export const adminQuizQuestionCreate = (
     throw new Error(answerValidationError.error);
   }
 
+  if (version === 'v2' && !validQuestionThumbnailUrl(questionBody.thumbnailUrl)) {
+    throw new Error('INVALID_QUESTION_THUMBNAIL_URL');
+  }
+
   const newQuestion: question = {
     questionId: randomId(100000),
     question: questionBody.question,
@@ -224,6 +230,10 @@ export const adminQuizQuestionCreate = (
       correct: answer.correct
     }))
   };
+
+  if (version === 'v2') {
+    newQuestion.thumbnailUrl = questionBody.thumbnailUrl;
+  }
 
   quiz.questions.push(newQuestion);
   quiz.timeLastEdited = quiz.timeCreated;
