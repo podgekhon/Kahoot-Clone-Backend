@@ -653,7 +653,7 @@ export const requestAdminAuthLogoutv2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminTrashList
+// adminTrashList v1
 /**
  * Makes http request to list quizzes in the trash
  *
@@ -671,6 +671,32 @@ export const requestAdminTrashList = (
     SERVER_URL + '/v1/admin/quiz/trash',
     {
       qs: { token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminTrashList v2
+/**
+ * Makes http request to list quizzes in the trash
+ *
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminTrashListv2 = (
+  token: string
+): {
+  body: ReturnType <typeof adminTrashList>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/quiz/trash',
+    {
+      headers: {
+        token: token
+      },
       timeout: TIMEOUT_MS,
     }
   );
