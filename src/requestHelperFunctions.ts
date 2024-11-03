@@ -410,7 +410,7 @@ export const requestAdminQuizRemoveV2 = (
     'DELETE',
     SERVER_URL + `/v2/admin/quiz/${quizId}`,
     {
-      headers: { 
+      headers: {
         token: token
       },
       timeout: TIMEOUT_MS,

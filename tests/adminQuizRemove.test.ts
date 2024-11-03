@@ -107,7 +107,7 @@ describe('test for adminQuizRemove', () => {
       expect(deleteResponse.statusCode).toStrictEqual(401);
       expect(deleteResponse.body).toStrictEqual({ error: expect.any(String) });
     });
-  
+
     test('invalid token', () => {
       // log out user1
       const result = requestAdminAuthLogout(user1token);
@@ -132,7 +132,7 @@ describe('test for adminQuizRemove', () => {
       expect(quizList.body).toStrictEqual({
         quizzes: []
       });
-  
+
       // one quiz in the trash list
       const trashList = requestAdminTrashList(user1token);
       expect(trashList.body).toStrictEqual({
@@ -144,6 +144,5 @@ describe('test for adminQuizRemove', () => {
         ]
       });
     });
-  
   });
 });
