@@ -130,5 +130,22 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   QUIZ_NOT_IN_TRASH: {
     status: httpStatus.BAD_REQUEST,
     message: 'Quiz ID refers to a quiz that is not currently in the trash.'
+  },
+  QUIZ_IN_TRASH: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'The quiz is in trash.'
+  },
+  AUTO_START_NUM_TOO_HIGH: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'autoStartNum is a number greater than 50.'
+  },
+  TOO_MANY_ACTIVE_SESSIONS: {
+    status: httpStatus.BAD_REQUEST,
+    message: '10 sessions that are not in END state currently exist for this quiz.'
+  },
+  NO_QUESTIONS_IN_QUIZ: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'The quiz does not have any questions in it.'
   }
+
 };

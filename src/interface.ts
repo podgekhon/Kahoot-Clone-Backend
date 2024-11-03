@@ -48,6 +48,8 @@ export interface quiz {
   timeLimit: number;
   // Optional property
   thumbnailUrl?: string;
+  activeSessions: number[],
+  inactiveSessions: number[]
 }
 
 export interface token {
@@ -91,6 +93,10 @@ export interface quizList {
 
 export interface quizCreateResponse {
   quizId: number,
+}
+
+export interface quizStartSessionResponse {
+  sessionId: number,
 }
 
 export interface quizQuestionCreateResponse {
