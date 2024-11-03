@@ -2,7 +2,9 @@ import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizInfo,
+  requestAdminQuizInfoV2,
   requestAdminQuizQuestionCreate,
+  requestAdminQuizQuestionCreateV2,
   requestClear,
 } from '../src/requestHelperFunctions';
 
@@ -436,6 +438,130 @@ describe('HTTP tests for quiz question create', () => {
     );
 
     expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('v2 - successfully creates a question with a valid thumbnailUrl', () => {
+    const questionBody = {
+      question: 'What is the capital of Australia?',
+      timeLimit: 4,
+      points: 5,
+      answerOptions: [
+        { answer: 'Canberra', correct: true },
+        { answer: 'Sydney', correct: false },
+      ],
+      thumbnailUrl: 'https://example.com/image.jpg',  
+    };
+  
+    const resCreateQuestion = requestAdminQuizQuestionCreateV2(
+      quiz.quizId,
+      user.token,
+      questionBody
+    );
+  
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    expect(resCreateQuestion.body).toHaveProperty('questionId');
+    const createdQuestionId = (resCreateQuestion.body as quizQuestionCreateResponse).questionId;
+
+    // Get quizInfo to verify that the question was added
+    const resQuizInfo = requestAdminQuizInfoV2(
+      quiz.quizId,
+      user.token
+    );
+    const quizInfo = resQuizInfo.body as quizInfo;
+    
+    // Verify the quiz contains the newly added question
+    expect(quizInfo).toHaveProperty('questions');
+    const addedQuestion = quizInfo.questions.find(
+      (q: question) => q.questionId === createdQuestionId
+    );
+    
+    // Check that the question matches the one created, including the thumbnail URL
+    expect(addedQuestion).toMatchObject({
+      questionId: createdQuestionId,
+      question: 'What is the capital of Australia?',
+      timeLimit: 4,
+      points: 5,
+      answerOptions: expect.arrayContaining([
+        expect.objectContaining({
+          answer: 'Canberra',
+          correct: true,
+        }),
+        expect.objectContaining({
+          answer: 'Sydney',
+          correct: false,
+        }),
+      ]),
+      thumbnailUrl: 'https://example.com/image.jpg',  
+    });
+  });
+
+  test('v2 - error when question thumbnailUrl is empty', () => {
+    const questionBody = {
+      question: 'What is the capital of Australia?',
+      timeLimit: 4,
+      points: 5,
+      answerOptions: [
+        { answer: 'Canberra', correct: true },
+        { answer: 'Sydney', correct: false },
+      ],
+      // Empty URL
+      thumbnailUrl: '',  
+    };
+  
+    const resCreateQuestion = requestAdminQuizQuestionCreateV2(
+      quiz.quizId,
+      user.token,
+      questionBody,
+    );
+  
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('v2 - error when quesiton thumbnailUrl has invalid file extension', () => {
+    const questionBody = {
+      question: 'What is the capital of Australia?',
+      timeLimit: 4,
+      points: 5,
+      answerOptions: [
+        { answer: 'Canberra', correct: true },
+        { answer: 'Sydney', correct: false },
+      ],
+       // .gif is an invalid extension
+      thumbnailUrl: 'https://example.com/image.gif', 
+    };
+  
+    const resCreateQuestion = requestAdminQuizQuestionCreateV2(
+      quiz.quizId,
+      user.token,
+      questionBody
+    );
+  
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('v2 - error when thumbnailUrl does not start with http or https', () => {
+    const questionBody = {
+      question: 'What is the capital of Australia?',
+      timeLimit: 4,
+      points: 5,
+      answerOptions: [
+        { answer: 'Canberra', correct: true },
+        { answer: 'Sydney', correct: false },
+      ],
+      // Invalid URL prefix
+      thumbnailUrl: 'abcd://example.com/image.jpg',  
+    };
+  
+    const resCreateQuestion = requestAdminQuizQuestionCreateV2(
+      quiz.quizId,
+      user.token,
+      questionBody,
+    );
+  
+    expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 });
