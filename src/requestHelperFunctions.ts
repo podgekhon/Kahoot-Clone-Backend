@@ -40,7 +40,6 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail
 } from './quiz';
-import { question } from './interface';
 
 // clear
 /**
@@ -868,7 +867,7 @@ export const requestAdminQuizQuestionCreateV2 = (
   const res = request(
     'POST',
     SERVER_URL + `/v2/admin/quiz/${quizId}/question`,
-    { 
+    {
       headers: {
         token: token
       },
@@ -880,7 +879,6 @@ export const requestAdminQuizQuestionCreateV2 = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
-
 
 // adminQuizQuestionUpdate
 /**

@@ -450,15 +450,15 @@ describe('HTTP tests for quiz question create', () => {
         { answer: 'Canberra', correct: true },
         { answer: 'Sydney', correct: false },
       ],
-      thumbnailUrl: 'https://example.com/image.jpg',  
+      thumbnailUrl: 'https://example.com/image.jpg',
     };
-  
+
     const resCreateQuestion = requestAdminQuizQuestionCreateV2(
       quiz.quizId,
       user.token,
       questionBody
     );
-  
+
     expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(resCreateQuestion.body).toHaveProperty('questionId');
     const createdQuestionId = (resCreateQuestion.body as quizQuestionCreateResponse).questionId;
@@ -469,13 +469,13 @@ describe('HTTP tests for quiz question create', () => {
       user.token
     );
     const quizInfo = resQuizInfo.body as quizInfo;
-    
+
     // Verify the quiz contains the newly added question
     expect(quizInfo).toHaveProperty('questions');
     const addedQuestion = quizInfo.questions.find(
       (q: question) => q.questionId === createdQuestionId
     );
-    
+
     // Check that the question matches the one created, including the thumbnail URL
     expect(addedQuestion).toMatchObject({
       questionId: createdQuestionId,
@@ -492,7 +492,7 @@ describe('HTTP tests for quiz question create', () => {
           correct: false,
         }),
       ]),
-      thumbnailUrl: 'https://example.com/image.jpg',  
+      thumbnailUrl: 'https://example.com/image.jpg',
     });
   });
 
@@ -506,15 +506,15 @@ describe('HTTP tests for quiz question create', () => {
         { answer: 'Sydney', correct: false },
       ],
       // Empty URL
-      thumbnailUrl: '',  
+      thumbnailUrl: '',
     };
-  
+
     const resCreateQuestion = requestAdminQuizQuestionCreateV2(
       quiz.quizId,
       user.token,
-      questionBody,
+      questionBody
     );
-  
+
     expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -528,16 +528,16 @@ describe('HTTP tests for quiz question create', () => {
         { answer: 'Canberra', correct: true },
         { answer: 'Sydney', correct: false },
       ],
-       // .gif is an invalid extension
-      thumbnailUrl: 'https://example.com/image.gif', 
+      // .gif is an invalid extension
+      thumbnailUrl: 'https://example.com/image.gif',
     };
-  
+
     const resCreateQuestion = requestAdminQuizQuestionCreateV2(
       quiz.quizId,
       user.token,
       questionBody
     );
-  
+
     expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -552,15 +552,15 @@ describe('HTTP tests for quiz question create', () => {
         { answer: 'Sydney', correct: false },
       ],
       // Invalid URL prefix
-      thumbnailUrl: 'abcd://example.com/image.jpg',  
+      thumbnailUrl: 'abcd://example.com/image.jpg',
     };
-  
+
     const resCreateQuestion = requestAdminQuizQuestionCreateV2(
       quiz.quizId,
       user.token,
-      questionBody,
+      questionBody
     );
-  
+
     expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });

@@ -9,18 +9,17 @@ import {
   dataStore
 } from './interface';
 
-
 /**
  * Checks if a given quesiton thumbnail url is valid
  * @param {string} url - the thumbnail url to validate
- * @returns {boolean} 
+ * @returns {boolean}
  */
 export function validQuestionThumbnailUrl(url: string): boolean {
   if (!url) return false;
 
   if (!/^https?:\/\/.*/i.test(url)) return false;
 
-  // Check if URL ends with jpg, jpeg, or png 
+  // Check if URL ends with jpg, jpeg, or png
   const validExtensions = /\.(jpg|jpeg|png)$/i;
   if (!validExtensions.test(url)) return false;
 
