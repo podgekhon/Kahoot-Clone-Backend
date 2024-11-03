@@ -294,20 +294,24 @@ app.put('/v1/admin/user/details', handleAdminUserDetailsUpdate);
 app.put('/v2/admin/user/details', handleAdminUserDetailsUpdate);
 
 // delete Quiz
-app.delete('/v1/admin/quiz/:quizid', (req: Request, res: Response) => {
-  const { token } = req.query;
-  const { quizid } = req.params;
-
-  const removeResult = adminQuizRemove(token as string, Number(quizid));
-  if ('error' in removeResult) {
-    if (removeResult.error === 'invalid token') {
-      return res.status(httpStatus.UNAUTHORIZED).json(removeResult);
-    }
-    return res.status(httpStatus.FORBIDDEN).json(removeResult);
+const requestAdminQuizRemove = (req: Request, res: Response) => {
+  let token;
+  if (req.headers.token) {
+    token = req.headers.token as string;
+  } else if (req.query.token) {
+    token = req.query.token as string;
   }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json({});
-});
+  const { quizid } = req.params;
+  try {
+    const result = adminQuizRemove(token as string, Number(quizid));
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+app.delete('/v1/admin/quiz/:quizid', requestAdminQuizRemove);
+app.delete('/v2/admin/quiz/:quizid', requestAdminQuizRemove);
 
 // get trash list
 const handleAdminTrashList = (req: Request, res: Response) => {

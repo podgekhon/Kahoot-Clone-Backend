@@ -393,6 +393,32 @@ export const requestAdminQuizRemove = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+/**
+ * Makes http request to remove a quiz
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminQuizRemoveV2 = (
+  quizId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizRemove>,
+  statusCode: number
+} => {
+  const res = request(
+    'DELETE',
+    SERVER_URL + `/v2/admin/quiz/${quizId}`,
+    {
+      headers: {
+        token: token
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminQuizInfo
 /**
  * Makes http request to get quiz information

@@ -383,13 +383,13 @@ export const adminQuizRemove = (
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'invalid token' };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 
   const error = isValidQuiz(authUserId, quizId, data);
   if (error) {
-    return error;
+    throw new Error(error.error);
   }
 
   // remove the correct quiz
