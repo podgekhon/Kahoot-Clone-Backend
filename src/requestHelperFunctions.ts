@@ -967,7 +967,7 @@ export const requestAdminQuizQuestionUpdateV2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminQuizQuestionRemove
+// adminQuizQuestionRemove v1
 /**
  * Makes http requets to remove a question
  *
@@ -986,7 +986,33 @@ export const requestAdminQuizQuestionRemove = (
     'DELETE',
     SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
     {
-      qs: { token },
+      qs: { token: token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizQuestionRemove v2
+/**
+ * Makes http requets to remove a question
+ *
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminQuizQuestionRemoveV2 = (
+  quizId: number, questionId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizQuestionRemove>,
+  statusCode: number
+} => {
+  const res = request(
+    'DELETE',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
+    {
+      headers: { token: token },
       timeout: TIMEOUT_MS,
     }
   );
