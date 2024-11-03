@@ -2,8 +2,11 @@ import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizInfo,
+  requestAdminQuizInfoV2,
   requestAdminQuizQuestionCreate,
+  requestAdminQuizQuestionCreateV2,
   requestAdminQuizQuestionUpdate,
+  requestAdminQuizQuestionUpdateV2,
   requestClear,
 } from '../src/requestHelperFunctions';
 
@@ -495,6 +498,187 @@ describe('HTTP tests for quiz question update', () => {
       question1.token,
       question1.questionBody
     );
+    expect(resUpdateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resUpdateQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+});
+
+describe('v2 HTTP tests for updating quiz question with thumbnail', () => {
+  let user: { token: string };
+  let quiz: { quizId: number };
+  let questionId: number;
+
+  beforeEach(() => {
+    const resRegister = requestAdminAuthRegister(
+      'test@gmail.com',
+      'validPassword5',
+      'Patrick',
+      'Chen'
+    );
+    user = resRegister.body as tokenReturn;
+
+    const resCreateQuiz = requestAdminQuizCreate(
+      user.token,
+      'validQuizName',
+      'validQuizDescription'
+    );
+    quiz = resCreateQuiz.body as quizCreateResponse;
+
+    // Create a question to update using the v2 route
+    const question1 = {
+      token: user.token,
+      questionBody: {
+        question: 'Who is the Monarch of England?',
+        timeLimit: 4,
+        points: 5,
+        answerOptions: [
+          {
+            answer: 'Prince Charles',
+            correct: true,
+          },
+          {
+            answer: 'Prince William',
+            correct: false,
+          },
+        ],
+        thumbnailUrl: 'http://google.com/some/image/path.jpg'
+      },
+    };
+
+    const resCreateQuestion = requestAdminQuizQuestionCreateV2(
+      quiz.quizId,
+      question1.token,
+      question1.questionBody
+    );
+    const questionResponse = resCreateQuestion.body as quizQuestionCreateResponse;
+    questionId = questionResponse.questionId;
+  });
+
+  test('successfully updates a quiz question with thumbnail', () => {
+    const updatedQuestion1 = {
+      token: user.token,
+      questionBody: {
+        question: 'Who is the current Monarch of the UK?',
+        timeLimit: 5,
+        points: 6,
+        answerOptions: [
+          {
+            answer: 'Prince Charles',
+            correct: true,
+          },
+          {
+            answer: 'Prince William',
+            correct: false,
+          },
+        ],
+        // New thumbnail url
+        thumbnailUrl: 'http://newurl.com/image.jpg',
+      },
+    };
+
+    const resUpdateQuestion = requestAdminQuizQuestionUpdateV2(
+      quiz.quizId,
+      questionId,
+      updatedQuestion1.token,
+      updatedQuestion1.questionBody
+    );
+
+    expect(resUpdateQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    expect(resUpdateQuestion.body).toStrictEqual({});
+
+    // Retrieve the updated quiz info to verify the question update
+    const resQuizInfo = requestAdminQuizInfoV2(quiz.quizId, user.token);
+    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    const quizInfo = resQuizInfo.body as quizInfo;
+
+    // Verify the quiz contains the updated question
+    expect(quizInfo).toHaveProperty('questions');
+    const updatedQuestion = quizInfo.questions.find(
+      (q: question) => q.questionId === questionId
+    );
+
+    expect(updatedQuestion).toMatchObject({
+      questionId: questionId,
+      question: 'Who is the current Monarch of the UK?',
+      timeLimit: 5,
+      points: 6,
+      answerOptions: expect.arrayContaining([
+        expect.objectContaining({
+          answer: 'Prince Charles',
+          correct: true,
+        }),
+        expect.objectContaining({
+          answer: 'Prince William',
+          correct: false,
+        }),
+      ]),
+      // Verify that the new thumbnail URL is the same
+      thumbnailUrl: 'http://newurl.com/image.jpg',
+    });
+  });
+
+  test('returns error when thumbnailUrl is invalid', () => {
+    const updatedQuestion = {
+      token: user.token,
+      questionBody: {
+        question: 'Who is the current Monarch of the UK?',
+        timeLimit: 5,
+        points: 6,
+        answerOptions: [
+          {
+            answer: 'Prince Charles',
+            correct: true,
+          },
+          {
+            answer: 'Prince William',
+            correct: false,
+          },
+        ],
+        // Invalid URL since it does not start with http
+        thumbnailUrl: 'invalid-url',
+      },
+    };
+
+    const resUpdateQuestion = requestAdminQuizQuestionUpdateV2(
+      quiz.quizId,
+      questionId,
+      updatedQuestion.token,
+      updatedQuestion.questionBody
+    );
+
+    expect(resUpdateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resUpdateQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when thumbnailUrl is empty', () => {
+    const updatedQuestion = {
+      token: user.token,
+      questionBody: {
+        question: 'Who is the current Monarch of the UK?',
+        timeLimit: 5,
+        points: 6,
+        answerOptions: [
+          {
+            answer: 'Prince Charles',
+            correct: true,
+          },
+          {
+            answer: 'Prince William',
+            correct: false,
+          },
+        ],
+        // Empty thumbnail URL is invalid
+        thumbnailUrl: '',
+      },
+    };
+
+    const resUpdateQuestion = requestAdminQuizQuestionUpdateV2(
+      quiz.quizId,
+      questionId,
+      updatedQuestion.token,
+      updatedQuestion.questionBody
+    );
+
     expect(resUpdateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resUpdateQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
