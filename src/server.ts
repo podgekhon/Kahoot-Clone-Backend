@@ -253,10 +253,10 @@ app.get('/v1/admin/user/details', (req, res) => {
 });
 
 // adminUserDetails v2
-app.get('/v2/admin/user/details', (req, res) => {
+const handleAdminUserDetails = (req: Request, res: Response) => {
   let token;
-  if (req.body.token) {
-    token = req.body.token;
+  if (req.query.token) {
+    token = req.query.token as string;
   } else if (req.headers.token) {
     token = req.headers.token as string;
   }
@@ -267,7 +267,10 @@ app.get('/v2/admin/user/details', (req, res) => {
     const { status, message } = errorMap[error.message];
     return res.status(status).json({ error: message });
   }
-});
+};
+
+app.get('/v1/admin/user/details', handleAdminUserDetails);
+app.get('/v2/admin/user/details', handleAdminUserDetails);
 
 // adminUserDetailsUpdate
 const handleAdminUserDetailsUpdate = (req: Request, res: Response) => {
