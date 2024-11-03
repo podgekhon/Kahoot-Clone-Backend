@@ -936,6 +936,37 @@ export const requestAdminQuizQuestionUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+/**
+ * Makes http request to update a question using v2 route
+ *
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @param { object } questionBody
+ * @returns { Response }
+ */
+export const requestAdminQuizQuestionUpdateV2 = (
+  quizId: number, questionId: number, token: string, questionBody: object
+): {
+  body: ReturnType <typeof adminQuizQuestionUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        questionBody: questionBody,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminQuizQuestionRemove
 /**
  * Makes http requets to remove a question
