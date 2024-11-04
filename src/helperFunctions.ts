@@ -6,8 +6,21 @@ import {
   quiz,
   answerOption,
   dataStore as data,
-  dataStore
+  dataStore,
+  quizSession
 } from './interface';
+
+import { quizState } from './quiz';
+
+/**
+ * Checks if a session is in the END state.
+ *
+ * @param {quizSession} session - The session to check.
+ * @returns {boolean} - Returns true if the session is in the END state, false otherwise.
+ */
+export const isSessionEnded = (session: quizSession): boolean => {
+  return session.sessionState === quizState.END;
+};
 
 /**
  * Checks if a given quesiton thumbnail url is valid
