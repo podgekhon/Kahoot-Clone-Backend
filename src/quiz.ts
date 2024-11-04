@@ -35,6 +35,14 @@ export enum quizState {
   END,
 }
 
+export enum adminAction {
+  NEXT_QUESTION,
+  SKIP_COUNTDOWN,
+  GO_TO_ANSWER,
+  GO_TO_FINAL_RESULTS,
+  END,
+}
+
 /**
  * Update the thumbnail for a specific quiz.
  *
@@ -165,7 +173,6 @@ export const adminQuizCreate = (
   const newQuiz: quiz = {
     quizId: randomId(10000),
     ownerId: authUserId,
-    sessionState: quizState.END,
     name: name,
     description: description,
     numQuestions: 0,

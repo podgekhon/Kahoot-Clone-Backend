@@ -2,10 +2,18 @@ import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
 import {
   requestAdminAuthRegister,
+  requestAdminQuizCreate,
+  requestAdminQuizQuestionCreateV2,
+  requestAdminStartQuizSession,
+  httpStatus
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
   tokenReturn,
+  quizCreate,
+  quizCreateResponse,
+  questionCreate,
+  startSession,
 } from '../src/interface';
 
 const SERVER_URL = `${url}:${port}`;
@@ -18,6 +26,11 @@ beforeEach(() => {
 describe('Test for adminQuizSessionUpdate', () => {
   let user1Response: userAuthRegister;
   let user1Token: string;
+  let quizCreateResponse: quizCreate;
+  let quizId: number;
+  let quizQuestionCreateResponse: questionCreate;
+  let startSessionResponse: startSession;
+  // let sessionId: number | { error: string };
 
   beforeEach(() => {
     user1Response = requestAdminAuthRegister(
@@ -29,5 +42,63 @@ describe('Test for adminQuizSessionUpdate', () => {
 
     user1Token = (user1Response.body as tokenReturn).token;
     expect(user1Response.statusCode).toStrictEqual(200);
+
+    quizCreateResponse = requestAdminQuizCreate(
+      user1Token,
+      'validQuizName',
+      'validQuizDescription'
+    );
+    expect(quizCreateResponse.statusCode).toStrictEqual(200);
+    quizId = (quizCreateResponse.body as quizCreateResponse).quizId;
+
+    const questionBody = {
+      question: 'What is the capital of Australia?',
+      timeLimit: 4,
+      points: 5,
+      answerOptions: [
+        { answer: 'Canberra', correct: true },
+        { answer: 'Sydney', correct: false },
+      ],
+      thumbnailUrl: 'http://google.com/some/image/path.jpg'
+    };
+    quizQuestionCreateResponse = requestAdminQuizQuestionCreateV2(
+      quizId,
+      user1Token,
+      questionBody
+    );
+    expect(quizQuestionCreateResponse.statusCode).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
+
+    // startSessionResponse = requestAdminStartQuizSession(
+    //   quizId,
+    //   user1Token,
+    //   1
+    // );
+    // expect(startSessionResponse.statusCode).toStrictEqual(
+    //   httpStatus.SUCCESSFUL_REQUEST
+    // );
+
+    // const sessionId = startSessionResponse.body;
+  });
+
+  test('admin ends session', () => {
+    startSessionResponse = requestAdminStartQuizSession(
+      quizId,
+      user1Token,
+      1
+    );
+    expect(startSessionResponse.statusCode).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
+
+    // const sessionId = startSessionResponse.body;
+
+    // const adminQuizSessionUpdate = adminQuizSessionUpdate(
+    //   quizId,
+    //   sessionId,
+    //   user1Token,
+    //   body,
+    // );
   });
 });

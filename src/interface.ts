@@ -3,9 +3,11 @@ import { adminAuthRegister, adminAuthLogin } from './auth';
 import {
   adminQuizCreate,
   adminQuizList,
+  adminQuizQuestionCreate,
   adminQuizTransfer,
   adminTrashList,
-  quizState
+  quizState,
+  adminStartQuizSession
 } from './quiz';
 export interface dataStore {
   users: user[],
@@ -54,8 +56,13 @@ export interface quiz {
   timeLimit: number;
   // Optional property
   thumbnailUrl?: string;
-  activeSessions: number[],
-  inactiveSessions: number[]
+  activeSessions: quizSession[],
+  inactiveSessions: quizSession[]
+}
+
+export interface quizSession {
+  sessionId: number,
+  sessionState: quizState
 }
 
 export interface token {
@@ -152,5 +159,15 @@ export interface quizListResponse {
 
 export interface trashList {
   body: ReturnType<typeof adminTrashList>;
+  statusCode: number;
+}
+
+export interface questionCreate {
+  body: ReturnType<typeof adminQuizQuestionCreate>;
+  statusCode: number;
+}
+
+export interface startSession {
+  body: ReturnType<typeof adminStartQuizSession> | { error: string };
   statusCode: number;
 }
