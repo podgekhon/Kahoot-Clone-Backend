@@ -63,7 +63,7 @@ describe('HTTP tests for viewing quiz sessions', () => {
     // Verify that the sessions are sorted in ascending order
     const activeSessions = resViewSessions.body.activeSessions;
     expect(activeSessions).toHaveLength(3);
-    // Create a shallow copy of the array using ... syntax to avoid modifying 
+    // Create a shallow copy of the array using ... syntax to avoid modifying
     // the original array during sorting
     expect(activeSessions).toEqual([...activeSessions].sort((a, b) => a - b));
 
