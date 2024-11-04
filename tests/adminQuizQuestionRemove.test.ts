@@ -1,17 +1,20 @@
 import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
+  requestAdminQuizCreateV2,
   requestAdminQuizQuestionCreate,
+  requestAdminQuizQuestionCreateV2,
   requestAdminQuizQuestionRemove,
-  requestAdminQuizRemove,
   requestAdminQuizQuestionRemoveV2,
+  requestAdminQuizRemove,
+  requestAdminQuizRemoveV2,
   requestClear
 } from '../src/requestHelperFunctions';
 
 import {
   tokenReturn,
   quizCreateResponse,
-  quizQuestionCreateResponse
+  quizQuestionCreateResponse,
 } from '../src/interface';
 
 import {
@@ -23,14 +26,33 @@ beforeEach(() => {
 });
 
 const routeVersions = [
-  { name: 'v1', removeFunction: requestAdminQuizQuestionRemove },
-  { name: 'v2', removeFunction: requestAdminQuizQuestionRemoveV2 },
+  {
+    name: 'v1',
+    removeFunction: requestAdminQuizQuestionRemove,
+    createFunction: requestAdminQuizCreate,
+    createQuestionFunction: requestAdminQuizQuestionCreate,
+    removeQuizFunction: requestAdminQuizRemove
+  },
+  {
+    name: 'v2',
+    removeFunction: requestAdminQuizQuestionRemoveV2,
+    createFunction: requestAdminQuizCreateV2,
+    createQuestionFunction: requestAdminQuizQuestionCreateV2,
+    removeQuizFunction: requestAdminQuizRemoveV2
+  }
 ];
 
-describe.each(routeVersions)('Tests for $name route', ({ name, removeFunction }) => {
+describe.each(routeVersions)('Tests for $name route', (
+  {
+    name,
+    removeFunction,
+    createFunction,
+    createQuestionFunction,
+    removeQuizFunction
+  }) => {
   let user: { token: string };
   let quiz: { quizId: number };
-  let questionId: number;
+  let question: { questionId: number };
 
   beforeEach(() => {
     const resRegister = requestAdminAuthRegister(
@@ -41,34 +63,44 @@ describe.each(routeVersions)('Tests for $name route', ({ name, removeFunction })
     );
     user = resRegister.body as tokenReturn;
 
-    const resCreateQuiz = requestAdminQuizCreate(
+    const resCreateQuiz = createFunction(
       user.token,
       'validQuizName',
       'validQuizDescription'
     );
     quiz = resCreateQuiz.body as quizCreateResponse;
 
-    const questionBody = {
-      question: 'Who is the Monarch of England?',
-      timeLimit: 4,
-      points: 5,
-      answerOptions: [
-        { answer: 'Prince Charles', correct: true },
-        { answer: 'Prince William', correct: false },
-      ],
-    };
+    const questionBody = name === 'v2'
+      ? {
+          question: 'What is the capital of Australia?',
+          timeLimit: 4,
+          points: 5,
+          answerOptions: [
+            { answer: 'Canberra', correct: true },
+            { answer: 'Sydney', correct: false },
+          ],
+          thumbnailUrl: 'https://example.com/image.jpg',
+        }
+      : {
+          question: 'Who is the Monarch of England?',
+          timeLimit: 4,
+          points: 5,
+          answerOptions: [
+            { answer: 'Prince Charles', correct: true },
+            { answer: 'Prince William', correct: false },
+          ],
+        };
 
-    const resCreateQuestion = requestAdminQuizQuestionCreate(
+    const resCreateQuestion = createQuestionFunction(
       quiz.quizId,
       user.token,
       questionBody
     );
-    questionId = (resCreateQuestion.body as quizQuestionCreateResponse).questionId;
+    question = resCreateQuestion.body as quizQuestionCreateResponse;
   });
 
   test('successfully removes a quiz question', () => {
-    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user.token);
-
+    const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user.token);
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(resRemoveQuestion.body).toStrictEqual({});
   });
@@ -82,7 +114,7 @@ describe.each(routeVersions)('Tests for $name route', ({ name, removeFunction })
     );
     const user2 = resRegisterUser2.body as tokenReturn;
 
-    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user2.token);
+    const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user2.token);
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
@@ -91,30 +123,30 @@ describe.each(routeVersions)('Tests for $name route', ({ name, removeFunction })
   test('returns error when quiz ID is invalid', () => {
     const invalidQuizId = 9999;
 
-    const resRemoveQuestion = removeFunction(invalidQuizId, questionId, user.token);
+    const resRemoveQuestion = removeFunction(invalidQuizId, question.questionId, user.token);
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when question ID is invalid', () => {
-    const invalidQuestionId = questionId + 1;
+    const invalidquestion = question.questionId + 1;
 
-    const resRemoveQuestion = removeFunction(quiz.quizId, invalidQuestionId, user.token);
+    const resRemoveQuestion = removeFunction(quiz.quizId, invalidquestion, user.token);
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when token is empty', () => {
-    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, '');
+    const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, '');
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when token is invalid', () => {
-    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, 'invalidToken');
+    const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, 'invalidToken');
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
@@ -122,19 +154,19 @@ describe.each(routeVersions)('Tests for $name route', ({ name, removeFunction })
 
   test('returns error when attempting to remove a question that is already deleted', () => {
     // Remove the question once
-    removeFunction(quiz.quizId, questionId, user.token);
+    removeFunction(quiz.quizId, question.questionId, user.token);
 
     // Attempt to remove the question again
-    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user.token);
+    const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user.token);
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when trying to remove a question after the quiz is deleted', () => {
-    requestAdminQuizRemove(quiz.quizId, user.token);
+    removeQuizFunction(quiz.quizId, user.token);
 
-    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user.token);
+    const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user.token);
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
