@@ -45,7 +45,6 @@ export interface question {
 export interface quiz {
   quizId: number;
   ownerId: number;
-  sessionState: quizState;
   name: string;
   description: string;
   numQuestions: number;
