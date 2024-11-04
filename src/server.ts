@@ -54,7 +54,9 @@ import {
   adminQuizQuestionDuplicate,
   adminQuizTransfer,
   adminTrashEmpty,
-  adminQuizUpdateThumbnail
+  adminQuizUpdateThumbnail,
+  adminStartQuizSession,
+  adminViewQuizSessions
 } from './quiz';
 
 import { clear } from './other';
@@ -436,6 +438,35 @@ const requestAdminQuizRestore = (req: Request, res: Response) => {
 
 app.post('/v1/admin/quiz/:quizId/restore', requestAdminQuizRestore);
 app.post('/v2/admin/quiz/:quizId/restore', requestAdminQuizRestore);
+
+// adminQuizStartSession
+app.post('/v1/admin/quiz/:quizId/session/start', (req, res) => {
+  const quizId = parseInt(req.params.quizId as string);
+  const token = req.headers.token as string;
+  const { autoStartNum } = req.body;
+
+  try {
+    const result = adminStartQuizSession(token, quizId, parseInt(autoStartNum));
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
+
+// adminViewQuizSessions
+app.get('/v1/admin/quiz/:quizId/sessions', (req, res) => {
+  const quizId = parseInt(req.params.quizId as string);
+  const token = req.headers.token as string;
+
+  try {
+    const result = adminViewQuizSessions(token, quizId);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
 
 // adminMoveQuizQuestion
 app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {

@@ -9,6 +9,7 @@ import {
   isValidQuestion,
   validateAnswers,
   validQuestionThumbnailUrl,
+  isSessionEnded,
   randomId
 } from './helperFunctions';
 
@@ -22,8 +23,20 @@ import {
   quizInfo,
   quiz,
   question,
-  answerOption
+  answerOption,
+  quizSession,
+  quizStartSessionResponse,
+  viewQuizSessionsResponse,
 } from './interface';
+
+export enum quizState {
+  LOBBY,
+  QUESTION_COUNTDOWN,
+  QUESTION_OPEN,
+  ANSWER_SHOW,
+  FINAL_RESULTS,
+  END,
+}
 
 /**
  * Update the thumbnail for a specific quiz.
@@ -117,7 +130,6 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
   * @param {string} description - description of new quiz for logged in user
   *
   * @returns {quizCreateResponse} - returns id of quiz if no errors
-  * @returns {errorMessages} - returns error message if error
 */
 export const adminQuizCreate = (
   token: string,
@@ -156,18 +168,114 @@ export const adminQuizCreate = (
   const newQuiz: quiz = {
     quizId: randomId(10000),
     ownerId: authUserId,
+    sessionState: quizState.END,
     name: name,
     description: description,
     numQuestions: 0,
     questions: [],
     timeCreated: Math.floor(Date.now() / 1000),
     timeLastEdited: Math.floor(Date.now() / 1000),
-    timeLimit: 0
+    timeLimit: 0,
+    activeSessions: [],
+    inactiveSessions: []
   };
 
   data.quizzes.push(newQuiz);
   setData(data);
   return { quizId: newQuiz.quizId };
+};
+
+/**
+ * Starts a new session for a quiz. Ensures that any edits made while a
+ * session is running do not affect the active session.
+ *
+ * @param {string} token - token of the logged-in user
+ * @param {number} quizId - quizId for which a session is to be started.
+ * @param {number} autoStartNum - number of sessions to auto-start
+ *
+ * @returns {quizStartSessionResponse} - returns a new sessionId
+ */
+export const adminStartQuizSession = (
+  token: string,
+  quizId: number,
+  autoStartNum: number
+): quizStartSessionResponse => {
+  const data = getData();
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+
+  // Check if the quiz is in trash
+  const isQuizInTrash = data.trash.some(q => q.quizId === quizId);
+  if (isQuizInTrash) {
+    throw new Error('QUIZ_IN_TRASH');
+  }
+
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  if (autoStartNum > 50) {
+    throw new Error('AUTO_START_NUM_TOO_HIGH');
+  }
+
+  if (quiz.activeSessions.length >= 10) {
+    throw new Error('TOO_MANY_ACTIVE_SESSIONS');
+  }
+
+  if (quiz.numQuestions === 0) {
+    throw new Error('NO_QUESTIONS_IN_QUIZ');
+  }
+
+  const newQuizSession: quizSession = {
+    sessionId: randomId(10000),
+    sessionState: quizState.LOBBY
+  };
+
+  quiz.activeSessions.push(newQuizSession);
+  setData(data);
+  return { sessionId: newQuizSession.sessionId };
+};
+
+/**
+ * Retrieves active and inactive session ids for a quiz.
+ *
+ * @param {string} token - token of the logged-in user
+ * @param {number} quizId - the quizId to retrieve sessions for
+ *
+ * @returns {viewQuizSessionsResponse} -
+ * Returns active and inactive sessions or error if any issues are found
+ */
+export const adminViewQuizSessions = (
+  token: string,
+  quizId: number
+): viewQuizSessionsResponse => {
+  const data = getData();
+
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // Separate active and inactive sessions
+  const activeSessions = quiz.activeSessions
+    .filter(session => !isSessionEnded(session))
+    .map(session => session.sessionId)
+    .sort((a, b) => a - b);
+
+  const inactiveSessions = quiz.activeSessions
+    .filter(isSessionEnded)
+    .map(session => session.sessionId)
+    .sort((a, b) => a - b);
+
+  return { activeSessions, inactiveSessions };
 };
 
 /**

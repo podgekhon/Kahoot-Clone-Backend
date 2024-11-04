@@ -38,7 +38,9 @@ import {
   adminQuizTransfer,
   adminTrashEmpty,
   adminTrashList,
-  adminQuizUpdateThumbnail
+  adminQuizUpdateThumbnail,
+  adminStartQuizSession,
+  adminViewQuizSessions
 } from './quiz';
 
 // clear
@@ -585,6 +587,62 @@ export const requestAdminQuizDescriptionUpdateV2 = (
       },
       json: {
         description: description,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+  * Makes HTTP request to start a new session for a quiz.
+  *
+  * @param {number} quizId - the quizId to start a session for
+  * @param {string} token  - the token of the user
+  * @param {number} autoStartNum - the auto-start number for the session
+  * @returns {Response}
+  */
+export const requestAdminStartQuizSession = (
+  quizId: number, token: string, autoStartNum: number
+): {
+  body: ReturnType<typeof adminStartQuizSession> | { error: string },
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/start`,
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        autoStartNum: autoStartNum
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Makes HTTP request to view active and inactive sessions for a quiz.
+ *
+ * @param {number} quizId - the quizId to retrieve sessions for
+ * @param {string} token - the token of the user
+ * @returns {Response}
+ */
+export const requestAdminViewQuizSessions = (
+  quizId: number, token: string
+): {
+  body: ReturnType<typeof adminViewQuizSessions>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/sessions`,
+    {
+      headers: {
+        token: token
       },
       timeout: TIMEOUT_MS,
     }
