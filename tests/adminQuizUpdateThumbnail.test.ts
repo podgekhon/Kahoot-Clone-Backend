@@ -3,7 +3,7 @@ import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizUpdateThumbnail,
-  // requestAdminQuizInfo,
+  requestAdminQuizInfoV2,
   requestClear,
   httpStatus
 } from '../src/requestHelperFunctions';
@@ -50,19 +50,15 @@ describe('HTTP tests for quiz thumbnail update', () => {
     expect(resUpdateThumbnail.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(resUpdateThumbnail.body).toStrictEqual({});
 
-    // Commented out becuase adminQuizInfo hasn't been updated to include
-    // thumbnail yet.
-    /*
-        // Get quiz info to confirm that the thumbnail is updated
-        const resQuizInfo = requestAdminQuizInfo(
-            quiz.quizId,
-            user.token
-        );
-        expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-        expect(resQuizInfo.body).toMatchObject({
-            thumbnailUrl: newThumbnailUrl
-        });
-        */
+    // Get quiz info to confirm that the thumbnail is updated
+    const resQuizInfo = requestAdminQuizInfoV2(
+      quiz.quizId,
+      user.token
+    );
+    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    expect(resQuizInfo.body).toMatchObject({
+      thumbnailUrl: newThumbnailUrl
+    });
   });
 
   test('returns error when token is not valid', () => {

@@ -22,7 +22,8 @@ import {
   quizInfo,
   quiz,
   question,
-  answerOption
+  answerOption,
+  quizStartSessionResponse,
 } from './interface';
 
 export enum quizState {
@@ -126,7 +127,6 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
   * @param {string} description - description of new quiz for logged in user
   *
   * @returns {quizCreateResponse} - returns id of quiz if no errors
-  * @returns {errorMessages} - returns error message if error
 */
 export const adminQuizCreate = (
   token: string,
@@ -172,12 +172,64 @@ export const adminQuizCreate = (
     questions: [],
     timeCreated: Math.floor(Date.now() / 1000),
     timeLastEdited: Math.floor(Date.now() / 1000),
-    timeLimit: 0
+    timeLimit: 0,
+    activeSessions: [],
+    inactiveSessions: []
   };
 
   data.quizzes.push(newQuiz);
   setData(data);
   return { quizId: newQuiz.quizId };
+};
+
+/**
+ * Starts a new session for a quiz. Ensures that any edits made while a
+ * session is running do not affect the active session.
+ *
+ * @param {string} token - token of the logged-in user
+ * @param {number} quizId - quizId for which a session is to be started.
+ * @param {number} autoStartNum - number of sessions to auto-start
+ *
+ * @returns {quizStartSessionResponse} - returns a new sessionId
+ */
+export const adminStartQuizSession = (
+  token: string,
+  quizId: number,
+  autoStartNum: number
+): quizStartSessionResponse => {
+  const data = getData();
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+
+  // Check if the quiz is in trash
+  const isQuizInTrash = data.trash.some(q => q.quizId === quizId);
+  if (isQuizInTrash) {
+    throw new Error('QUIZ_IN_TRASH');
+  }
+
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  if (autoStartNum > 50) {
+    throw new Error('AUTO_START_NUM_TOO_HIGH');
+  }
+
+  if (quiz.activeSessions.length >= 10) {
+    throw new Error('TOO_MANY_ACTIVE_SESSIONS');
+  }
+
+  if (quiz.numQuestions === 0) {
+    throw new Error('NO_QUESTIONS_IN_QUIZ');
+  }
+
+  const sessionId = randomId(10000);
+  quiz.activeSessions.push(sessionId);
+  setData(data);
+  return { sessionId };
 };
 
 /**
