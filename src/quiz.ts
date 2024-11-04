@@ -769,7 +769,7 @@ export const adminQuizTransfer = (
   }
   const senderId = tokenValidation.authUserId;
 
-  // checks if receiver is a real user
+  // checks if receiver is not a real user
   if (!receiver) {
     throw new Error('INVALID_USEREMAIL');
   }
@@ -788,6 +788,11 @@ export const adminQuizTransfer = (
   // if sender does not own quiz
   if (senderId !== transferredQuiz.ownerId) {
     throw new Error('INVALID_OWNER');
+  }
+
+  // if quizId is incorrect
+  if (!transferredQuiz) {
+    throw new Error('INVALID_QUIZ');
   }
 
   // update new owner
