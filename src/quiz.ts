@@ -956,4 +956,3 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
 
   return {};
 };
-

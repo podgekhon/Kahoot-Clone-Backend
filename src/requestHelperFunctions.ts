@@ -864,7 +864,6 @@ export const requestAdminTrashEmpty = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 // adminTrashEmpty v2
 /**
  * Makes http request to empty a trash
@@ -890,8 +889,6 @@ export const requestAdminTrashEmptyV2 = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
-
-
 
 // adminQuizTransfer
 /**

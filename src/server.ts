@@ -60,7 +60,6 @@ import {
 } from './quiz';
 
 import { clear } from './other';
-import { isErrorMessages } from './helperFunctions';
 import { errorMap } from './errorMap';
 
 enum httpStatus {
@@ -586,31 +585,6 @@ app.post('/v1/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
 
 app.post('/v2/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
 
-// Empty trash
-// app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
-//   const { token, quizIds } = req.query;
-
-//   // Parse quizIds into an array of numbers
-//   const quizIdsArray = JSON.parse(quizIds as string);
-//   // Call the adminTrashEmpty function with the parsed array'
-//   const result = adminTrashEmpty(token as string, quizIdsArray);
-
-//   if (isErrorMessages(result) &&
-//     ((result.error === 'Invalid token format.') ||
-//      (result.error === 'Invalid token: session does not exist.'))) {
-//     return res.status(httpStatus.UNAUTHORIZED).json(result);
-//   } else if (isErrorMessages(result) &&
-//     (result.error === 'Quiz ID is not in the trash.')) {
-//     return res.status(httpStatus.BAD_REQUEST).json(result);
-//   } else if (isErrorMessages(result) &&
-//     (result.error === 'Quiz ID does not belong to the current user.')) {
-//     return res.status(httpStatus.FORBIDDEN).json(result);
-//   }
-
-//   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-// });
-
-
 const handleAdminTrashEmpty = (req: Request, res: Response) => {
   const { quizIds } = req.query;
 
@@ -635,7 +609,6 @@ const handleAdminTrashEmpty = (req: Request, res: Response) => {
 
 app.delete('/v1/admin/quiz/trash/empty', handleAdminTrashEmpty);
 app.delete('/v2/admin/quiz/trash/empty', handleAdminTrashEmpty);
-
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
