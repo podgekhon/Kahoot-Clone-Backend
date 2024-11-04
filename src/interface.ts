@@ -1,6 +1,12 @@
 /// ///////////// interface for dataStore /////////////////
 import { adminAuthRegister, adminAuthLogin } from './auth';
-import { adminQuizCreate, adminQuizList, adminQuizTransfer, adminTrashList } from './quiz';
+import {
+  adminQuizCreate,
+  adminQuizList,
+  adminQuizTransfer,
+  adminTrashList,
+  quizState
+} from './quiz';
 export interface dataStore {
   users: user[],
   quizzes: quiz[],
@@ -39,6 +45,7 @@ export interface question {
 export interface quiz {
   quizId: number;
   ownerId: number;
+  sessionState: quizState;
   name: string;
   description: string;
   numQuestions: number;
@@ -48,6 +55,8 @@ export interface quiz {
   timeLimit: number;
   // Optional property
   thumbnailUrl?: string;
+  activeSessions: number[],
+  inactiveSessions: number[]
 }
 
 export interface token {
@@ -91,6 +100,10 @@ export interface quizList {
 
 export interface quizCreateResponse {
   quizId: number,
+}
+
+export interface quizStartSessionResponse {
+  sessionId: number,
 }
 
 export interface quizQuestionCreateResponse {

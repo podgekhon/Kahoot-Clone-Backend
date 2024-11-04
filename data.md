@@ -19,6 +19,7 @@ let data = {
     {
       quizId: 1,
       ownerId: 2,
+      sessionState: quizState.END,
       name: "maths",
       description: "this very hard maths quiz",
       quiz: [
