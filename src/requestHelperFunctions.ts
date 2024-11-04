@@ -39,7 +39,8 @@ import {
   adminTrashEmpty,
   adminTrashList,
   adminQuizUpdateThumbnail,
-  adminStartQuizSession
+  adminStartQuizSession,
+  adminViewQuizSessions
 } from './quiz';
 
 // clear
@@ -616,6 +617,32 @@ export const requestAdminStartQuizSession = (
       },
       json: {
         autoStartNum: autoStartNum
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Makes HTTP request to view active and inactive sessions for a quiz.
+ *
+ * @param {number} quizId - the quizId to retrieve sessions for
+ * @param {string} token - the token of the user
+ * @returns {Response}
+ */
+export const requestAdminViewQuizSessions = (
+  quizId: number, token: string
+): {
+  body: ReturnType<typeof adminViewQuizSessions>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/sessions`,
+    {
+      headers: {
+        token: token
       },
       timeout: TIMEOUT_MS,
     }
