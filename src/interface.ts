@@ -120,6 +120,11 @@ export interface quizQuestionDuplicateResponse {
   duplicatedQuestionId: number,
 }
 
+export interface viewQuizSessionsResponse {
+  activeSessions: number[],
+  inactiveSessions: number[]
+}
+
 export interface quizInfo {
   quizId: number,
   name: string,
