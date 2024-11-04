@@ -137,6 +137,37 @@ export const requestAdminUserPasswordUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+/**
+ * Makes http request to update password
+ *
+ * @param { string } token
+ * @param { string } oldPassword
+ * @param { string } newPassword
+ * @returns { Response }
+ */
+export const requestAdminUserPasswordUpdateV2 = (
+  token: string, oldPassword: string, newPassword: string
+): {
+  body: ReturnType <typeof adminUserPasswordUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + '/v2/admin/user/password',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        oldPassword: oldPassword,
+        newPassword: newPassword
+      },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminUserDetails
 /**
  * Makes http request to get user details
@@ -155,6 +186,32 @@ export const requestAdminUserDetails = (
     SERVER_URL + '/v1/admin/user/details',
     {
       qs: { token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminUserDetails
+/**
+ * Makes http request to get user details
+ *
+ * @param { string } token
+ * @returns
+ */
+export const requestAdminUserDetailsupdatev2 = (
+  token: string
+): {
+  body: ReturnType <typeof adminUserDetails>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/user/details',
+    {
+      headers: {
+        token: token
+      },
       timeout: TIMEOUT_MS,
     }
   );
@@ -302,7 +359,6 @@ export const requestAdminQuizCreateV2 = (
         token: token
       },
       json: {
-        token: token,
         name: name,
         description: description,
       },
@@ -331,6 +387,32 @@ export const requestAdminQuizRemove = (
     SERVER_URL + `/v1/admin/quiz/${quizId}`,
     {
       qs: { token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Makes http request to remove a quiz
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminQuizRemoveV2 = (
+  quizId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizRemove>,
+  statusCode: number
+} => {
+  const res = request(
+    'DELETE',
+    SERVER_URL + `/v2/admin/quiz/${quizId}`,
+    {
+      headers: {
+        token: token
+      },
       timeout: TIMEOUT_MS,
     }
   );
@@ -389,7 +471,7 @@ export const requestAdminQuizInfoV2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminQuizNameUpdate
+// adminQuizNameUpdate v1
 /**
  * Makes http request to update quiz name
  *
@@ -410,6 +492,37 @@ export const requestAdminQuizNameUpdate = (
     {
       json: {
         token: token,
+        name: name,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizNameUpdate v2
+/**
+ * Makes http request to update quiz name
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @param { string } name
+ * @returns { Response }
+ */
+export const requestAdminQuizNameUpdateV2 = (
+  quizId: number, token: string, name: string
+): {
+  body: ReturnType <typeof adminQuizNameUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/name`,
+    {
+      headers: {
+        token: token
+      },
+      json: {
         name: name,
       },
       timeout: TIMEOUT_MS,
@@ -511,7 +624,7 @@ export const requestAdminQuizUpdateThumbnail = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminAuthLogout
+// adminAuthLogout v1
 /**
  * Makes http request to log out a user
  *
@@ -537,7 +650,36 @@ export const requestAdminAuthLogout = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminTrashList
+// adminAuthLogout v2
+/**
+ * Makes http request to log out a user
+ *
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminAuthLogoutv2 = (
+  token: string
+): {
+  body: ReturnType <typeof adminAuthLogout>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v2/admin/auth/logout',
+    {
+      headers: {
+        token: token,
+      },
+      json: {
+        token: token,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminTrashList v1
 /**
  * Makes http request to list quizzes in the trash
  *
@@ -555,6 +697,32 @@ export const requestAdminTrashList = (
     SERVER_URL + '/v1/admin/quiz/trash',
     {
       qs: { token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminTrashList v2
+/**
+ * Makes http request to list quizzes in the trash
+ *
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminTrashListv2 = (
+  token: string
+): {
+  body: ReturnType <typeof adminTrashList>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/quiz/trash',
+    {
+      headers: {
+        token: token
+      },
       timeout: TIMEOUT_MS,
     }
   );
@@ -581,6 +749,31 @@ export const requestAdminQuizRestore = (
     {
       json: {
         token: token,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+/**
+ * Makes http request to restore a quiz
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @returns
+ */
+export const requestAdminQuizRestoreV2 = (
+  quizId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizRestore>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/restore`,
+    {
+      headers: {
+        token: token
       },
       timeout: TIMEOUT_MS,
     }
@@ -683,6 +876,36 @@ export const requestAdminQuizQuestionCreate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+/**
+ * Makes http request to create a question using v2 route
+ *
+ * @param { number } quizId
+ * @param { string } token
+ * @param { object } questionBody - an object containing question details
+ * @returns { Response }
+ */
+export const requestAdminQuizQuestionCreateV2 = (
+  quizId: number, token: string, questionBody: object
+): {
+  body: ReturnType <typeof adminQuizQuestionCreate>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question`,
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        questionBody: questionBody,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
 // adminQuizQuestionUpdate
 /**
  * Makes http request to update a question
@@ -713,7 +936,38 @@ export const requestAdminQuizQuestionUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminQuizQuestionRemove
+/**
+ * Makes http request to update a question using v2 route
+ *
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @param { object } questionBody
+ * @returns { Response }
+ */
+export const requestAdminQuizQuestionUpdateV2 = (
+  quizId: number, questionId: number, token: string, questionBody: object
+): {
+  body: ReturnType <typeof adminQuizQuestionUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        questionBody: questionBody,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizQuestionRemove v1
 /**
  * Makes http requets to remove a question
  *
@@ -732,7 +986,33 @@ export const requestAdminQuizQuestionRemove = (
     'DELETE',
     SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
     {
-      qs: { token },
+      qs: { token: token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizQuestionRemove v2
+/**
+ * Makes http requets to remove a question
+ *
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminQuizQuestionRemoveV2 = (
+  quizId: number, questionId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizQuestionRemove>,
+  statusCode: number
+} => {
+  const res = request(
+    'DELETE',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
+    {
+      headers: { token: token },
       timeout: TIMEOUT_MS,
     }
   );
@@ -789,6 +1069,33 @@ export const requestAdminQuizQuestionDuplicate = (
     SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`,
     {
       json: {
+        token: token,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Makes http request to duplicate a quiz
+ *
+ * @param { number } quizId
+ * @param { number } questionId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminQuizQuestionDuplicateV2 = (
+  quizId: number, questionId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizQuestionDuplicate>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}/duplicate`,
+    {
+      headers: {
         token: token,
       },
       timeout: TIMEOUT_MS,

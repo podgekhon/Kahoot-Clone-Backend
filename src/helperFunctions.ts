@@ -10,6 +10,23 @@ import {
 } from './interface';
 
 /**
+ * Checks if a given quesiton thumbnail url is valid
+ * @param {string} url - the thumbnail url to validate
+ * @returns {boolean}
+ */
+export function validQuestionThumbnailUrl(url: string): boolean {
+  if (!url) return false;
+
+  if (!/^https?:\/\/.*/i.test(url)) return false;
+
+  // Check if URL ends with jpg, jpeg, or png
+  const validExtensions = /\.(jpg|jpeg|png)$/i;
+  if (!validExtensions.test(url)) return false;
+
+  return true;
+}
+
+/**
  * Generates a random hexadecimal color code.
  *
  * @returns {string} - A string representing a random hexadecimal color code,
@@ -213,18 +230,15 @@ export const isValidQuiz = (
   quizId: number,
   data: data
 ): errorMessages | null => {
-  const validUserId = data.users.find(user => user.userId === authUserId);
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
 
   // check invalid user id
-  if (!validUserId) {
-    return { error: 'AuthUserId is not valid.' };
-  } else if (!validQuizId) {
+  if (!validQuizId) {
     // invalid quiz id
-    return { error: 'QuizID does not refer to a valid quiz.' };
+    return { error: 'INVALID_QUIZ' };
   } else if (validQuizId.ownerId !== authUserId) {
     // quiz id does not refer to it's owner
-    return { error: 'Quiz ID does not refer to a quiz that this user owns.' };
+    return { error: 'INVALID_OWNER' };
   }
   return null;
 };

@@ -3,6 +3,7 @@ import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
   requestAdminQuizRemove,
+  requestAdminQuizRemoveV2,
   requestAdminQuizList,
   requestAdminTrashList,
   requestAdminAuthLogout,
@@ -36,7 +37,7 @@ describe('test for adminQuizRemove', () => {
     expect(quizList.body).toStrictEqual({
       quizzes: []
     });
-    
+
     // one quiz in the trash list
     const trashList = requestAdminTrashList(user1token);
     expect(trashList.body).toStrictEqual({
@@ -69,7 +70,12 @@ describe('test for adminQuizRemove', () => {
   });
 
   test('Attempt to delete quiz by non-admin user', () => {
-    const newuser = requestAdminAuthRegister('test1@gmail.com', 'validPassword5', 'Guanlin1', 'Kong1');
+    const newuser = requestAdminAuthRegister(
+      'test1@gmail.com',
+      'validPassword5',
+      'Guanlin1',
+      'Kong1'
+    );
     const newtoken = (newuser.body as tokenReturn).token;
     const deleteResponse = requestAdminQuizRemove(quizID, newtoken);
     expect(deleteResponse.statusCode).toStrictEqual(401);
@@ -94,5 +100,49 @@ describe('test for adminQuizRemove', () => {
     const deleteResponse = requestAdminQuizRemove(quizID, user1token);
     expect(deleteResponse.statusCode).toStrictEqual(401);
     expect(deleteResponse.body).toStrictEqual({ error: expect.any(String) });
+  });
+  describe('tests for v2 routes', () => {
+    test('empty token', () => {
+      const deleteResponse = requestAdminQuizRemoveV2(quizID, ' ');
+      expect(deleteResponse.statusCode).toStrictEqual(401);
+      expect(deleteResponse.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('invalid token', () => {
+      // log out user1
+      const result = requestAdminAuthLogout(user1token);
+      expect(result.statusCode).toStrictEqual(200);
+      expect(result.body).toStrictEqual({});
+      // log in user2
+      const resRegister = requestAdminAuthLogin('test@gmail.com', 'validPassword5');
+      expect(resRegister.statusCode).toStrictEqual(200);
+      // invalid token
+      const deleteResponse = requestAdminQuizRemoveV2(quizID, user1token);
+      expect(deleteResponse.statusCode).toStrictEqual(401);
+      expect(deleteResponse.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('Successfully delete quiz', () => {
+      const deleteResponse = requestAdminQuizRemoveV2(quizID, user1token);
+      expect(deleteResponse.statusCode).toEqual(200);
+      // has correct return type
+      expect(deleteResponse.body).toEqual({});
+      // has empty quiz list
+      const quizList = requestAdminQuizList(user1token);
+      expect(quizList.body).toStrictEqual({
+        quizzes: []
+      });
+
+      // one quiz in the trash list
+      const trashList = requestAdminTrashList(user1token);
+      expect(trashList.body).toStrictEqual({
+        quizzes: [
+          {
+            quizId: quizID,
+            name: 'Test Quiz'
+          }
+        ]
+      });
+    });
   });
 });

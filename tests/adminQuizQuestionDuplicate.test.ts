@@ -1,16 +1,17 @@
-import { 
-  requestAdminAuthRegister, 
-  requestAdminQuizCreate, 
-  requestAdminQuizQuestionDuplicate, 
-  requestAdminQuizQuestionCreate, 
+import {
+  requestAdminAuthRegister,
+  requestAdminQuizCreate,
+  requestAdminQuizQuestionDuplicate,
+  requestAdminQuizQuestionDuplicateV2,
+  requestAdminQuizQuestionCreate,
   requestAdminQuizInfo,
-  requestClear 
+  requestClear
 } from '../src/requestHelperFunctions';
 
-import { 
-  quizCreateResponse, 
-  quizQuestionCreateResponse, 
-  quizQuestionDuplicateResponse, 
+import {
+  quizCreateResponse,
+  quizQuestionCreateResponse,
+  quizQuestionDuplicateResponse,
   tokenReturn,
 } from '../src/interface';
 
@@ -24,7 +25,7 @@ describe('test for quiz duplicate', () => {
   let user1token: string;
   let quiz1Id: number;
   let question1Id: number;
-  
+
   beforeEach(() => {
     const user1 = requestAdminAuthRegister('ericMa@unsw.edu.au', 'EricMa1234', 'Eric', 'Ma');
     user1token = (user1.body as tokenReturn).token;
@@ -49,8 +50,8 @@ describe('test for quiz duplicate', () => {
       },
     };
     const question = requestAdminQuizQuestionCreate(
-      quiz1Id, 
-      questionBody.token, 
+      quiz1Id,
+      questionBody.token,
       questionBody.questionBody
     );
     question1Id = (question.body as quizQuestionCreateResponse).questionId;
@@ -108,8 +109,8 @@ describe('test for quiz duplicate', () => {
       },
     };
     const question2 = requestAdminQuizQuestionCreate(
-      quiz2Id, 
-      questionBody.token, 
+      quiz2Id,
+      questionBody.token,
       questionBody.questionBody
     );
     const question2Id = (question2.body as quizQuestionCreateResponse).questionId;
@@ -205,8 +206,8 @@ describe('test for quiz duplicate', () => {
         },
       };
       const question2 = requestAdminQuizQuestionCreate(
-        quiz1Id, 
-        user1token, 
+        quiz1Id,
+        user1token,
         questionBody.questionBody
       );
       const question2Id = (question2.body as quizQuestionCreateResponse).questionId;
@@ -292,6 +293,129 @@ describe('test for quiz duplicate', () => {
         ],
         timeLimit: expect.any(Number)
       });
+    });
+  });
+
+  describe('tests for v2 route', () => {
+    test('success when multiple question exist', () => {
+      // create question 2
+      const questionBody = {
+        token: user1token,
+        questionBody: {
+          question: 'question2',
+          timeLimit: 4,
+          points: 5,
+          answerOptions: [
+            {
+              answer: 'answer1',
+              correct: true,
+            },
+            {
+              answer: 'answer2',
+              correct: false,
+            },
+          ],
+        },
+      };
+      const question2 = requestAdminQuizQuestionCreate(
+        quiz1Id,
+        user1token,
+        questionBody.questionBody
+      );
+      const question2Id = (question2.body as quizQuestionCreateResponse).questionId;
+      // duplicate question1
+      const res = requestAdminQuizQuestionDuplicateV2(quiz1Id, question1Id, user1token);
+      const duplicateId = (res.body as quizQuestionDuplicateResponse).duplicatedQuestionId;
+
+      expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(res.body).toStrictEqual(
+        { duplicatedQuestionId: expect.any(Number) }
+      );
+
+      // list the info in the quiz, should be 3 questions in the list
+      const quizInfoRes = requestAdminQuizInfo(quiz1Id, user1token);
+      expect(quizInfoRes.body).toStrictEqual({
+        quizId: quiz1Id,
+        name: 'quiz1',
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: 'quiz1',
+        numQuestions: 3,
+        questions: [
+          {
+            questionId: question1Id,
+            question: 'question1',
+            timeLimit: 4,
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'answer1',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'answer2',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          },
+          {
+            questionId: duplicateId,
+            question: 'question1',
+            timeLimit: 4,
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'answer1',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'answer2',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          },
+          {
+            questionId: question2Id,
+            question: 'question2',
+            timeLimit: 4,
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'answer1',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'answer2',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          }
+        ],
+        timeLimit: expect.any(Number)
+      });
+    });
+    test('invalid token', () => {
+      const res = requestAdminQuizQuestionDuplicateV2(quiz1Id, question1Id, JSON.stringify('abcd'));
+      expect(res.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(res.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('empty token', () => {
+      const res = requestAdminQuizQuestionDuplicateV2(quiz1Id, question1Id, JSON.stringify(''));
+      expect(res.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(res.body).toStrictEqual({ error: expect.any(String) });
     });
   });
 });

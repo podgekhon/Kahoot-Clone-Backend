@@ -134,14 +134,11 @@ export const adminUserDetails = (token: string): errorMessages | userDetails => 
   // get userId
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'invalid token' };
+    return { error: 'Token is empty or invalid (does not refer to valid logged in user session)' };
   }
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find((user) => user.userId === authUserId);
-  if (!user) {
-    return { error: 'AuthUserId is not a valid user.' };
-  }
 
   const userDetails = {
     userId: user.userId,
@@ -229,27 +226,23 @@ export const adminUserPasswordUpdate = (
   // get userId from token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    throw new Error('Invalid token');
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find(user => user.userId === authUserId);
 
-  if (!user) {
-    throw new Error('AuthUserId is not a valid user.');
-  }
-
   if (user.currentPassword !== oldPassword) {
-    throw new Error('Old Password is not the correct old password');
+    throw new Error('WRONG_PASSWORD');
   }
 
   if (oldPassword === newPassword) {
-    throw new Error('Old Password and New Password match exactly');
+    throw new Error('OLD_PASSWORD_REUSE');
   }
 
   // Check if the newPassword has been used before
   if (user.oldPasswords.includes(newPassword)) {
-    throw new Error('New Password has already been used before by this user.');
+    throw new Error('NEW_PASSWORD_USED');
   }
 
   const passwordValidation = isValidPassword(newPassword);
@@ -257,7 +250,7 @@ export const adminUserPasswordUpdate = (
   // error field
   if (passwordValidation.error) {
     // Return the error if validation fails
-    throw new Error(passwordValidation.error);
+    throw new Error('INVALID_PASSWORD');
   }
 
   // Add the current password to oldPasswords array
@@ -280,15 +273,11 @@ export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
 
   const validation = validateToken(token, data);
   if ('error' in validation) {
-    return { error: 'invalid token' };
+    throw new Error('INVALID_TOKEN');
   }
 
   const sessionIndex = data.sessions.findIndex(
     (session) => session.userId === validation.authUserId);
-
-  if (sessionIndex === -1) {
-    return { error: 'Session not found.' };
-  }
 
   data.sessions.splice(sessionIndex, 1);
   setData(data);

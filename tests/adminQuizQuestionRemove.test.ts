@@ -4,7 +4,7 @@ import {
   requestAdminQuizQuestionCreate,
   requestAdminQuizQuestionRemove,
   requestAdminQuizRemove,
-  requestAdminTrashList,
+  requestAdminQuizQuestionRemoveV2,
   requestClear
 } from '../src/requestHelperFunctions';
 
@@ -16,13 +16,18 @@ import {
 
 import {
   httpStatus
-} from '../src/requestHelperFunctions'
+} from '../src/requestHelperFunctions';
 
 beforeEach(() => {
   requestClear();
 });
 
-describe('Tests for adminQuizQuestionRemove', () => {
+const routeVersions = [
+  { name: 'v1', removeFunction: requestAdminQuizQuestionRemove },
+  { name: 'v2', removeFunction: requestAdminQuizQuestionRemoveV2 },
+];
+
+describe.each(routeVersions)('Tests for $name route', ({ name, removeFunction }) => {
   let user: { token: string };
   let quiz: { quizId: number };
   let questionId: number;
@@ -41,9 +46,8 @@ describe('Tests for adminQuizQuestionRemove', () => {
       'validQuizName',
       'validQuizDescription'
     );
-    quiz = (resCreateQuiz.body as quizCreateResponse);
+    quiz = resCreateQuiz.body as quizCreateResponse;
 
-    // Create a question to delete
     const questionBody = {
       question: 'Who is the Monarch of England?',
       timeLimit: 4,
@@ -63,16 +67,11 @@ describe('Tests for adminQuizQuestionRemove', () => {
   });
 
   test('successfully removes a quiz question', () => {
-    const resRemoveQuestion = requestAdminQuizQuestionRemove(
-      quiz.quizId,
-      questionId,
-      user.token
-    );
+    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user.token);
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(resRemoveQuestion.body).toStrictEqual({});
   });
-
 
   test('returns error when user is not the quiz owner', () => {
     const resRegisterUser2 = requestAdminAuthRegister(
@@ -83,11 +82,7 @@ describe('Tests for adminQuizQuestionRemove', () => {
     );
     const user2 = resRegisterUser2.body as tokenReturn;
 
-    const resRemoveQuestion = requestAdminQuizQuestionRemove(
-      quiz.quizId,
-      questionId,
-      user2.token
-    );
+    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user2.token);
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
@@ -96,82 +91,61 @@ describe('Tests for adminQuizQuestionRemove', () => {
   test('returns error when quiz ID is invalid', () => {
     const invalidQuizId = 9999;
 
-    const resRemoveQuestion = requestAdminQuizQuestionRemove(
-      invalidQuizId,
-      questionId,
-      user.token
-    );
+    const resRemoveQuestion = removeFunction(invalidQuizId, questionId, user.token);
 
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Remove question when question ID is invalid', () => {
+  test('returns error when question ID is invalid', () => {
     const invalidQuestionId = questionId + 1;
 
-    const result = requestAdminQuizQuestionRemove(
-      quiz.quizId,
-      invalidQuestionId,
-      user.token
-    );
-    expect(result.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    expect(result.body).toStrictEqual({ error: expect.any(String) });
-  });
+    const resRemoveQuestion = removeFunction(quiz.quizId, invalidQuestionId, user.token);
 
-  test('Remove question when token is empty', () => {
-    const result = requestAdminQuizQuestionRemove(
-      quiz.quizId,
-      questionId,
-      ''
-    );
-    expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
-    expect(result.body).toStrictEqual({ error: expect.any(String) });
-  });
-
-  test('Remove question when token is invalid', () => {
-    const result = requestAdminQuizQuestionRemove(
-      quiz.quizId,
-      questionId,
-      'invalidToken'
-    );
-    expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
-    expect(result.body).toStrictEqual({ error: expect.any(String) });
-  });
-
-  test('Try removing a question that is already deleted', () => {
-    // Remove question first
-    requestAdminQuizQuestionRemove(quiz.quizId, questionId, user.token);
-
-    // Try removing again
-    const resRemoveQuestion = requestAdminQuizQuestionRemove(
-      quiz.quizId,
-      questionId,
-      user.token
-    );
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('remove question after quiz is deleted', () => {
+  test('returns error when token is empty', () => {
+    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, '');
+
+    expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+    expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when token is invalid', () => {
+    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, 'invalidToken');
+
+    expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+    expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when attempting to remove a question that is already deleted', () => {
+    // Remove the question once
+    removeFunction(quiz.quizId, questionId, user.token);
+
+    // Attempt to remove the question again
+    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user.token);
+
+    expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when trying to remove a question after the quiz is deleted', () => {
     requestAdminQuizRemove(quiz.quizId, user.token);
 
-    const quizlist = requestAdminTrashList(user.token);
-    expect(quizlist.body).toEqual({ quizzes: [
-      {
-        quizId: quiz.quizId,
-        name: 'validQuizName'
-      }
-    ]
-    });
-    const resRemoveQuestion = requestAdminQuizQuestionRemove(
-      quiz.quizId,
-      questionId,
-      user.token
-    );
-    expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
-    expect(resRemoveQuestion.body).toStrictEqual(
-      { error: expect.any(String) }
-    );
-  });
-});
+    const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user.token);
 
+    expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+    expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  // TO BE Implemented
+  // test('returns error when quiz is not in END state', () => {
+
+  //   const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user.token);
+
+  //   expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+  //   expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
+  // });
+});

@@ -1,9 +1,9 @@
-import { 
-  requestClear, 
-  requestAdminAuthLogin, 
-  requestAdminAuthRegister, 
-  requestAdminQuizList, 
-  requestAdminUserDetails 
+import {
+  requestClear,
+  requestAdminAuthLogin,
+  requestAdminAuthRegister,
+  requestAdminQuizList,
+  requestAdminUserDetails
 } from '../src/requestHelperFunctions';
 import { httpStatus } from './adminAuthRegister.test';
 import { tokenReturn } from '../src/interface';
@@ -33,5 +33,4 @@ describe('clear test', () => {
     const userDetailRes = requestAdminUserDetails(userId);
     expect(userDetailRes.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
   });
-  
 });

@@ -33,6 +33,7 @@ export interface question {
   timeLimit: number;
   points: number;
   answerOptions: answerOption[];
+  thumbnailUrl?: string;
 }
 
 export interface quiz {

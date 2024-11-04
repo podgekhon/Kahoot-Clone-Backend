@@ -1,6 +1,15 @@
 import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
-import { requestAdminAuthLogout, requestAdminAuthRegister, requestAdminQuizCreate, requestAdminQuizList, requestAdminQuizRemove, requestAdminQuizRestore, requestAdminTrashList } from '../src/requestHelperFunctions';
+import {
+  requestAdminAuthLogout,
+  requestAdminAuthRegister,
+  requestAdminQuizCreate,
+  requestAdminQuizList,
+  requestAdminQuizRemove,
+  requestAdminQuizRestore,
+  requestAdminQuizRestoreV2,
+  requestAdminTrashList
+} from '../src/requestHelperFunctions';
 import { quizCreateResponse, tokenReturn } from '../src/interface';
 import { httpStatus } from './adminAuthRegister.test';
 
@@ -29,7 +38,7 @@ describe('test for quiz restore', () => {
     // list the trash and quiz Info
     let result = requestAdminTrashList(user1token);
     expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-      // quiz1 should be in the trash now
+    // quiz1 should be in the trash now
     expect(result.body).toStrictEqual(
       {
         quizzes: [
@@ -70,7 +79,7 @@ describe('test for quiz restore', () => {
 
   test('Quiz name of the restored quiz is already used by another active quiz', () => {
     // create quiz2 which name is 'quiz1'
-    requestAdminQuizCreate(user1token, 'quiz1', 'this is quiz 2 actually')
+    requestAdminQuizCreate(user1token, 'quiz1', 'this is quiz 2 actually');
     // restore quiz1
     const res = requestAdminQuizRestore(quiz1Id, user1token);
     expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
@@ -114,5 +123,63 @@ describe('test for quiz restore', () => {
     const result = requestAdminQuizRestore(quiz1Id, user2token);
     expect(result.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(result.body).toStrictEqual({ error: expect.any(String) });
+  });
+  describe('tests for v2 route', () => {
+    test('empty token', () => {
+      const result = requestAdminQuizRestoreV2(quiz1Id, JSON.stringify(''));
+      expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(result.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('invalid token(does not refer to a logged in user)', () => {
+      // log out user 1
+      requestAdminAuthLogout(user1token);
+      const result = requestAdminQuizRestoreV2(quiz1Id, user1token);
+      expect(result.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
+      expect(result.body).toStrictEqual({ error: expect.any(String) });
+    });
+
+    test('restore successful', () => {
+      // list the trash and quiz Info
+      let result = requestAdminTrashList(user1token);
+      expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      // quiz1 should be in the trash now
+      expect(result.body).toStrictEqual(
+        {
+          quizzes: [
+            {
+              quizId: quiz1Id,
+              name: 'quiz1',
+            }
+          ]
+        }
+      );
+      // restore a quiz from the trash
+      const res = requestAdminQuizRestoreV2(quiz1Id, user1token);
+      // check status code and return type
+      expect(res.statusCode).toStrictEqual(200);
+      expect(res.body).toStrictEqual({});
+      // list the trash
+      result = requestAdminTrashList(user1token);
+      // nothing in the trash now
+      expect(result.body).toStrictEqual(
+        {
+          quizzes: []
+        }
+      );
+      // list the quiz list
+      result = requestAdminQuizList(user1token);
+      // quiz1 should be back in quiz list
+      expect(result.body).toStrictEqual(
+        {
+          quizzes: [
+            {
+              quizId: quiz1Id,
+              name: 'quiz1'
+            }
+          ]
+        }
+      );
+    });
   });
 });

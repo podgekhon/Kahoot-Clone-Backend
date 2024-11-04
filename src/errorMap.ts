@@ -89,13 +89,17 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Description is more than 100 characters in length.'
   },
-  INVALID_THUMBNAIL_URL_START: {
+  INVALID_QUIZ_THUMBNAIL_URL_START: {
     status: httpStatus.BAD_REQUEST,
-    message: 'Thumbnail URL must start with "http://" or "https://".'
+    message: 'Quiz thumbnail URL must start with "http://" or "https://".'
   },
-  INVALID_THUMBNAIL_URL_END: {
+  INVALID_QUIZ_THUMBNAIL_URL_END: {
     status: httpStatus.BAD_REQUEST,
-    message: 'Thumbnail URL must end with ".jpg", ".jpeg", or ".png".'
+    message: 'Quiz thumbnail URL must end with ".jpg", ".jpeg", or ".png".'
+  },
+  INVALID_QUESTION_THUMBNAIL_URL: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Question thumbnail URL format is invalid'
   },
   QUIZ_NAME_TOO_LONG: {
     status: httpStatus.BAD_REQUEST,
@@ -104,5 +108,27 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   INVALID_QUIZ_NAME: {
     status: httpStatus.BAD_REQUEST,
     message: 'Quiz name contains invalid characters. Valid characters are alphanumeric and spaces.'
+  },
+  WRONG_PASSWORD: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Old Password is not the correct old password.'
+  },
+  OLD_PASSWORD_REUSE: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Old Password and New Password match exactly.'
+  },
+  NEW_PASSWORD_USED: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'New Password has already been used before by this user.'
+  },
+  INVALID_PASSWORD: {
+    status: httpStatus.BAD_REQUEST,
+    message:
+    'New Password is less than 8 characters or' +
+    'does not contain at least one number and at least one letter.'
+  },
+  QUIZ_NOT_IN_TRASH: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Quiz ID refers to a quiz that is not currently in the trash.'
   }
 };
