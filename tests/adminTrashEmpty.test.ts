@@ -3,6 +3,9 @@ import {
   requestAdminQuizCreate,
   requestAdminTrashEmpty,
   requestAdminQuizRemove,
+  requestAdminQuizCreateV2,
+  requestAdminTrashEmptyV2,
+  requestAdminQuizRemoveV2,
   requestClear
 } from '../src/requestHelperFunctions';
 

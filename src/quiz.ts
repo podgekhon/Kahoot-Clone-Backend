@@ -924,7 +924,7 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   const data = getData();
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
   const invalidQuizzes: number[] = [];
@@ -942,12 +942,12 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   }
   // If there are any invalid quizzes, return an error
   if (invalidQuizzes.length > 0) {
-    return { error: 'Quiz ID is not in the trash.' };
+    throw new Error('QUIZ_NOT_IN_TRASH');
   }
 
   // If there are any unauthorized quizzes, return an error
   if (unauthorizedQuizzes.length > 0) {
-    return { error: 'Quiz ID does not belong to the current user.' };
+    throw new Error('INVALID_OWNER');
   }
 
   // Remove the valid quizzes from the trash
@@ -956,3 +956,4 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
 
   return {};
 };
+

@@ -839,7 +839,7 @@ export const requestAdminQuizRestoreV2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminTrashEmpty
+// adminTrashEmpty v1
 /**
  * Makes http request to empty a trash
  *
@@ -863,6 +863,35 @@ export const requestAdminTrashEmpty = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+
+// adminTrashEmpty v2
+/**
+ * Makes http request to empty a trash
+ *
+ * @param { string } token
+ * @param { array  } quizIds - array of quiz ID
+ * @returns { Response }
+ */
+export const requestAdminTrashEmptyV2 = (
+  token: string, quizIds: number[]
+): {
+  body: ReturnType <typeof adminTrashEmpty>,
+  statusCode: number
+} => {
+  const res = request(
+    'DELETE',
+    SERVER_URL + '/v2/admin/quiz/trash/empty',
+    {
+      headers: { token },
+      qs: { quizIds: JSON.stringify(quizIds) },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+
 
 // adminQuizTransfer
 /**
