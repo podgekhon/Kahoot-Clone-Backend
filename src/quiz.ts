@@ -25,6 +25,15 @@ import {
   answerOption
 } from './interface';
 
+export enum quizState {
+  LOBBY,
+  QUESTION_COUNTDOWN,
+  QUESTION_OPEN,
+  ANSWER_SHOW,
+  FINAL_RESULTS,
+  END,
+}
+
 /**
  * Update the thumbnail for a specific quiz.
  *
@@ -156,6 +165,7 @@ export const adminQuizCreate = (
   const newQuiz: quiz = {
     quizId: randomId(10000),
     ownerId: authUserId,
+    state: quizState.END,
     name: name,
     description: description,
     numQuestions: 0,
