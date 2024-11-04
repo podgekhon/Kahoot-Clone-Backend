@@ -8,8 +8,6 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
-/// ////////------UNCOMMENT THIS LINE BELOW--------//////////
-// import { getData } from './dataStore.js';
 
 // Set up web app
 const app = express();
