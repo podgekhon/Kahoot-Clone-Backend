@@ -9,6 +9,7 @@ import {
   isValidQuestion,
   validateAnswers,
   validQuestionThumbnailUrl,
+  isSessionEnded,
   randomId
 } from './helperFunctions';
 
@@ -23,7 +24,9 @@ import {
   quiz,
   question,
   answerOption,
+  quizSession,
   quizStartSessionResponse,
+  viewQuizSessionsResponse,
 } from './interface';
 
 export enum quizState {
@@ -226,10 +229,53 @@ export const adminStartQuizSession = (
     throw new Error('NO_QUESTIONS_IN_QUIZ');
   }
 
-  const sessionId = randomId(10000);
-  quiz.activeSessions.push(sessionId);
+  const newQuizSession: quizSession = {
+    sessionId: randomId(10000),
+    sessionState: quizState.LOBBY
+  };
+
+  quiz.activeSessions.push(newQuizSession);
   setData(data);
-  return { sessionId };
+  return { sessionId: newQuizSession.sessionId };
+};
+
+/**
+ * Retrieves active and inactive session ids for a quiz.
+ *
+ * @param {string} token - token of the logged-in user
+ * @param {number} quizId - the quizId to retrieve sessions for
+ *
+ * @returns {viewQuizSessionsResponse} -
+ * Returns active and inactive sessions or error if any issues are found
+ */
+export const adminViewQuizSessions = (
+  token: string,
+  quizId: number
+): viewQuizSessionsResponse => {
+  const data = getData();
+
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+
+  const quiz = data.quizzes.find(q => q.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // Separate active and inactive sessions
+  const activeSessions = quiz.activeSessions
+    .filter(session => !isSessionEnded(session))
+    .map(session => session.sessionId)
+    .sort((a, b) => a - b);
+
+  const inactiveSessions = quiz.activeSessions
+    .filter(isSessionEnded)
+    .map(session => session.sessionId)
+    .sort((a, b) => a - b);
+
+  return { activeSessions, inactiveSessions };
 };
 
 /**
