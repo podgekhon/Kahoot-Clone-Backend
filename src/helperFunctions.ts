@@ -10,6 +10,10 @@ import {
   quizSession
 } from './interface';
 
+import {
+  getData
+} from './dataStore';
+
 import { quizState } from './quiz';
 
 /**
@@ -350,4 +354,58 @@ export function isErrorMessages(result: errorMessages | emptyReturn): result is 
  */
 export function randomId(max: number): number {
   return Math.floor(Math.random() * (max + 1));
+}
+
+/**
+ * given a sessionId, return a number between 0 and the number
+ *
+ * @param {number} sessionId - ID of the session
+ * @returns {quizState} - state of the session
+ * @returns {undefined} - do not find quiz
+ */
+export function getSessionStateBySessionId(sessionId: number): quizState | undefined {
+  const data = getData();
+  const token = data.sessions.find((session) => session.sessionId === sessionId);
+  
+  if (token) {
+    const quiz = data.quizzes.find((quiz) => quiz.ownerId === token.userId);
+    
+    if (quiz) {
+      return quiz.sessionState;
+    } else {
+      return undefined;
+    }
+  } else {
+    return undefined;
+  }
+}
+
+/**
+ * Generate a random name consisting of 5 unique letters followed by 3 unique digits.
+ *
+ * @returns {string} - A random name in the format of "[5 letters][3 numbers]",
+ *                     ensuring no repetitions of letters or numbers.
+ */
+export function generateRandomName(): string {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+
+  let randomLetters = '';
+  let randomNumbers = '';
+
+  while (randomLetters.length < 5) {
+    const randomChar = letters[Math.floor(Math.random() * letters.length)];
+    if (!randomLetters.includes(randomChar)) {
+      randomLetters += randomChar;
+    }
+  }
+
+  while (randomNumbers.length < 3) {
+    const randomNum = numbers[Math.floor(Math.random() * numbers.length)];
+    if (!randomNumbers.includes(randomNum)) {
+      randomNumbers += randomNum;
+    }
+  }
+
+  return randomLetters + randomNumbers;
 }

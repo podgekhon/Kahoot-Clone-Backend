@@ -58,7 +58,8 @@ import {
   adminTrashEmpty,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  joinPlayer
 } from './quiz';
 
 import { clear } from './other';
@@ -611,6 +612,22 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
 
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
+
+
+// join player
+const handlejoinPlayer = (req: Request, res: Response) => {
+  const { sessionId, playerName } = req.body;
+
+  try {
+    const result = joinPlayer(sessionId, playerName);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.post('/v1/player/join', handlejoinPlayer);
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
