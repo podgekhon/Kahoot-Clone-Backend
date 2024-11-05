@@ -613,7 +613,6 @@ app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
-
 // join player
 const handlejoinPlayer = (req: Request, res: Response) => {
   const { sessionId, playerName } = req.body;

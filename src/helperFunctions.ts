@@ -10,10 +10,6 @@ import {
   quizSession
 } from './interface';
 
-import {
-  getData
-} from './dataStore';
-
 import { quizState } from './quiz';
 
 /**
@@ -354,30 +350,6 @@ export function isErrorMessages(result: errorMessages | emptyReturn): result is 
  */
 export function randomId(max: number): number {
   return Math.floor(Math.random() * (max + 1));
-}
-
-/**
- * given a sessionId, return a number between 0 and the number
- *
- * @param {number} sessionId - ID of the session
- * @returns {quizState} - state of the session
- * @returns {undefined} - do not find quiz
- */
-export function getSessionStateBySessionId(sessionId: number): quizState | undefined {
-  const data = getData();
-  const token = data.sessions.find((session) => session.sessionId === sessionId);
-  
-  if (token) {
-    const quiz = data.quizzes.find((quiz) => quiz.ownerId === token.userId);
-    
-    if (quiz) {
-      return quiz.sessionState;
-    } else {
-      return undefined;
-    }
-  } else {
-    return undefined;
-  }
 }
 
 /**

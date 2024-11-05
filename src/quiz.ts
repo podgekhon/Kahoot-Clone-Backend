@@ -961,7 +961,7 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
 };
 
 /**
- * 
+ *
 Allow a guest player to join a session
  *
  * @param {number} sessionId - sessionId of the session
@@ -977,7 +977,7 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
   if (existingPlayer) {
     throw new Error('EXIST_PLAYERNAME');
   }
-  
+
   if (playerName.trim() === '') {
     playerName = generateRandomName();
   } else if (!isStringValid(playerName)) {
@@ -992,15 +992,15 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
   if (FindSession.sessionState !== quizState.LOBBY) {
     throw new Error('SESSION_NOT_IN_LOBBY');
   }
-    
+
   const playerId = data.players.length + 1;
   const newPlayer = {
     playerId,
     playerName,
     sessionId,
   };
-  
+
   data.players.push(newPlayer);
   setData(data);
-  return  { playerId: playerId };
-}
+  return { playerId: playerId };
+};
