@@ -12,6 +12,14 @@ export interface dataStore {
   quizzes: quiz[],
   sessions: token[];
   trash: quiz[];
+  players: player[];
+  sessioninfo: quizSession[];
+}
+
+export interface player {
+  playerId: number,
+  playerName: string,
+  sessionId: number
 }
 
 export interface user {
@@ -164,4 +172,8 @@ export interface quizListResponse {
 export interface trashList {
   body: ReturnType<typeof adminTrashList>;
   statusCode: number;
+}
+
+export interface playerId {
+  playerId: number;
 }
