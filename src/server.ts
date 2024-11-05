@@ -8,8 +8,6 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
-/// ////////------UNCOMMENT THIS LINE BELOW--------//////////
-// import { getData } from './dataStore.js';
 
 // Set up web app
 const app = express();
@@ -63,7 +61,6 @@ import {
 } from './quiz';
 
 import { clear } from './other';
-import { isErrorMessages } from './helperFunctions';
 import { errorMap } from './errorMap';
 
 enum httpStatus {
@@ -589,29 +586,30 @@ app.post('/v1/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
 
 app.post('/v2/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
 
-// Empty trash
-app.delete('/v1/admin/quiz/trash/empty', (req: Request, res: Response) => {
-  const { token, quizIds } = req.query;
+const handleAdminTrashEmpty = (req: Request, res: Response) => {
+  const { quizIds } = req.query;
 
-  // Parse quizIds into an array of numbers
-  const quizIdsArray = JSON.parse(quizIds as string);
-  // Call the adminTrashEmpty function with the parsed array'
-  const result = adminTrashEmpty(token as string, quizIdsArray);
-
-  if (isErrorMessages(result) &&
-    ((result.error === 'Invalid token format.') ||
-     (result.error === 'Invalid token: session does not exist.'))) {
-    return res.status(httpStatus.UNAUTHORIZED).json(result);
-  } else if (isErrorMessages(result) &&
-    (result.error === 'Quiz ID is not in the trash.')) {
-    return res.status(httpStatus.BAD_REQUEST).json(result);
-  } else if (isErrorMessages(result) &&
-    (result.error === 'Quiz ID does not belong to the current user.')) {
-    return res.status(httpStatus.FORBIDDEN).json(result);
+  let token;
+  if (req.query.token) {
+    token = req.query.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
   }
 
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-});
+  try {
+    // Parse quizIds into an array of numbers
+    const quizIdsArray = JSON.parse(quizIds as string);
+    // Call the adminTrashEmpty function with the parsed array'
+    const result = adminTrashEmpty(token as string, quizIdsArray);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.delete('/v1/admin/quiz/trash/empty', handleAdminTrashEmpty);
+app.delete('/v2/admin/quiz/trash/empty', handleAdminTrashEmpty);
 
 // join player
 const handlejoinPlayer = (req: Request, res: Response) => {
