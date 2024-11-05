@@ -1665,7 +1665,7 @@ The remaining time will be Q&A led by a tutor. That tutor may not necessarily be
   </tr>
   <tr>
     <td>Automarking (Testing & Implementation)</td>
-    <td>60%</td>
+    <td>65%</td>
     <td>
     <ul>
       <li>Correct implementation of specified functions.</li>
