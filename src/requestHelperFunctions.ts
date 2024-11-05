@@ -40,7 +40,8 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  joinPlayer
 } from './quiz';
 
 // clear
@@ -1155,6 +1156,26 @@ export const requestAdminQuizQuestionDuplicateV2 = (
     {
       headers: {
         token: token,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestjoinPlayer = (
+  sessionId: number, playerName: string
+): {
+  body: ReturnType <typeof joinPlayer>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/player/join`,
+    {
+      json: {
+        sessionId: sessionId,
+        playerName: playerName
       },
       timeout: TIMEOUT_MS,
     }
