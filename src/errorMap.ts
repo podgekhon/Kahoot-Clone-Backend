@@ -146,6 +146,21 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   NO_QUESTIONS_IN_QUIZ: {
     status: httpStatus.BAD_REQUEST,
     message: 'The quiz does not have any questions in it.'
+  },
+  EXIST_PLAYERNAME: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Name of user entered is not unique.'
+  },
+  INVALID_PLAYERNAME: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Name contains invalid characters.'
+  },
+  INVALID_SESSIONID: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session Id does not refer to a valid session.'
+  },
+  SESSION_NOT_IN_LOBBY: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is not in LOBBY state.'
   }
-
 };
