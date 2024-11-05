@@ -5,7 +5,8 @@ import {
   requestAdminQuizCreate,
   requestAdminQuizQuestionCreateV2,
   requestAdminStartQuizSession,
-  httpStatus
+  httpStatus,
+  requestAdminQuizSessionUpdate
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
@@ -14,6 +15,7 @@ import {
   quizCreateResponse,
   questionCreate,
   startSession,
+  quizStartSessionResponse,
 } from '../src/interface';
 
 const SERVER_URL = `${url}:${port}`;
@@ -30,7 +32,6 @@ describe('Test for adminQuizSessionUpdate', () => {
   let quizId: number;
   let quizQuestionCreateResponse: questionCreate;
   let startSessionResponse: startSession;
-  // let sessionId: number | { error: string };
 
   beforeEach(() => {
     user1Response = requestAdminAuthRegister(
@@ -92,13 +93,35 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.SUCCESSFUL_REQUEST
     );
 
-    // const sessionId = startSessionResponse.body;
+    const sessionId = (
+      startSessionResponse.body as quizStartSessionResponse
+    ).sessionId;
 
-    // const adminQuizSessionUpdate = adminQuizSessionUpdate(
-    //   quizId,
-    //   sessionId,
-    //   user1Token,
-    //   body,
-    // );
+    const body = {
+      question: 'What is the capital of Australia?',
+      timeLimit: 4,
+      points: 5,
+      answerOptions: [
+        { answer: 'Canberra', correct: true },
+        { answer: 'Sydney', correct: false },
+      ],
+      thumbnailUrl: 'http://google.com/some/image/path.jpg'
+    };
+
+    const adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      user1Token,
+      body
+    );
+
+    expect(adminQuizSessionUpdate).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
+
+    // get quiz session status to verify changes made to status
+    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
+    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
+    // expect(quizSessionStatus).toStrictEqual('LOBBY');
   });
 });

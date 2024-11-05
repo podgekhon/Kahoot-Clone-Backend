@@ -606,7 +606,7 @@ export const requestAdminQuizDescriptionUpdateV2 = (
 export const requestAdminStartQuizSession = (
   quizId: number, token: string, autoStartNum: number
 ): {
-  body: ReturnType<typeof adminStartQuizSession> | { error: string },
+  body: ReturnType<typeof adminStartQuizSession>,
   statusCode: number
 } => {
   const res = request(
@@ -1207,4 +1207,12 @@ export const requestjoinPlayer = (
     }
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestAdminQuizSessionUpdate = (
+  quizId: number,
+  sessionId: number,
+  token: string,
+  actionBody: object
+) => {
 };

@@ -186,8 +186,8 @@ export interface questionCreate {
 }
 
 export interface startSession {
-  body: ReturnType<typeof adminStartQuizSession> | { error: string };
-  statusCode: number;
+  body: ReturnType<typeof adminStartQuizSession>;
+  statusCode: number; // this might be a copy of quizStartSessionResponse
 }
 export interface playerId {
   playerId: number;
