@@ -41,6 +41,14 @@ export enum quizState {
   END,
 }
 
+export enum adminAction {
+  NEXT_QUESTION,
+  SKIP_COUNTDOWN,
+  GO_TO_ANSWER,
+  GO_TO_FINAL_RESULT,
+  END
+}
+
 /**
  * Update the thumbnail for a specific quiz.
  *
@@ -1020,4 +1028,17 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
   data.players.push(newPlayer);
   setData(data);
   return { playerId: playerId };
+};
+
+/**
+ *
+ Updates quiz session status
+ *
+ * @param {number} sessionId - sessionId of the session
+ * @param {string} playerName - the name of player
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {playerId} - A Number which is the playerId of player
+ */
+export const adminQuizSessionStatusUpdate = () => {
 };

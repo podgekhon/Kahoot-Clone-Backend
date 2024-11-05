@@ -16,10 +16,36 @@ import {
   questionCreate,
   startSession,
   quizStartSessionResponse,
+  quizSessionStatusUpdate,
 } from '../src/interface';
+
+import { quizState, adminAction } from '../src/quiz';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
+
+const testCasePairs = [
+  {
+    action: adminAction.END,
+    sessionState: quizState.END
+  },
+  {
+    action: adminAction.GO_TO_FINAL_RESULT,
+    sessionState: quizState.FINAL_RESULTS
+  },
+  {
+    action: adminAction.GO_TO_ANSWER,
+    sessionState: quizState.ANSWER_SHOW
+  },
+  {
+    action: adminAction.NEXT_QUESTION,
+    sessionState: quizState.QUESTION_COUNTDOWN
+  },
+  {
+    action: adminAction.SKIP_COUNTDOWN,
+    sessionState: quizState.QUESTION_OPEN
+  },
+];
 
 beforeEach(() => {
   request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
@@ -32,6 +58,9 @@ describe('Test for adminQuizSessionUpdate', () => {
   let quizId: number;
   let quizQuestionCreateResponse: questionCreate;
   let startSessionResponse: startSession;
+  let sessionId: number;
+  let actionBody: object; // this might change to use a proper enum
+  let adminQuizSessionUpdate: quizSessionStatusUpdate;
 
   beforeEach(() => {
     user1Response = requestAdminAuthRegister(
@@ -71,19 +100,6 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.SUCCESSFUL_REQUEST
     );
 
-    // startSessionResponse = requestAdminStartQuizSession(
-    //   quizId,
-    //   user1Token,
-    //   1
-    // );
-    // expect(startSessionResponse.statusCode).toStrictEqual(
-    //   httpStatus.SUCCESSFUL_REQUEST
-    // );
-
-    // const sessionId = startSessionResponse.body;
-  });
-
-  test('admin ends session', () => {
     startSessionResponse = requestAdminStartQuizSession(
       quizId,
       user1Token,
@@ -92,31 +108,121 @@ describe('Test for adminQuizSessionUpdate', () => {
     expect(startSessionResponse.statusCode).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
     );
-
-    const sessionId = (
+    sessionId = (
       startSessionResponse.body as quizStartSessionResponse
     ).sessionId;
 
-    const body = {
-      question: 'What is the capital of Australia?',
-      timeLimit: 4,
-      points: 5,
-      answerOptions: [
-        { answer: 'Canberra', correct: true },
-        { answer: 'Sydney', correct: false },
-      ],
-      thumbnailUrl: 'http://google.com/some/image/path.jpg'
-    };
+    // get quiz session status to verify changes made to status
+    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
+    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
+    // expect(quizSessionStatus).toStrictEqual('LOBBY');
+  });
+
+  // i can use for.each and assign actions and status and just loop thru
+  test.each(testCasePairs)('All actions & status successful', ({
+    action,
+    sessionState
+  }) => {
+    actionBody = { action: action };
+
+    adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      user1Token,
+      actionBody
+    );
+
+    expect(adminQuizSessionUpdate).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
+
+    // get quiz session status to verify changes made to status
+    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
+    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
+    // expect(quizSessionStatus).toStrictEqual(sessionState);
+  });
+
+  test('Returns error for invalid sessionId', () => { // use test.each for all 400 errs
+    actionBody = { action: 'END' };
 
     const adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
       quizId,
       sessionId,
       user1Token,
-      body
+      actionBody
     );
 
     expect(adminQuizSessionUpdate).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
+    );
+
+    // get quiz session status to verify changes made to status
+    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
+    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
+    // expect(quizSessionStatus).toStrictEqual('LOBBY');
+  });
+
+  test('Returns error for invalid token', () => {
+    actionBody = { action: 'END' };
+
+    const adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      'invalidToken',
+      actionBody
+    );
+
+    expect(adminQuizSessionUpdate).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
+
+    // get quiz session status to verify changes made to status
+    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
+    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
+    // expect(quizSessionStatus).toStrictEqual('LOBBY');
+  });
+
+  test('Returns error for invalid quizId', () => { // loop thru
+    actionBody = { action: 'END' };
+
+    const adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
+      quizId + 1,
+      sessionId,
+      user1Token,
+      actionBody
+    );
+
+    expect(adminQuizSessionUpdate).toStrictEqual(
+      httpStatus.FORBIDDEN
+    );
+
+    // get quiz session status to verify changes made to status
+    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
+    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
+    // expect(quizSessionStatus).toStrictEqual('LOBBY');
+  });
+
+  test('Returns error for user is not owner of quiz', () => {
+    const user2Response: userAuthRegister = requestAdminAuthRegister(
+      'user2@gmail.com',
+      'validPassword2',
+      'User',
+      'Two'
+    );
+    expect(user2Response.statusCode).toStrictEqual(200);
+    const user2Token: string = (user2Response.body as tokenReturn).token;
+
+    actionBody = { action: 'END' };
+
+    const adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      user2Token,
+      actionBody
+    );
+
+    expect(adminQuizSessionUpdate).toStrictEqual(
+      httpStatus.FORBIDDEN
     );
 
     // get quiz session status to verify changes made to status

@@ -7,7 +7,8 @@ import {
   adminQuizTransfer,
   adminTrashList,
   quizState,
-  adminStartQuizSession
+  adminStartQuizSession,
+  adminQuizSessionStatusUpdate
 } from './quiz';
 export interface dataStore {
   users: user[],
@@ -191,4 +192,9 @@ export interface startSession {
 }
 export interface playerId {
   playerId: number;
+}
+
+export interface quizSessionStatusUpdate {
+  body: ReturnType<typeof adminQuizSessionStatusUpdate>;
+  statusCode: number;
 }
