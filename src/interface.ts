@@ -14,6 +14,14 @@ export interface dataStore {
   quizzes: quiz[],
   sessions: token[];
   trash: quiz[];
+  players: player[];
+  sessioninfo: quizSession[];
+}
+
+export interface player {
+  playerId: number,
+  playerName: string,
+  sessionId: number
 }
 
 export interface user {
@@ -60,9 +68,13 @@ export interface quiz {
   inactiveSessions: quizSession[]
 }
 
+export type quizCopy = Omit<quiz, 'activeSessions' | 'inactiveSessions'>;
+
 export interface quizSession {
-  sessionId: number,
-  sessionState: quizState
+  sessionId: number;
+  sessionState: quizState;
+  quizCopy: quizCopy;
+  autoStartNum: number
 }
 
 export interface token {
@@ -175,4 +187,7 @@ export interface questionCreate {
 export interface startSession {
   body: ReturnType<typeof adminStartQuizSession> | { error: string };
   statusCode: number;
+}
+export interface playerId {
+  playerId: number;
 }

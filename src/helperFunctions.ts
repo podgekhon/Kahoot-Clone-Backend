@@ -351,3 +351,33 @@ export function isErrorMessages(result: errorMessages | emptyReturn): result is 
 export function randomId(max: number): number {
   return Math.floor(Math.random() * (max + 1));
 }
+
+/**
+ * Generate a random name consisting of 5 unique letters followed by 3 unique digits.
+ *
+ * @returns {string} - A random name in the format of "[5 letters][3 numbers]",
+ *                     ensuring no repetitions of letters or numbers.
+ */
+export function generateRandomName(): string {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+
+  let randomLetters = '';
+  let randomNumbers = '';
+
+  while (randomLetters.length < 5) {
+    const randomChar = letters[Math.floor(Math.random() * letters.length)];
+    if (!randomLetters.includes(randomChar)) {
+      randomLetters += randomChar;
+    }
+  }
+
+  while (randomNumbers.length < 3) {
+    const randomNum = numbers[Math.floor(Math.random() * numbers.length)];
+    if (!randomNumbers.includes(randomNum)) {
+      randomNumbers += randomNum;
+    }
+  }
+
+  return randomLetters + randomNumbers;
+}

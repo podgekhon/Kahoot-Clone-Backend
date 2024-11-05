@@ -40,7 +40,8 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  joinPlayer
 } from './quiz';
 
 // clear
@@ -839,7 +840,7 @@ export const requestAdminQuizRestoreV2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminTrashEmpty
+// adminTrashEmpty v1
 /**
  * Makes http request to empty a trash
  *
@@ -858,6 +859,32 @@ export const requestAdminTrashEmpty = (
     SERVER_URL + '/v1/admin/quiz/trash/empty',
     {
       qs: { token, quizIds: JSON.stringify(quizIds) },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminTrashEmpty v2
+/**
+ * Makes http request to empty a trash
+ *
+ * @param { string } token
+ * @param { array  } quizIds - array of quiz ID
+ * @returns { Response }
+ */
+export const requestAdminTrashEmptyV2 = (
+  token: string, quizIds: number[]
+): {
+  body: ReturnType <typeof adminTrashEmpty>,
+  statusCode: number
+} => {
+  const res = request(
+    'DELETE',
+    SERVER_URL + '/v2/admin/quiz/trash/empty',
+    {
+      headers: { token },
+      qs: { quizIds: JSON.stringify(quizIds) },
       timeout: TIMEOUT_MS,
     }
   );
@@ -1155,6 +1182,26 @@ export const requestAdminQuizQuestionDuplicateV2 = (
     {
       headers: {
         token: token,
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestjoinPlayer = (
+  sessionId: number, playerName: string
+): {
+  body: ReturnType <typeof joinPlayer>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + '/v1/player/join',
+    {
+      json: {
+        sessionId: sessionId,
+        playerName: playerName
       },
       timeout: TIMEOUT_MS,
     }

@@ -10,7 +10,8 @@ import {
   validateAnswers,
   validQuestionThumbnailUrl,
   isSessionEnded,
-  randomId
+  randomId,
+  generateRandomName
 } from './helperFunctions';
 
 import {
@@ -27,6 +28,8 @@ import {
   quizSession,
   quizStartSessionResponse,
   viewQuizSessionsResponse,
+  quizCopy,
+  playerId
 } from './interface';
 
 export enum quizState {
@@ -236,12 +239,29 @@ export const adminStartQuizSession = (
     throw new Error('NO_QUESTIONS_IN_QUIZ');
   }
 
+  const quizCopy: quizCopy = {
+    quizId: quiz.quizId,
+    ownerId: quiz.ownerId,
+    sessionState: quiz.sessionState,
+    name: quiz.name,
+    description: quiz.description,
+    numQuestions: quiz.numQuestions,
+    questions: quiz.questions,
+    timeCreated: quiz.timeCreated,
+    timeLastEdited: quiz.timeLastEdited,
+    timeLimit: quiz.timeLimit,
+    thumbnailUrl: quiz.thumbnailUrl
+  };
+
   const newQuizSession: quizSession = {
     sessionId: randomId(10000),
-    sessionState: quizState.LOBBY
+    sessionState: quizState.LOBBY,
+    quizCopy,
+    autoStartNum
   };
 
   quiz.activeSessions.push(newQuizSession);
+  data.sessioninfo.push(newQuizSession);
   setData(data);
   return { sessionId: newQuizSession.sessionId };
 };
@@ -936,7 +956,7 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   const data = getData();
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
   const invalidQuizzes: number[] = [];
@@ -954,12 +974,12 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   }
   // If there are any invalid quizzes, return an error
   if (invalidQuizzes.length > 0) {
-    return { error: 'Quiz ID is not in the trash.' };
+    throw new Error('QUIZ_NOT_IN_TRASH');
   }
 
   // If there are any unauthorized quizzes, return an error
   if (unauthorizedQuizzes.length > 0) {
-    return { error: 'Quiz ID does not belong to the current user.' };
+    throw new Error('INVALID_OWNER');
   }
 
   // Remove the valid quizzes from the trash
@@ -967,4 +987,49 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   setData(data);
 
   return {};
+};
+
+/**
+ *
+Allow a guest player to join a session
+ *
+ * @param {number} sessionId - sessionId of the session
+ * @param {string} playerName - the name of player
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {playerId} - A Number which is the playerId of player
+ */
+export const joinPlayer = (sessionId: number, playerName: string): errorMessages | playerId => {
+  const data = getData();
+
+  const existingPlayer = data.players.find((player) => player.playerName === playerName);
+  if (existingPlayer) {
+    throw new Error('EXIST_PLAYERNAME');
+  }
+
+  if (playerName.trim() === '') {
+    playerName = generateRandomName();
+  } else if (!isStringValid(playerName)) {
+    throw new Error('INVALID_PLAYERNAME');
+  }
+
+  const FindSession = data.sessioninfo.find((session) => session.sessionId === sessionId);
+
+  if (!FindSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+  if (FindSession.sessionState !== quizState.LOBBY) {
+    throw new Error('SESSION_NOT_IN_LOBBY');
+  }
+
+  const playerId = data.players.length + 1;
+  const newPlayer = {
+    playerId,
+    playerName,
+    sessionId,
+  };
+
+  data.players.push(newPlayer);
+  setData(data);
+  return { playerId: playerId };
 };
