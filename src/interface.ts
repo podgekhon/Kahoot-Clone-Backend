@@ -76,7 +76,8 @@ export interface quizSession {
   sessionId: number;
   sessionState: quizState;
   quizCopy: quizCopy;
-  autoStartNum: number
+  autoStartNum: number;
+  sessionQuestionPosition: number;
 }
 
 export interface token {

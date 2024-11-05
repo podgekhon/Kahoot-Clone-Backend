@@ -258,7 +258,8 @@ export const adminStartQuizSession = (
     sessionId: randomId(10000),
     sessionState: quizState.LOBBY,
     quizCopy,
-    autoStartNum
+    autoStartNum,
+    sessionQuestionPosition: 1
   };
 
   quiz.activeSessions.push(newQuizSession);
