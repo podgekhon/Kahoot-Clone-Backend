@@ -1737,7 +1737,7 @@ The remaining time will be Q&A led by a tutor. That tutor may not necessarily be
 
 The formula used for automarking in this iteration is:
 
-`Mark = 90*(g * i^2 * min(c + 1, 100)^3) + 5*e + 5*t`
+`Mark = 90*(g * i^2 * min(c + 1, 100)^4) + 5*e + 5*t`
 (Mark equals 90% of `g` multiplied by `i` squared multiplied by the lower of `c + 1` or `100`, to the power of four, plus 5% of `e`, plus 5% of `t`).
 
 Where:
