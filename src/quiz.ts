@@ -1021,3 +1021,73 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
   setData(data);
   return { playerId: playerId };
 };
+
+
+/**
+ *
+ * Allow the current player to submit answer(s) to the currently active question.
+ *
+ * @param {number[]} answerIds - an array of answerIds
+ * @param {number} playerId - an unique identifier for a player
+ * @param {number} questionPosition - an unique identifier for a player
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - A Number which is the playerId of player
+ */
+export const playerAnswerQuestion = (answerIds: number[], playerId: number, questionPosition: number): errorMessages | emptyReturn => {
+  const data = getData();
+
+  // Find the player session and validate player existence
+   // const validPlayerId = data.players.find(player => player.playerId === playerId);
+  // if (!validPlayerId) {
+  //   return { error: "Player ID does not exist" };
+  // }
+  const playerSession = data.sessions.find(session => session.players.includes(playerId));
+  if (!playerSession) {
+    return { error: "Player ID does not exist" };
+  }
+
+  // Check if session is in the QUESTION_OPEN state
+  if (playerSession.state !== "QUESTION_OPEN") {
+    return { error: "Session is not in QUESTION_OPEN state" };
+  }
+
+  // Check if session is currently on the specified question position
+  if (playerSession.currentQuestionPosition !== questionPosition) {
+    return { error: "Session is not currently on this question" };
+  }
+
+  // Validate question position within the session
+  const question = playerSession.questions[questionPosition - 1]; // Question positions start at 1
+  if (!question) {
+    return { error: "Question position is not valid for the session this player is in" };
+  }
+
+  // Validate provided answer IDs for the question
+  const validAnswerIds = new Set(question.answerIds);
+  for (const answerId of answerIds) {
+    if (!validAnswerIds.has(answerId)) {
+      return { error: "Answer IDs are not valid for this particular question" };
+    }
+  }
+
+  // Check for duplicate answer IDs
+  const uniqueAnswers = new Set(answerIds);
+  if (uniqueAnswers.size !== answerIds.length) {
+    return { error: "Duplicate answer IDs provided" };
+  }
+
+  // Check that at least one answer ID is submitted
+  if (answerIds.length < 1) {
+    return { error: "Less than 1 answer ID was submitted" };
+  }
+
+  // Record the answer submission
+  playerSession.submissions[playerId] = answerIds;
+
+  // Update the data store
+  setData(data);
+
+  // Return player ID if successful
+  return { playerId };
+}

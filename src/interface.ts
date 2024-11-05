@@ -50,6 +50,10 @@ export interface question {
   thumbnailUrl?: string;
 }
 
+export interface answer {
+  answerIds: number[];
+}
+
 export interface quiz {
   quizId: number;
   ownerId: number;

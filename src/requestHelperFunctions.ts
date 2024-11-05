@@ -1208,3 +1208,50 @@ export const requestjoinPlayer = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Allow the current player to submit answer(s) to the currently active question.
+ *
+ * @param { number[] } answerIds
+ * @param { number } playerId
+ * @param { number } questionPosition
+ * @returns { Response }
+ */
+export const requestPlayerAnswerQuestion = (
+  answerIds: number[], playerId: number, questionPosition: number
+): {
+  body: ReturnType <typeof PlayerAnswerQuestion>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/player/${playerId}/question/${questionPosition}/answer`,
+    {
+      json: {
+        answerIds: answerIds
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};

@@ -626,6 +626,36 @@ const handlejoinPlayer = (req: Request, res: Response) => {
 
 app.post('/v1/player/join', handlejoinPlayer);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// join player
+const handlePlayerAnswerQuestion = (req: Request, res: Response) => {
+  const { answerIds } = req.body;
+  const { playerId, questionPosition } = req.params
+  try {
+    const result = PlayerAnswerQuestion(answerIds, playerId, questionPosition);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.put('/v1/player/:playerId/question/:questionPosition/answer', handlePlayerAnswerQuestion);
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================
