@@ -67,9 +67,13 @@ export interface quiz {
   inactiveSessions: quizSession[]
 }
 
+export type quizCopy = Omit<quiz, 'activeSessions' | 'inactiveSessions'>;
+
 export interface quizSession {
-  sessionId: number,
-  sessionState: quizState
+  sessionId: number;
+  sessionState: quizState;
+  quizCopy: quizCopy;
+  autoStartNum: number
 }
 
 export interface token {
