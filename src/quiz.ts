@@ -28,6 +28,7 @@ import {
   quizSession,
   quizStartSessionResponse,
   viewQuizSessionsResponse,
+  quizCopy,
   playerId
 } from './interface';
 
@@ -231,9 +232,25 @@ export const adminStartQuizSession = (
     throw new Error('NO_QUESTIONS_IN_QUIZ');
   }
 
+  const quizCopy: quizCopy = {
+    quizId: quiz.quizId,
+    ownerId: quiz.ownerId,
+    sessionState: quiz.sessionState,
+    name: quiz.name,
+    description: quiz.description,
+    numQuestions: quiz.numQuestions,
+    questions: quiz.questions,
+    timeCreated: quiz.timeCreated,
+    timeLastEdited: quiz.timeLastEdited,
+    timeLimit: quiz.timeLimit,
+    thumbnailUrl: quiz.thumbnailUrl
+  };
+
   const newQuizSession: quizSession = {
     sessionId: randomId(10000),
-    sessionState: quizState.LOBBY
+    sessionState: quizState.LOBBY,
+    quizCopy,
+    autoStartNum
   };
 
   quiz.activeSessions.push(newQuizSession);
