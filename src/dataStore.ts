@@ -8,7 +8,7 @@ let data: dataStore = {
   sessions: [],
   trash: [],
   players: [],
-  sessioninfo: []
+  // sessioninfo: []
 };
 
 // YOU MAY MODIFY THIS OBJECT ABOVE

@@ -1,5 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
+import { adminAction, adminQuizSessionUpdate } from './quiz';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100000;
@@ -1212,10 +1213,39 @@ export const requestjoinPlayer = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// adminQuizSessionUpdate
+/**
+ * Makes http request to update quiz session status
+ *
+ * @param { number } quizId
+ * @param { number } sessionId
+ * @param { string } token
+ * @param { adminAction } action
+ * @returns { Response }
+ */
 export const requestAdminQuizSessionUpdate = (
   quizId: number,
   sessionId: number,
   token: string,
-  actionBody: object
-) => {
+  actionBody: adminAction
+): {
+  body: ReturnType <typeof adminQuizSessionUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    {
+      headers: { token },
+      json: {
+        action: actionBody
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+
+  console.log('Response body:', res.body.toString()); // Log the response body
+  console.log('Response status code:', res.statusCode); // Log the status code
+
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };

@@ -1,5 +1,6 @@
 /// ///////////// interface for dataStore /////////////////
 import { adminAuthRegister, adminAuthLogin } from './auth';
+
 import {
   adminQuizCreate,
   adminQuizList,
@@ -77,6 +78,7 @@ export interface quizSession {
   quizCopy: quizCopy;
   autoStartNum: number;
   sessionQuestionPosition: number;
+  isCountdownSkipped?: boolean;
 }
 
 export interface token {

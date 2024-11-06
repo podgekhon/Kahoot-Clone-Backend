@@ -8,6 +8,7 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
+import { adminAction } from './quiz';
 
 // Set up web app
 const app = express();
@@ -631,21 +632,23 @@ const handlejoinPlayer = (req: Request, res: Response) => {
 app.post('/v1/player/join', handlejoinPlayer);
 
 // quiz session update
-app.put('/v1/admin/quiz/:quizId/session/:sessionid', (
+app.put('/v1/admin/quiz/:quizId/session/:sessionId', (
   req: Request,
   res: Response
 ) => {
   const { quizId } = req.params;
   const { sessionId } = req.params;
   const token = req.headers.token as string;
-  const { actionBody } = req.body;
+  const { action: actionBody } = req.body;
+
+  const action = adminAction[actionBody as keyof typeof adminAction];
 
   try {
     const result = adminQuizSessionUpdate(
       parseInt(quizId),
       parseInt(sessionId),
       token,
-      actionBody
+      action
     );
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {

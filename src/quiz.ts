@@ -898,7 +898,7 @@ export const adminQuizTransfer = (
   quizId: number,
   token: string,
   userEmail: string
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
   const receiver = data.users.find((user) => user.email === userEmail);
   const tokenValidation = validateToken(token, data);
@@ -987,11 +987,11 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
 /**
  * Updates quiz session status based on admin action
  *
- * @param {number} quizId - an array of existing quizIds owned by user
- * @param {number} sessionId - unique session id for quiz
- * @param {string} token - unique session id for user
+ * @param {number} quizId - An array of existing quizIds owned by user
+ * @param {number} sessionId - Unique session id for quiz
+ * @param {string} token - Unique session id for user
+ * @param {adminAction} action - An admin action enum
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
 export const adminQuizSessionUpdate = (
@@ -999,33 +999,33 @@ export const adminQuizSessionUpdate = (
   sessionId: number,
   token: string,
   action: adminAction
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
-  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  const tokenValidation = validateToken(token, data);
-  const quizSession = quiz.activeSessions.find(
-    (session) => session.sessionId === sessionId
-  );
-  let quizSessionState = quizSession.sessionState;
 
+  const tokenValidation = validateToken(token, data);
   // checks if validity of user token
   if ('error' in tokenValidation) {
     throw new Error('INVALID_TOKEN');
   }
   const user = tokenValidation.authUserId;
 
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   // checks if quiz exist
   if (!quiz) {
     throw new Error('INVALID_QUIZ');
   }
 
-  // sessionId does not exist
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+    // check if sessionId does not exist
   if (!quizSession) {
     throw new Error('INVALID_SESSIONID');
   }
+  let quizSessionState = quizSession.sessionState;
 
   // check if action is invalid
-  if (!Object.values(adminAction).includes(action)) {
+  if (!(action in adminAction)) {
     throw new Error('INVALID_ACTION');
   }
 
@@ -1056,15 +1056,39 @@ export const adminQuizSessionUpdate = (
   // if action is 'NEXT_QUESTION'
   if (action === adminAction.NEXT_QUESTION) {
     // check if action can be applied to current state
-    if (quizSessionState !== quizState.LOBBY) {
+    if (
+      quizSessionState !== quizState.LOBBY &&
+      quizSessionState !== quizState.ANSWER_SHOW &&
+      quizSessionState !== quizState.QUESTION_CLOSE
+    ) {
       throw new Error('INVALID_ACTION');
     }
 
     // update quiz session
     quizSessionState = quizState.QUESTION_COUNTDOWN;
+
+    // give quizSession countdown flag
+    quizSession.isCountdownSkipped = false;
+
     // set a 3s duration before state of session automatically updates
+    // setTimeout(() => {
+    //   if (quizSession.isCountdownSkipped === false) {
+    //     quizSession.sessionState = quizState.QUESTION_OPEN;
+    //     // i could call a new instance of get Data during this time to ensure
+    //     // that i am retrieving the latest updated datastore
+    //     setData(data);
+    //   }
+
     setTimeout(() => {
-      quizSessionState = quizState.QUESTION_OPEN;
+      const updatedData = getData();
+      const updatedQuizSession = quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+
+      if (updatedQuizSession.isCountdownSkipped === false) {
+        updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
+        setData(updatedData);
+      }
     }, 3000);
   }
 
@@ -1077,6 +1101,7 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSessionState = quizState.QUESTION_OPEN;
+    quizSession.isCountdownSkipped = true;
   }
 
   // if action is 'ANSWER_SHOW'
@@ -1105,6 +1130,19 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSessionState = quizState.FINAL_RESULTS;
+  }
+
+  if (quizSessionState === quizState.QUESTION_OPEN) {
+    setTimeout(() => {
+      const updatedData = getData();
+      const updatedQuizSession = quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+      if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
+        quizSession.sessionState = quizState.QUESTION_CLOSE;
+        setData(updatedData); // could also try to use updated datastore
+      }
+    }, 60000);
   }
 
   setData(data);
