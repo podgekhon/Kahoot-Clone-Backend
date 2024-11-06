@@ -41,12 +41,15 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  adminQuizSessionState
 } from './quiz';
 
 import {
-  joinPlayer
+  joinPlayer,
+  playerMessage
 } from './player';
+import { messageBody } from './interface';
 
 // clear
 /**
@@ -1243,9 +1246,48 @@ export const requestAdminQuizSessionUpdate = (
       timeout: TIMEOUT_MS,
     }
   );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
 
-  console.log('Response body:', res.body.toString()); // Log the response body
-  console.log('Response status code:', res.statusCode); // Log the status code
+export const requestPlayerMessage = (
+  playerId: number,
+  message: messageBody
+) : {
+  body: ReturnType <typeof playerMessage>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/player/${playerId}/chat`,
+    {
+      json: {
+        message: message,
+      },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
 
+export const requestadminQuizSessionState = (
+  quizId: number, sessionId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizSessionState>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v1/admin/quiz/{quizid}/session/{sessionid}',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        quizId: quizId,
+        sessionId: sessionId
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };

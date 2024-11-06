@@ -58,16 +58,17 @@ import {
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
   adminViewQuizSessions,
-  adminQuizSessionUpdate
+  adminQuizSessionUpdate,
+  adminQuizSessionState
 } from './quiz';
 
 import {
-  joinPlayer
+  joinPlayer,
+  playerMessage
 } from './player';
 
 import { clear } from './other';
 import { errorMap } from './errorMap';
-
 enum httpStatus {
   UNAUTHORIZED = 401,
   BAD_REQUEST = 400,
@@ -656,6 +657,35 @@ app.put('/v1/admin/quiz/:quizId/session/:sessionId', (
     return res.status(mappedError.status).json({ error: mappedError.message });
   }
 });
+
+// player message
+app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  const { message } = req.body;
+
+  try {
+    const result = playerMessage(playerId, message);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+});
+
+// adminQuizSessionState
+const handleadminQuizSessionState = (req: Request, res: Response) => {
+  const { sessionId, quizId } = req.body;
+  const token = req.headers.token as string;
+  try {
+    const result = adminQuizSessionState(quizId, sessionId, token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.get('/v1/admin/quiz/{quizid}/session/{sessionid}', handleadminQuizSessionState);
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

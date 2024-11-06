@@ -166,5 +166,17 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   INVALID_ACTION: {
     status: httpStatus.BAD_REQUEST,
     message: 'Invalid admin action.'
+  },
+  INVALID_PLAYER: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Player ID does not exist.'
+  },
+  INVALID_MESSAGE_LENGTH: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Message body is less than 1 character or more than 100 characters.'
+  },
+  INVALID_QUIZ_SESSION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'INVALID_QUIZ_SESSION'
   }
 };

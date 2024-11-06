@@ -28,6 +28,7 @@ import {
   quizStartSessionResponse,
   viewQuizSessionsResponse,
   quizCopy,
+  sessionState
 } from './interface';
 
 export enum quizState {
@@ -178,6 +179,7 @@ export const adminQuizCreate = (
   const newQuiz: quiz = {
     quizId: randomId(10000),
     ownerId: authUserId,
+    atQuestion: 1,
     sessionState: quizState.END,
     name: name,
     description: description,
@@ -258,7 +260,8 @@ export const adminStartQuizSession = (
     sessionState: quizState.LOBBY,
     quizCopy,
     autoStartNum,
-    sessionQuestionPosition: 1
+    sessionQuestionPosition: 1,
+    messages: []
   };
 
   quiz.activeSessions.push(newQuizSession);
@@ -1147,4 +1150,63 @@ export const adminQuizSessionUpdate = (
 
   setData(data);
   return {};
+};
+
+export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
+errorMessages | sessionState => {
+  const data = getData();
+
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
+    if (FindSession) break;
+  }
+  if (!FindSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const validQuiz = data.quizzes.find(q => q.quizId === quizId);
+  if (validQuiz.ownerId !== authUserId) {
+    throw new Error('INVALID_OWNER');
+  }
+
+  const matchedPlayers = data.players.filter(player => player.sessionId === sessionId);
+  const PLayersname = matchedPlayers.map(player => player.playerName);
+
+  const response : sessionState = {
+    state: FindSession.sessionState,
+    atQuestion: validQuiz.atQuestion,
+    players: PLayersname,
+    metadata: {
+      quizId: validQuiz.quizId,
+      name: validQuiz.name,
+      timeCreated: validQuiz.timeCreated,
+      timeLastEdited: validQuiz.timeLastEdited,
+      description: validQuiz.description,
+      numQuestions: validQuiz.numQuestions,
+      questions: validQuiz.questions.map(question => ({
+        questionId: question.questionId,
+        question: question.question,
+        timeLimit: question.timeLimit,
+        thumbnailUrl: question.thumbnailUrl || '',
+        points: question.points,
+        answerOptions: question.answerOptions.map(option => ({
+          answerId: option.answerId,
+          answer: option.answer,
+          colour: option.colour,
+          correct: option.correct
+        }))
+      })),
+      timeLimit: validQuiz.timeLimit,
+      thumbnailUrl: validQuiz.thumbnailUrl || '',
+    }
+  };
+
+  return response;
 };
