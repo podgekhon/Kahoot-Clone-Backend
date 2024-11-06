@@ -29,7 +29,8 @@ import {
   quizStartSessionResponse,
   viewQuizSessionsResponse,
   quizCopy,
-  playerId
+  playerId,
+  answerSubmission
 } from './interface';
 
 export enum quizState {
@@ -250,7 +251,8 @@ export const adminStartQuizSession = (
     sessionId: randomId(10000),
     sessionState: quizState.LOBBY,
     quizCopy,
-    autoStartNum
+    autoStartNum,
+    sessionQuestionPosition: 1
   };
 
   quiz.activeSessions.push(newQuizSession);
@@ -1037,53 +1039,79 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
 export const playerAnswerQuestion = (answerIds: number[], playerId: number, questionPosition: number): errorMessages | emptyReturn => {
   const data = getData();
 
-  // Find the player session and validate player existence
+  // If player ID does not exist
    // const validPlayerId = data.players.find(player => player.playerId === playerId);
   // if (!validPlayerId) {
   //   return { error: "Player ID does not exist" };
   // }
-  const playerSession = data.sessions.find(session => session.players.includes(playerId));
-  if (!playerSession) {
-    return { error: "Player ID does not exist" };
+  const player = data.players.find(p => p.playerId === playerId);
+  if (!player) {
+    throw new Error(`PLAYERID_NOT_EXIST`);
   }
 
-  // Check if session is in the QUESTION_OPEN state
-  if (playerSession.state !== "QUESTION_OPEN") {
-    return { error: "Session is not in QUESTION_OPEN state" };
+  const session = player.sessionId;
+  // if (!session) {
+  //   return { error: "Player's session does not exist" };
+  // }
+
+  // Find the quiz associated with the session and check the state
+  const quiz = data.quizzes.find(q =>
+    q.activeSessions.some(as => as.sessionId === session)
+  );
+
+  // if (!quiz) {
+  //   return { error: "Quiz not found for the session" };
+  // }
+
+  // Retrieve quiz session in active sessions
+  const quizSession = quiz.activeSessions.find(as => as.sessionId === session);
+  // if (!quizSession) {
+  //   throw new Error(`SESSION_NOT_ACTIVE`);
+  // }
+
+  // Check if the session state is QUESTION_OPEN
+  if (quizSession.sessionState !== quizState.QUESTION_OPEN) {
+    throw new Error(`SESSION_NOT_OPEN`);
   }
 
-  // Check if session is currently on the specified question position
-  if (playerSession.currentQuestionPosition !== questionPosition) {
-    return { error: "Session is not currently on this question" };
+  // If session is not currently on this question
+  if (quizSession.sessionQuestionPosition !== questionPosition) {
+    throw new Error(`SESSION_NOT_ON_QUESTION`);
   }
 
-  // Validate question position within the session
-  const question = playerSession.questions[questionPosition - 1]; // Question positions start at 1
-  if (!question) {
-    return { error: "Question position is not valid for the session this player is in" };
+  // If question position is not valid for the session this player is in
+  if (questionPosition < 1 || questionPosition > quiz.numQuestions) {
+    throw new Error(`INVALID_QUESTION_POSITION`);
   }
 
-  // Validate provided answer IDs for the question
-  const validAnswerIds = new Set(question.answerIds);
+  const question = quiz.questions[questionPosition - 1];
+  // if (!question) {
+  //   return { error: "Invalid question position" };
+  // }
+
+
+  // Answer IDs are not valid for this particular question
+  const validAnswerIds = new Set(question.answerOptions.map(option => option.answerId));
   for (const answerId of answerIds) {
     if (!validAnswerIds.has(answerId)) {
-      return { error: "Answer IDs are not valid for this particular question" };
+      throw new Error(`INVALID_ANSWERID`);
     }
   }
 
-  // Check for duplicate answer IDs
+  // There are duplicate answer IDs provided
   const uniqueAnswers = new Set(answerIds);
   if (uniqueAnswers.size !== answerIds.length) {
-    return { error: "Duplicate answer IDs provided" };
+    throw new Error(`DUPLICATE_ANSWERS_SUBMITTED`);
   }
 
-  // Check that at least one answer ID is submitted
+  // Less than 1 answer ID was submitted
   if (answerIds.length < 1) {
-    return { error: "Less than 1 answer ID was submitted" };
+    throw new Error(`INVALID_ANSWER_SUBMITTED`);
   }
 
   // Record the answer submission
-  playerSession.submissions[playerId] = answerIds;
+  const playerAnswer: answerSubmission = { playerId, answerIds };
+  question.answerSubmissions.push(playerAnswer);
 
   // Update the data store
   setData(data);
