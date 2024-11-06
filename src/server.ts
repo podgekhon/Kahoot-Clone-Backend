@@ -56,9 +56,12 @@ import {
   adminTrashEmpty,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions,
-  joinPlayer
+  adminViewQuizSessions
 } from './quiz';
+
+import {
+  joinPlayer
+} from './player';
 
 import { clear } from './other';
 import { errorMap } from './errorMap';
