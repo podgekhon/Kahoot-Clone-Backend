@@ -5,6 +5,7 @@ import {
 } from './helperFunctions';
 
 import {
+  emptyReturn,
   messageBody,
   playerId,
   quizSession,
@@ -69,38 +70,35 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
 };
 
 /**
- * 
- * @param { number } playerId - playerId to identify which user is sending msgs 
+ *
+ * @param { number } playerId - playerId to identify which user is sending msgs
  * @param { string } message - player's  msgs to be sent
  * @returns {} - empty object
  */
-export const playerMessage = (playerId: number, message: messageBody) => {
-	const data = getData();
-	const newMessage = message.messageBody;
-	const validPlayer = data.players.find(p => p.playerId === playerId)
-	if (!validPlayer) {
-		throw new Error ('INVALID_PLAYER');
-	}
-	if (newMessage.length < 1 || newMessage.length > 100) {
-		throw new Error ('INVALID_MESSAGE_LENGTH');
-	}
-	const quizSessionId = validPlayer.sessionId;
-	const msg = {
-		playerId: playerId,
-		playerName: validPlayer.playerName,
-		messageBody: newMessage,
-		timesent: Math.floor(Date.now() / 1000)
-	};
-	// find the quiz Session
-	let FindSession: quizSession;
-	for (const quiz of data.quizzes) {
-		FindSession = quiz.activeSessions.find(session => session.sessionId === quizSessionId);
-		if (FindSession) break; 
-	}
-	if (!FindSession) {
-		throw new Error ('INVALID_QUIZ_SESSION');
-	}
-	FindSession.messages.push(msg);
-	setData(data);
-	return {};
-}
+export const playerMessage = (playerId: number, message: messageBody) : emptyReturn => {
+  const data = getData();
+  const newMessage = message.messageBody;
+  const validPlayer = data.players.find(p => p.playerId === playerId);
+  if (!validPlayer) {
+    throw new Error('INVALID_PLAYER');
+  }
+  if (newMessage.length < 1 || newMessage.length > 100) {
+    throw new Error('INVALID_MESSAGE_LENGTH');
+  }
+  const quizSessionId = validPlayer.sessionId;
+  const msg = {
+    playerId: playerId,
+    playerName: validPlayer.playerName,
+    messageBody: newMessage,
+    timesent: Math.floor(Date.now() / 1000)
+  };
+  // find the quiz Session
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find(session => session.sessionId === quizSessionId);
+    if (FindSession) break;
+  }
+  FindSession.messages.push(msg);
+  setData(data);
+  return {};
+};

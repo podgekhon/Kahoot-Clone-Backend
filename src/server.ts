@@ -66,8 +66,6 @@ import {
 
 import { clear } from './other';
 import { errorMap } from './errorMap';
-import { messageBody } from './interface';
-
 enum httpStatus {
   UNAUTHORIZED = 401,
   BAD_REQUEST = 400,
@@ -639,7 +637,7 @@ app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {
   try {
     const result = playerMessage(playerId, message);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-  } catch ( error ) {
+  } catch (error) {
     const { status, message } = errorMap[error.message];
     return res.status(status).json({ error: message });
   }

@@ -1214,7 +1214,6 @@ export const requestjoinPlayer = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 export const requestPlayerMessage = (
   playerId: number,
   message: messageBody
@@ -1223,7 +1222,7 @@ export const requestPlayerMessage = (
   statusCode: number
 } => {
   const res = request(
-    'POST', 
+    'POST',
     SERVER_URL + `/v1/player/${playerId}/chat`,
     {
       json: {
@@ -1232,6 +1231,5 @@ export const requestPlayerMessage = (
       timeout: TIMEOUT_MS
     }
   );
-  console.log(res.body.toString());
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-}
+};
