@@ -891,22 +891,26 @@ export const adminQuizTransfer = (
   userEmail: string
 ): errorMessages | emptyReturn => {
   const data = getData();
-  const receiver = data.users.find((user) => user.email === userEmail);
-  const tokenValidation = validateToken(token, data);
-  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     throw new Error('INVALID_TOKEN');
   }
-  const senderId = tokenValidation.authUserId;
+
+  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!transferredQuiz) {
+    throw new Error('INVALID_QUIZ');
+  }
 
   // checks if receiver is a real user
+  const receiver = data.users.find((user) => user.email === userEmail);
   if (!receiver) {
     throw new Error('INVALID_USEREMAIL');
   }
   const receiverId = receiver.userId;
 
   // checks if userEmail is the current logged in user
+  const senderId = tokenValidation.authUserId;
   if (senderId === receiverId) {
     throw new Error('ALREADY_OWNS');
   }
