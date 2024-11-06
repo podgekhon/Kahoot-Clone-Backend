@@ -40,9 +40,12 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions,
-  joinPlayer
+  adminViewQuizSessions
 } from './quiz';
+
+import {
+joinPlayer
+} from './player';
 
 // clear
 /**
