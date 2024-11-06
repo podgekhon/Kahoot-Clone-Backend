@@ -44,7 +44,7 @@ import {
 } from './quiz';
 
 import {
-joinPlayer
+  joinPlayer
 } from './player';
 
 // clear

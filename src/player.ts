@@ -45,7 +45,7 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
 
   let FindSession: quizSession;
   for (const quiz of data.quizzes) {
-    FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId)
+    FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
     if (FindSession) break;
   }
 

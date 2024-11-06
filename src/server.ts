@@ -60,7 +60,7 @@ import {
 } from './quiz';
 
 import {
-joinPlayer
+  joinPlayer
 } from './player';
 
 import { clear } from './other';
