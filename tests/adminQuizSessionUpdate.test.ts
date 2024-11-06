@@ -19,33 +19,11 @@ import {
   quizSessionStatusUpdate,
 } from '../src/interface';
 
-import { quizState, adminAction } from '../src/quiz';
+// rmb to add quizState
+import { adminAction } from '../src/quiz';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
-
-// const testCasePairs = [
-//   {
-//     action: adminAction.END,
-//     sessionState: quizState.END
-//   },
-//   {
-//     action: adminAction.GO_TO_FINAL_RESULT,
-//     sessionState: quizState.FINAL_RESULTS
-//   },
-//   {
-//     action: adminAction.GO_TO_ANSWER,
-//     sessionState: quizState.ANSWER_SHOW
-//   },
-//   {
-//     action: adminAction.NEXT_QUESTION,
-//     sessionState: quizState.QUESTION_COUNTDOWN
-//   },
-//   {
-//     action: adminAction.SKIP_COUNTDOWN,
-//     sessionState: quizState.QUESTION_OPEN
-//   },
-// ];
 
 beforeEach(() => {
   request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
@@ -63,7 +41,6 @@ describe('Test for adminQuizSessionUpdate', () => {
   let nextQuestionAction: object;
   let skipCountDownAction: object;
   let showAnswerAction: object;
-  // let closeQuestion: object;
   let goFinalResults: object;
 
   let adminQuizSessionUpdate: quizSessionStatusUpdate;
@@ -123,30 +100,6 @@ describe('Test for adminQuizSessionUpdate', () => {
     // const quizSessionStatus = (quizSession.body as getQuizSession).status;
     // expect(quizSessionStatus).toStrictEqual('LOBBY');
   });
-
-  // i can use for.each and assign actions and status and just loop thru
-  // test.each(testCasePairs)('All actions & status successful', ({
-  //   action,
-  //   sessionState
-  // }) => {
-  //   actionBody = { action: action };
-
-  //   adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
-  //     quizId,
-  //     sessionId,
-  //     user1Token,
-  //     actionBody
-  //   );
-
-  //   expect(adminQuizSessionUpdate).toStrictEqual(
-  //     httpStatus.SUCCESSFUL_REQUEST
-  //   );
-
-  //   // get quiz session status to verify changes made to status
-  //   // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-  //   // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-  //   // expect(quizSessionStatus).toStrictEqual(sessionState);
-  // });
 
   test('User successfully ends session status', () => {
     endAction = { action: adminAction.END };
@@ -326,6 +279,8 @@ describe('Test for adminQuizSessionUpdate', () => {
     // const quizSessionStatus = (quizSession.body as getQuizSession).status;
     // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_CLOSE');
     });
+
+    // test for invalid action in current state
 
 
     test('Returns error for invalid sessionId', () => { // use test.each for all 400 errs

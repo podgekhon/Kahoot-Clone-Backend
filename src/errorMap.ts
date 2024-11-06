@@ -162,5 +162,9 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   SESSION_NOT_IN_LOBBY: {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in LOBBY state.'
+  },
+  INVALID_ACTION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Invalid admin action.'
   }
 };

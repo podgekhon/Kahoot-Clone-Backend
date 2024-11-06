@@ -8,7 +8,7 @@ import {
   adminTrashList,
   quizState,
   adminStartQuizSession,
-  adminQuizSessionStatusUpdate
+  adminQuizSessionUpdate
 } from './quiz';
 export interface dataStore {
   users: user[],
@@ -55,7 +55,7 @@ export interface question {
 export interface quiz {
   quizId: number;
   ownerId: number;
-  sessionState: quizState;
+  sessionState: quizState,
   name: string;
   description: string;
   numQuestions: number;
@@ -195,6 +195,6 @@ export interface playerId {
 }
 
 export interface quizSessionStatusUpdate {
-  body: ReturnType<typeof adminQuizSessionStatusUpdate>;
+  body: ReturnType<typeof adminQuizSessionUpdate>;
   statusCode: number;
 }

@@ -34,6 +34,7 @@ export enum quizState {
   LOBBY,
   QUESTION_COUNTDOWN,
   QUESTION_OPEN,
+  QUESTION_CLOSE,
   ANSWER_SHOW,
   FINAL_RESULTS,
   END,
@@ -980,5 +981,132 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   data.trash = data.trash.filter(quiz => !quizIds.includes(quiz.quizId));
   setData(data);
 
+  return {};
+};
+
+/**
+ * Updates quiz session status based on admin action
+ *
+ * @param {number} quizId - an array of existing quizIds owned by user
+ * @param {number} sessionId - unique session id for quiz
+ * @param {string} token - unique session id for user
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - An empty upon successful registration
+ */
+export const adminQuizSessionUpdate = (
+  quizId: number,
+  sessionId: number,
+  token: string,
+  action: adminAction
+): errorMessages | emptyReturn => {
+  const data = getData();
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  const tokenValidation = validateToken(token, data);
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+  let quizSessionState = quizSession.sessionState;
+
+  // checks if validity of user token
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+  const user = tokenValidation.authUserId;
+
+  // checks if quiz exist
+  if (!quiz) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // sessionId does not exist
+  if (!quizSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  // check if action is invalid
+  if (!Object.values(adminAction).includes(action)) {
+    throw new Error('INVALID_ACTION');
+  }
+
+  // check if user owns quiz
+  if (user !== quiz.ownerId) {
+    throw new Error('INVALID_OWNER');
+  }
+
+  // if action is 'END'
+  if (action === adminAction.END) {
+    // check if action can be applied to current state
+    if (quizSessionState === quizState.END) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session state
+    quizSessionState = quizState.END;
+
+    // add into inactiveSes array
+    quiz.inactiveSessions.push(quizSession);
+
+    // get index of quizSession in activeSes array
+    const quizSessionIndex = quiz.activeSessions.indexOf(quizSession);
+    // remove it from activeSes array
+    quiz.activeSessions.splice(quizSessionIndex);
+  }
+
+  // if action is 'NEXT_QUESTION'
+  if (action === adminAction.NEXT_QUESTION) {
+    // check if action can be applied to current state
+    if (quizSessionState !== quizState.LOBBY) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSessionState = quizState.QUESTION_COUNTDOWN;
+    // set a 3s duration before state of session automatically updates
+    setTimeout(() => {
+      quizSessionState = quizState.QUESTION_OPEN;
+    }, 3000);
+  }
+
+  // if action is 'SKIP_COUNTDOWN'
+  if (action === adminAction.SKIP_COUNTDOWN) {
+    // check if action can be applied to current state
+    if (quizSessionState !== quizState.QUESTION_COUNTDOWN) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSessionState = quizState.QUESTION_OPEN;
+  }
+
+  // if action is 'ANSWER_SHOW'
+  if (action === adminAction.GO_TO_ANSWER) {
+    // check if action can be applied to current state
+    if (
+      quizSessionState !== quizState.QUESTION_OPEN &&
+      quizSessionState !== quizState.QUESTION_CLOSE
+    ) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSessionState = quizState.ANSWER_SHOW;
+  }
+
+  // if action is 'GO_TO_FINAL_RESULTS'
+  if (action === adminAction.GO_TO_FINAL_RESULT) {
+    // check if action can be applied to current state
+    if (
+      quizSessionState !== quizState.QUESTION_CLOSE &&
+      quizSessionState !== quizState.ANSWER_SHOW
+    ) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSessionState = quizState.FINAL_RESULTS;
+  }
+
+  setData(data);
   return {};
 };
