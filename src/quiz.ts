@@ -978,9 +978,10 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   return {};
 };
 
-export const adminQuizSessionState = (quizId: number, sessionId: number, token: string): errorMessages | sessionState => {
+export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
+errorMessages | sessionState => {
   const data = getData();
-  
+
   let FindSession: quizSession;
   for (const quiz of data.quizzes) {
     FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
@@ -1000,7 +1001,7 @@ export const adminQuizSessionState = (quizId: number, sessionId: number, token: 
   if (validQuiz.ownerId !== authUserId) {
     throw new Error('INVALID_OWNER');
   }
-  
+
   const matchedPlayers = data.players.filter(player => player.sessionId === sessionId);
   const PLayersname = matchedPlayers.map(player => player.playerName);
 
@@ -1032,6 +1033,6 @@ export const adminQuizSessionState = (quizId: number, sessionId: number, token: 
       thumbnailUrl: validQuiz.thumbnailUrl || '',
     }
   };
-  
+
   return response;
-}
+};

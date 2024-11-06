@@ -1245,7 +1245,7 @@ export const requestadminQuizSessionState = (
     'GET',
     SERVER_URL + '/v1/admin/quiz/{quizid}/session/{sessionid}',
     {
-      headers : {
+      headers: {
         token: token
       },
       json: {

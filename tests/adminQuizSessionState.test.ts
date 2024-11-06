@@ -56,47 +56,47 @@ describe('tests for joinplayer', () => {
 
   test('success Show Session State', () => {
     const resStartSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
-    
-    expect(resStartSession.body).toStrictEqual( {
-        "state": 0,
-        "atQuestion": 1,
-        "players": [
-          "abcde123"
+
+    expect(resStartSession.body).toStrictEqual({
+      state: 0,
+      atQuestion: 1,
+      players: [
+        'abcde123'
+      ],
+      metadata: {
+        quizId: expect.any(Number),
+        name: 'validQuizName',
+        timeCreated: expect.any(Number),
+        timeLastEdited: expect.any(Number),
+        description: 'validQuizDescription',
+        numQuestions: 1,
+        questions: [
+          {
+            questionId: expect.any(Number),
+            question: 'What is the capital of Australia?',
+            timeLimit: 4,
+            thumbnailUrl: 'http://google.com/some/image/path.jpg',
+            points: 5,
+            answerOptions: [
+              {
+                answerId: expect.any(Number),
+                answer: 'Canberra',
+                colour: expect.any(String),
+                correct: true
+              },
+              {
+                answerId: expect.any(Number),
+                answer: 'Sydney',
+                colour: expect.any(String),
+                correct: false
+              }
+            ]
+          }
         ],
-        "metadata": {
-          "quizId": expect.any(Number),
-          "name": "validQuizName",
-          "timeCreated": expect.any(Number),
-          "timeLastEdited": expect.any(Number),
-          "description": "validQuizDescription",
-          "numQuestions": 1,
-          "questions": [
-            {
-              "questionId": expect.any(Number),
-              "question": "What is the capital of Australia?",
-              "timeLimit": 4,
-              "thumbnailUrl": "http://google.com/some/image/path.jpg",
-              "points": 5,
-              "answerOptions": [
-                {
-                  "answerId": expect.any(Number),
-                  "answer": "Canberra",
-                  "colour": expect.any(String),
-                  "correct": true
-                },
-                {
-                  "answerId": expect.any(Number),
-                  "answer": "Sydney",
-                  "colour": expect.any(String),
-                  "correct": false
-                }
-              ]
-            }
-          ],
-          "timeLimit": 4,
-          "thumbnailUrl": "http://google.com/some/image/path.jpg"
-        }
+        timeLimit: 4,
+        thumbnailUrl: 'http://google.com/some/image/path.jpg'
       }
+    }
     );
     expect(resStartSession.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
