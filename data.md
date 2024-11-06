@@ -36,6 +36,20 @@ let data = {
       timeLastEdited: 132145231415,
     },
   ],
+  sessions: [
+    {
+      sessionId: 123,
+      quizId: 1,
+      sessionState: LOBBY,
+      userId: 2,
+    },
+    {
+      sessionId: 1234,
+      quizId: 1,
+      sessionState: END,
+      userId: 2,
+    }
+  ]
 };
 ```
 

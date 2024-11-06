@@ -5,9 +5,10 @@ import {
 } from './helperFunctions';
 
 import {
-  errorMessages,
+  emptyReturn,
+  messageBody,
   playerId,
-  quizSession
+  quizSession,
 } from './interface';
 
 export enum quizState {
@@ -29,7 +30,7 @@ Allow a guest player to join a session
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {playerId} - A Number which is the playerId of player
  */
-export const joinPlayer = (sessionId: number, playerName: string): errorMessages | playerId => {
+export const joinPlayer = (sessionId: number, playerName: string): playerId => {
   const data = getData();
 
   const existingPlayer = data.players.find((player) => player.playerName === playerName);
@@ -66,4 +67,38 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
   data.players.push(newPlayer);
   setData(data);
   return { playerId: playerId };
+};
+
+/**
+ *
+ * @param { number } playerId - playerId to identify which user is sending msgs
+ * @param { string } message - player's  msgs to be sent
+ * @returns {} - empty object
+ */
+export const playerMessage = (playerId: number, message: messageBody) : emptyReturn => {
+  const data = getData();
+  const newMessage = message.messageBody;
+  const validPlayer = data.players.find(p => p.playerId === playerId);
+  if (!validPlayer) {
+    throw new Error('INVALID_PLAYER');
+  }
+  if (newMessage.length < 1 || newMessage.length > 100) {
+    throw new Error('INVALID_MESSAGE_LENGTH');
+  }
+  const quizSessionId = validPlayer.sessionId;
+  const msg = {
+    playerId: playerId,
+    playerName: validPlayer.playerName,
+    messageBody: newMessage,
+    timesent: Math.floor(Date.now() / 1000)
+  };
+  // find the quiz Session
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find(session => session.sessionId === quizSessionId);
+    if (FindSession) break;
+  }
+  FindSession.messages.push(msg);
+  setData(data);
+  return {};
 };

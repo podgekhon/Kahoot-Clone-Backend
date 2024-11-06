@@ -28,15 +28,25 @@ import {
   quizStartSessionResponse,
   viewQuizSessionsResponse,
   quizCopy,
+  sessionState
 } from './interface';
 
 export enum quizState {
   LOBBY,
   QUESTION_COUNTDOWN,
   QUESTION_OPEN,
+  QUESTION_CLOSE,
   ANSWER_SHOW,
   FINAL_RESULTS,
   END,
+}
+
+export enum adminAction {
+  NEXT_QUESTION,
+  SKIP_COUNTDOWN,
+  GO_TO_ANSWER,
+  GO_TO_FINAL_RESULT,
+  END
 }
 
 /**
@@ -169,6 +179,7 @@ export const adminQuizCreate = (
   const newQuiz: quiz = {
     quizId: randomId(10000),
     ownerId: authUserId,
+    atQuestion: 1,
     sessionState: quizState.END,
     name: name,
     description: description,
@@ -249,7 +260,8 @@ export const adminStartQuizSession = (
     sessionState: quizState.LOBBY,
     quizCopy,
     autoStartNum,
-    sessionQuestionPosition: 1
+    sessionQuestionPosition: 1,
+    messages: []
   };
 
   quiz.activeSessions.push(newQuizSession);
@@ -889,7 +901,7 @@ export const adminQuizTransfer = (
   quizId: number,
   token: string,
   userEmail: string
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -977,4 +989,228 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   setData(data);
 
   return {};
+};
+
+/**
+ * Updates quiz session status based on admin action
+ *
+ * @param {number} quizId - An array of existing quizIds owned by user
+ * @param {number} sessionId - Unique session id for quiz
+ * @param {string} token - Unique session id for user
+ * @param {adminAction} action - An admin action enum
+ *
+ * @returns {emptyReturn} - An empty upon successful registration
+ */
+export const adminQuizSessionUpdate = (
+  quizId: number,
+  sessionId: number,
+  token: string,
+  action: adminAction
+): emptyReturn => {
+  const data = getData();
+
+  const tokenValidation = validateToken(token, data);
+  // checks if validity of user token
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+  const user = tokenValidation.authUserId;
+
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  // checks if quiz exist
+  if (!quiz) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+    // check if sessionId does not exist
+  if (!quizSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+  let quizSessionState = quizSession.sessionState;
+
+  // check if action is invalid
+  if (!(action in adminAction)) {
+    throw new Error('INVALID_ACTION');
+  }
+
+  // check if user owns quiz
+  if (user !== quiz.ownerId) {
+    throw new Error('INVALID_OWNER');
+  }
+
+  // if action is 'END'
+  if (action === adminAction.END) {
+    // check if action can be applied to current state
+    if (quizSessionState === quizState.END) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session state
+    quizSessionState = quizState.END;
+
+    // add into inactiveSes array
+    quiz.inactiveSessions.push(quizSession);
+
+    // get index of quizSession in activeSes array
+    const quizSessionIndex = quiz.activeSessions.indexOf(quizSession);
+    // remove it from activeSes array
+    quiz.activeSessions.splice(quizSessionIndex);
+  }
+
+  // if action is 'NEXT_QUESTION'
+  if (action === adminAction.NEXT_QUESTION) {
+    // check if action can be applied to current state
+    if (
+      quizSessionState !== quizState.LOBBY &&
+      quizSessionState !== quizState.ANSWER_SHOW &&
+      quizSessionState !== quizState.QUESTION_CLOSE
+    ) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSessionState = quizState.QUESTION_COUNTDOWN;
+
+    // give quizSession countdown flag
+    quizSession.isCountdownSkipped = false;
+
+    // set a 3s duration before state of session automatically updates
+    // setTimeout(() => {
+    //   if (quizSession.isCountdownSkipped === false) {
+    //     quizSession.sessionState = quizState.QUESTION_OPEN;
+    //     // i could call a new instance of get Data during this time to ensure
+    //     // that i am retrieving the latest updated datastore
+    //     setData(data);
+    //   }
+
+    setTimeout(() => {
+      const updatedData = getData();
+      const updatedQuizSession = quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+
+      if (updatedQuizSession.isCountdownSkipped === false) {
+        updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
+        setData(updatedData);
+      }
+    }, 3000);
+  }
+
+  // if action is 'SKIP_COUNTDOWN'
+  if (action === adminAction.SKIP_COUNTDOWN) {
+    // check if action can be applied to current state
+    if (quizSessionState !== quizState.QUESTION_COUNTDOWN) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSessionState = quizState.QUESTION_OPEN;
+    quizSession.isCountdownSkipped = true;
+  }
+
+  // if action is 'ANSWER_SHOW'
+  if (action === adminAction.GO_TO_ANSWER) {
+    // check if action can be applied to current state
+    if (
+      quizSessionState !== quizState.QUESTION_OPEN &&
+      quizSessionState !== quizState.QUESTION_CLOSE
+    ) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSessionState = quizState.ANSWER_SHOW;
+  }
+
+  // if action is 'GO_TO_FINAL_RESULTS'
+  if (action === adminAction.GO_TO_FINAL_RESULT) {
+    // check if action can be applied to current state
+    if (
+      quizSessionState !== quizState.QUESTION_CLOSE &&
+      quizSessionState !== quizState.ANSWER_SHOW
+    ) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSessionState = quizState.FINAL_RESULTS;
+  }
+
+  if (quizSessionState === quizState.QUESTION_OPEN) {
+    setTimeout(() => {
+      const updatedData = getData();
+      const updatedQuizSession = quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+      if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
+        quizSession.sessionState = quizState.QUESTION_CLOSE;
+        setData(updatedData); // could also try to use updated datastore
+      }
+    }, 60000);
+  }
+
+  setData(data);
+  return {};
+};
+
+export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
+errorMessages | sessionState => {
+  const data = getData();
+
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
+    if (FindSession) break;
+  }
+  if (!FindSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const validQuiz = data.quizzes.find(q => q.quizId === quizId);
+  if (validQuiz.ownerId !== authUserId) {
+    throw new Error('INVALID_OWNER');
+  }
+
+  const matchedPlayers = data.players.filter(player => player.sessionId === sessionId);
+  const PLayersname = matchedPlayers.map(player => player.playerName);
+
+  const response : sessionState = {
+    state: FindSession.sessionState,
+    atQuestion: validQuiz.atQuestion,
+    players: PLayersname,
+    metadata: {
+      quizId: validQuiz.quizId,
+      name: validQuiz.name,
+      timeCreated: validQuiz.timeCreated,
+      timeLastEdited: validQuiz.timeLastEdited,
+      description: validQuiz.description,
+      numQuestions: validQuiz.numQuestions,
+      questions: validQuiz.questions.map(question => ({
+        questionId: question.questionId,
+        question: question.question,
+        timeLimit: question.timeLimit,
+        thumbnailUrl: question.thumbnailUrl || '',
+        points: question.points,
+        answerOptions: question.answerOptions.map(option => ({
+          answerId: option.answerId,
+          answer: option.answer,
+          colour: option.colour,
+          correct: option.correct
+        }))
+      })),
+      timeLimit: validQuiz.timeLimit,
+      thumbnailUrl: validQuiz.thumbnailUrl || '',
+    }
+  };
+
+  return response;
 };

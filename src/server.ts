@@ -8,6 +8,7 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
+import { adminAction } from './quiz';
 
 // Set up web app
 const app = express();
@@ -56,16 +57,18 @@ import {
   adminTrashEmpty,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  adminQuizSessionUpdate,
+  adminQuizSessionState
 } from './quiz';
 
 import {
-  joinPlayer
+  joinPlayer,
+  playerMessage
 } from './player';
 
 import { clear } from './other';
 import { errorMap } from './errorMap';
-
 enum httpStatus {
   UNAUTHORIZED = 401,
   BAD_REQUEST = 400,
@@ -566,7 +569,7 @@ const handleAdminQuizTransfer = (
   req: Request,
   res: Response
 ) => {
-  const { quizid } = req.params;
+  const { quizId } = req.params;
   const { userEmail } = req.body;
 
   let token;
@@ -577,7 +580,7 @@ const handleAdminQuizTransfer = (
   }
 
   try {
-    const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
+    const result = adminQuizTransfer(parseInt(quizId), token, userEmail);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (err) {
     const mappedError = errorMap[err.message];
@@ -585,9 +588,9 @@ const handleAdminQuizTransfer = (
   }
 };
 
-app.post('/v1/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
+app.post('/v1/admin/quiz/:quizId/transfer', handleAdminQuizTransfer);
 
-app.post('/v2/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
+app.post('/v2/admin/quiz/:quizId/transfer', handleAdminQuizTransfer);
 
 const handleAdminTrashEmpty = (req: Request, res: Response) => {
   const { quizIds } = req.query;
@@ -628,6 +631,61 @@ const handlejoinPlayer = (req: Request, res: Response) => {
 };
 
 app.post('/v1/player/join', handlejoinPlayer);
+
+// quiz session update
+app.put('/v1/admin/quiz/:quizId/session/:sessionId', (
+  req: Request,
+  res: Response
+) => {
+  const { quizId } = req.params;
+  const { sessionId } = req.params;
+  const token = req.headers.token as string;
+  const { action: actionBody } = req.body;
+
+  const action = adminAction[actionBody as keyof typeof adminAction];
+
+  try {
+    const result = adminQuizSessionUpdate(
+      parseInt(quizId),
+      parseInt(sessionId),
+      token,
+      action
+    );
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
+
+// player message
+app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  const { message } = req.body;
+
+  try {
+    const result = playerMessage(playerId, message);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+});
+
+// adminQuizSessionState
+const handleadminQuizSessionState = (req: Request, res: Response) => {
+  const { sessionId, quizId } = req.body;
+  const token = req.headers.token as string;
+  try {
+    const result = adminQuizSessionState(quizId, sessionId, token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.get('/v1/admin/quiz/{quizid}/session/{sessionid}', handleadminQuizSessionState);
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

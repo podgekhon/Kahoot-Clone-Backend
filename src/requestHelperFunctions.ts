@@ -1,5 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
+import { adminAction, adminQuizSessionUpdate } from './quiz';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100000;
@@ -40,12 +41,15 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  adminQuizSessionState
 } from './quiz';
 
 import {
-  joinPlayer
+  joinPlayer,
+  playerMessage
 } from './player';
+import { messageBody } from './interface';
 
 // clear
 /**
@@ -609,7 +613,7 @@ export const requestAdminQuizDescriptionUpdateV2 = (
 export const requestAdminStartQuizSession = (
   quizId: number, token: string, autoStartNum: number
 ): {
-  body: ReturnType<typeof adminStartQuizSession> | { error: string },
+  body: ReturnType<typeof adminStartQuizSession>,
   statusCode: number
 } => {
   const res = request(
@@ -1205,6 +1209,82 @@ export const requestjoinPlayer = (
       json: {
         sessionId: sessionId,
         playerName: playerName
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizSessionUpdate
+/**
+ * Makes http request to update quiz session status
+ *
+ * @param { number } quizId
+ * @param { number } sessionId
+ * @param { string } token
+ * @param { adminAction } action
+ * @returns { Response }
+ */
+export const requestAdminQuizSessionUpdate = (
+  quizId: number,
+  sessionId: number,
+  token: string,
+  actionBody: adminAction
+): {
+  body: ReturnType <typeof adminQuizSessionUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    {
+      headers: { token },
+      json: {
+        action: actionBody
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestPlayerMessage = (
+  playerId: number,
+  message: messageBody
+) : {
+  body: ReturnType <typeof playerMessage>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/player/${playerId}/chat`,
+    {
+      json: {
+        message: message,
+      },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestadminQuizSessionState = (
+  quizId: number, sessionId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizSessionState>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v1/admin/quiz/{quizid}/session/{sessionid}',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        quizId: quizId,
+        sessionId: sessionId
       },
       timeout: TIMEOUT_MS,
     }
