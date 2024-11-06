@@ -44,6 +44,7 @@ import {
   joinPlayer
 } from './quiz';
 
+import { playerMessage } from './player';
 // clear
 /**
  * Makes a http request to clear everything
@@ -1208,3 +1209,28 @@ export const requestjoinPlayer = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+
+export const requestPlayerMessage = (
+  playerId: number,
+  message: string
+) : {
+  body: ReturnType <typeof playerMessage>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST', 
+    SERVER_URL + `/v1/player/${playerId}/chat`,
+    {
+      json: {
+        message: {
+          messageBody: {
+            message
+          }
+        }
+      },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+}
