@@ -1,11 +1,15 @@
 /// ///////////// interface for dataStore /////////////////
 import { adminAuthRegister, adminAuthLogin } from './auth';
+
 import {
   adminQuizCreate,
   adminQuizList,
+  adminQuizQuestionCreate,
   adminQuizTransfer,
   adminTrashList,
-  quizState
+  quizState,
+  adminStartQuizSession,
+  adminQuizSessionUpdate
 } from './quiz';
 
 export interface dataStore {
@@ -76,6 +80,7 @@ export interface quizSession {
   quizCopy: quizCopy;
   autoStartNum: number;
   sessionQuestionPosition: number;
+  isCountdownSkipped?: boolean;
   messages: message[];
 }
 
@@ -191,10 +196,23 @@ export interface trashList {
   statusCode: number;
 }
 
+export interface questionCreate {
+  body: ReturnType<typeof adminQuizQuestionCreate>;
+  statusCode: number;
+}
+
+export interface startSession {
+  body: ReturnType<typeof adminStartQuizSession>;
+  statusCode: number; // this might be a copy of quizStartSessionResponse
+}
 export interface playerId {
   playerId: number;
 }
 
+export interface quizSessionStatusUpdate {
+  body: ReturnType<typeof adminQuizSessionUpdate>;
+  statusCode: number;
+}
 export interface sessionState {
   state: quizState;
   atQuestion: number;

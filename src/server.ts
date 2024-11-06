@@ -8,6 +8,7 @@ import sui from 'swagger-ui-express';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
+import { adminAction } from './quiz';
 
 // Set up web app
 const app = express();
@@ -57,6 +58,7 @@ import {
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
   adminViewQuizSessions,
+  adminQuizSessionUpdate,
   adminQuizSessionState
 } from './quiz';
 
@@ -567,7 +569,7 @@ const handleAdminQuizTransfer = (
   req: Request,
   res: Response
 ) => {
-  const { quizid } = req.params;
+  const { quizId } = req.params;
   const { userEmail } = req.body;
 
   let token;
@@ -578,7 +580,7 @@ const handleAdminQuizTransfer = (
   }
 
   try {
-    const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
+    const result = adminQuizTransfer(parseInt(quizId), token, userEmail);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (err) {
     const mappedError = errorMap[err.message];
@@ -586,9 +588,9 @@ const handleAdminQuizTransfer = (
   }
 };
 
-app.post('/v1/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
+app.post('/v1/admin/quiz/:quizId/transfer', handleAdminQuizTransfer);
 
-app.post('/v2/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
+app.post('/v2/admin/quiz/:quizId/transfer', handleAdminQuizTransfer);
 
 const handleAdminTrashEmpty = (req: Request, res: Response) => {
   const { quizIds } = req.query;
@@ -629,6 +631,32 @@ const handlejoinPlayer = (req: Request, res: Response) => {
 };
 
 app.post('/v1/player/join', handlejoinPlayer);
+
+// quiz session update
+app.put('/v1/admin/quiz/:quizId/session/:sessionId', (
+  req: Request,
+  res: Response
+) => {
+  const { quizId } = req.params;
+  const { sessionId } = req.params;
+  const token = req.headers.token as string;
+  const { action: actionBody } = req.body;
+
+  const action = adminAction[actionBody as keyof typeof adminAction];
+
+  try {
+    const result = adminQuizSessionUpdate(
+      parseInt(quizId),
+      parseInt(sessionId),
+      token,
+      action
+    );
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
 
 // player message
 app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {

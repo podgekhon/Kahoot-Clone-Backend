@@ -163,6 +163,10 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in LOBBY state.'
   },
+  INVALID_ACTION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Invalid admin action.'
+  },
   INVALID_PLAYER: {
     status: httpStatus.BAD_REQUEST,
     message: 'Player ID does not exist.'
