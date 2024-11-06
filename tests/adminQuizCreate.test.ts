@@ -101,7 +101,6 @@ describe('adminQuizCreate', () => {
   });
   describe('tests for v2', () => {
     test('valid inputs', () => {
-      console.log(user1Token);
       const result = requestAdminQuizCreateV2(user1Token, 'quiz1', 'This is quiz 1');
 
       expect(result.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);

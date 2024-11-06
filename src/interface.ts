@@ -7,6 +7,7 @@ import {
   adminTrashList,
   quizState
 } from './quiz';
+
 export interface dataStore {
   users: user[],
   quizzes: quiz[],
@@ -74,6 +75,14 @@ export interface quizSession {
   quizCopy: quizCopy;
   autoStartNum: number;
   sessionQuestionPosition: number;
+  messages: message[];
+}
+
+export interface message {
+  playerId: number,
+  playerName: string,
+  messageBody: string,
+  timesent: number
 }
 
 export interface token {
@@ -81,6 +90,9 @@ export interface token {
   userId: number;
 }
 
+export interface messageBody {
+  messageBody: string
+}
 /// /////////////// interface for auth.ts/////////////////////
 
 export interface errorMessages {

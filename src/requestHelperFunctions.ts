@@ -44,8 +44,10 @@ import {
 } from './quiz';
 
 import {
-  joinPlayer
+  joinPlayer,
+  playerMessage
 } from './player';
+import { messageBody } from './interface';
 
 // clear
 /**
@@ -1207,6 +1209,26 @@ export const requestjoinPlayer = (
         playerName: playerName
       },
       timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestPlayerMessage = (
+  playerId: number,
+  message: messageBody
+) : {
+  body: ReturnType <typeof playerMessage>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/player/${playerId}/chat`,
+    {
+      json: {
+        message: message,
+      },
+      timeout: TIMEOUT_MS
     }
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };

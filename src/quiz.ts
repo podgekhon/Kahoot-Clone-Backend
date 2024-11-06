@@ -249,7 +249,8 @@ export const adminStartQuizSession = (
     sessionState: quizState.LOBBY,
     quizCopy,
     autoStartNum,
-    sessionQuestionPosition: 1
+    sessionQuestionPosition: 1,
+    messages: []
   };
 
   quiz.activeSessions.push(newQuizSession);

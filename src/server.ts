@@ -60,12 +60,12 @@ import {
 } from './quiz';
 
 import {
-  joinPlayer
+  joinPlayer,
+  playerMessage
 } from './player';
 
 import { clear } from './other';
 import { errorMap } from './errorMap';
-
 enum httpStatus {
   UNAUTHORIZED = 401,
   BAD_REQUEST = 400,
@@ -628,6 +628,20 @@ const handlejoinPlayer = (req: Request, res: Response) => {
 };
 
 app.post('/v1/player/join', handlejoinPlayer);
+
+// player message
+app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  const { message } = req.body;
+
+  try {
+    const result = playerMessage(playerId, message);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+});
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
