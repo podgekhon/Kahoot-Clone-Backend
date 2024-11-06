@@ -46,7 +46,8 @@ import {
 
 import {
   joinPlayer,
-  playerMessage
+  playerMessage,
+  playerState
 } from './player';
 import { messageBody } from './interface';
 
@@ -1243,7 +1244,7 @@ export const requestadminQuizSessionState = (
 } => {
   const res = request(
     'GET',
-    SERVER_URL + '/v1/admin/quiz/{quizid}/session/{sessionid}',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
     {
       headers: {
         token: token
@@ -1252,6 +1253,22 @@ export const requestadminQuizSessionState = (
         quizId: quizId,
         sessionId: sessionId
       },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestplayerState = (
+  playerId: number
+): {
+  body: ReturnType <typeof playerState>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}`,
+    {
       timeout: TIMEOUT_MS,
     }
   );
