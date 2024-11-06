@@ -16,7 +16,7 @@ import {
   quizStartSessionResponse
 } from '../src/interface';
 
-describe('tests for joinplayer', () => {
+describe('tests for adminQuizSession', () => {
   let user;
   let usertoken: string;
   let quiz;
