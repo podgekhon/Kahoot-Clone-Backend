@@ -40,7 +40,8 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  adminQuizSessionState
 } from './quiz';
 
 import {
@@ -1229,6 +1230,29 @@ export const requestPlayerMessage = (
         message: message,
       },
       timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestadminQuizSessionState = (
+  quizId: number, sessionId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizSessionState>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v1/admin/quiz/{quizid}/session/{sessionid}',
+    {
+      headers : {
+        token: token
+      },
+      json: {
+        quizId: quizId,
+        sessionId: sessionId
+      },
+      timeout: TIMEOUT_MS,
     }
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
