@@ -17,7 +17,6 @@ export const clear = () => {
   data.sessions = [];
   data.trash = [];
   data.players = [];
-  data.sessioninfo = [];
   setData(data);
   return {};
 };
