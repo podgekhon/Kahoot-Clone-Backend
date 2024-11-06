@@ -56,7 +56,8 @@ import {
   adminTrashEmpty,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  adminQuizSessionState
 } from './quiz';
 
 import {
@@ -642,6 +643,21 @@ app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {
     return res.status(status).json({ error: message });
   }
 });
+
+// adminQuizSessionState
+const handleadminQuizSessionState = (req: Request, res: Response) => {
+  const { sessionId, quizId } = req.body;
+  const token = req.headers.token as string;
+  try {
+    const result = adminQuizSessionState(quizId, sessionId, token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.get('/v1/admin/quiz/{quizid}/session/{sessionid}', handleadminQuizSessionState);
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

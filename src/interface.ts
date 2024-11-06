@@ -53,6 +53,7 @@ export interface question {
 export interface quiz {
   quizId: number;
   ownerId: number;
+  atQuestion?: number;
   sessionState: quizState;
   name: string;
   description: string;
@@ -192,4 +193,33 @@ export interface trashList {
 
 export interface playerId {
   playerId: number;
+}
+
+export interface sessionState {
+  state: quizState;
+  atQuestion: number;
+  players: string[];
+  metadata: {
+    quizId: number;
+    name: string;
+    timeCreated: number;
+    timeLastEdited: number;
+    description: string;
+    numQuestions: number;
+    questions: {
+      questionId: number;
+      question: string;
+      timeLimit: number;
+      thumbnailUrl: string;
+      points: number;
+      answerOptions: {
+        answerId: number;
+        answer: string;
+        colour: string;
+        correct: boolean;
+      }[];
+    }[];
+    timeLimit: number;
+    thumbnailUrl: string;
+  };
 }
