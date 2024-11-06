@@ -41,7 +41,8 @@ import {
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
   adminViewQuizSessions,
-  joinPlayer
+  joinPlayer,
+  playerAnswerQuestion
 } from './quiz';
 
 // clear
@@ -1240,7 +1241,7 @@ export const requestjoinPlayer = (
 export const requestPlayerAnswerQuestion = (
   answerIds: number[], playerId: number, questionPosition: number
 ): {
-  body: ReturnType <typeof PlayerAnswerQuestion>,
+  body: ReturnType <typeof playerAnswerQuestion>,
   statusCode: number
 } => {
   const res = request(

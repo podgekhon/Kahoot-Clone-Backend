@@ -57,7 +57,8 @@ import {
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
   adminViewQuizSessions,
-  joinPlayer
+  joinPlayer,
+  playerAnswerQuestion
 } from './quiz';
 
 import { clear } from './other';
@@ -647,7 +648,7 @@ const handlePlayerAnswerQuestion = (req: Request, res: Response) => {
   const { answerIds } = req.body;
   const { playerId, questionPosition } = req.params
   try {
-    const result = PlayerAnswerQuestion(answerIds, playerId, questionPosition);
+    const result = playerAnswerQuestion(answerIds, parseInt(playerId), parseInt(questionPosition));
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
     const { status, message } = errorMap[error.message];
