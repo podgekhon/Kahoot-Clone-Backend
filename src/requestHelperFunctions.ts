@@ -40,11 +40,15 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions,
-  joinPlayer
+  adminViewQuizSessions
 } from './quiz';
 
-import { playerMessage } from './player';
+import {
+  joinPlayer,
+  playerMessage
+} from './player';
+import { messageBody } from './interface';
+
 // clear
 /**
  * Makes a http request to clear everything
@@ -1213,7 +1217,7 @@ export const requestjoinPlayer = (
 
 export const requestPlayerMessage = (
   playerId: number,
-  message: string
+  message: messageBody
 ) : {
   body: ReturnType <typeof playerMessage>,
   statusCode: number
@@ -1223,14 +1227,11 @@ export const requestPlayerMessage = (
     SERVER_URL + `/v1/player/${playerId}/chat`,
     {
       json: {
-        message: {
-          messageBody: {
-            message
-          }
-        }
+        message: message,
       },
       timeout: TIMEOUT_MS
     }
   );
+  console.log(res.body.toString());
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 }

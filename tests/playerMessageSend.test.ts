@@ -16,16 +16,13 @@ import {
 	playerId
 } from '../src/interface';
 
-beforeEach(() => {
-	requestClear();
-});
-
 describe('tests for player message send', () => {
 	let token: string;
 	let quizId: number;
 	let quizSessionId: number;
 	let playerId: number;
 	beforeEach(() => {
+		requestClear();
     const user = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
     token = (user.body as tokenReturn).token;
 
@@ -51,32 +48,50 @@ describe('tests for player message send', () => {
 		playerId = (player.body as playerId).playerId;
 
 	})
+
 	test('player ID does not exists', () => {
-		const res = requestPlayerMessage(-1, 'no player ID');
+		const messageToSend = {
+			message: {
+				messageBody: 'No player Id'
+			}
+		}
+		const res = requestPlayerMessage(-1, messageToSend.message);
 		expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
 		expect(res.body).toStrictEqual({ error: expect.any(String) });
 	});
 	
 	describe('invalid message body', () => {
 		test('message too short', () => {
-			const res = requestPlayerMessage(playerId, '');
+			const messageToSend = {
+				message: {
+					messageBody: ''
+				}
+			}	
+			const res = requestPlayerMessage(playerId, messageToSend.message);
 			expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
 			expect(res.body).toStrictEqual({ error: expect.any(String) });
 		});
 
 		test('message too long', () => {
-			const res = requestPlayerMessage(
-				playerId,
-				'asdfasdfjklasfdjklsafjkdlsa;jfdklsagdjksaljgkldsajkfl' +
-				'fdsafjieowajgnklewjakljelfwjaiofejiwogjeiowjaoijfioejwao'
-			);
+			const messageToSend = {
+				message: {
+					messageBody: 'asdfasdfjklasfdjklsafjkdlsa;jfdklsagdjksaljgkldsajkfl' +
+					'fdsafjieowajgnklewjakljelfwjaiofejiwogjeiowjaoijfioejwao'
+				}
+			};
+			const res = requestPlayerMessage(playerId, messageToSend.message);
 			expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
 			expect(res.body).toStrictEqual({ error: expect.any(String) });
 		});
 	});
 
 	test('successfully send the message', () => {
-		const res = requestPlayerMessage(playerId, 'hello guys');
+		const messageToSend = {
+			message: {
+				messageBody: 'hello guys'
+			}
+		}	
+		const res = requestPlayerMessage(playerId, messageToSend.message);
 		// correct return type
 		expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 		expect(res.body).toStrictEqual({});

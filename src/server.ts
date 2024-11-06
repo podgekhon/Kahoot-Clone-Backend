@@ -56,12 +56,17 @@ import {
   adminTrashEmpty,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions,
-  joinPlayer
+  adminViewQuizSessions
 } from './quiz';
+
+import {
+  joinPlayer,
+  playerMessage
+} from './player';
 
 import { clear } from './other';
 import { errorMap } from './errorMap';
+import { messageBody } from './interface';
 
 enum httpStatus {
   UNAUTHORIZED = 401,
@@ -625,6 +630,20 @@ const handlejoinPlayer = (req: Request, res: Response) => {
 };
 
 app.post('/v1/player/join', handlejoinPlayer);
+
+// player message
+app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  const { message } = req.body;
+
+  try {
+    const result = playerMessage(playerId, message);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch ( error ) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+});
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
