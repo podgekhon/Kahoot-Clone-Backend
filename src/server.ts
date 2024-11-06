@@ -57,9 +57,12 @@ import {
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
   adminViewQuizSessions,
+} from './quiz';
+
+import {
   joinPlayer,
   playerAnswerQuestion
-} from './quiz';
+} from './player';
 
 import { clear } from './other';
 import { errorMap } from './errorMap';

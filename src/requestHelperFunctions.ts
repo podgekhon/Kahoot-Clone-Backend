@@ -41,9 +41,12 @@ import {
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
   adminViewQuizSessions,
+} from './quiz';
+
+import {
   joinPlayer,
   playerAnswerQuestion
-} from './quiz';
+} from './player';
 
 // clear
 /**
