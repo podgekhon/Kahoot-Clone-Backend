@@ -63,7 +63,7 @@ describe('Test for adminQuizSessionUpdate', () => {
   let nextQuestionAction: object;
   let skipCountDownAction: object;
   let showAnswerAction: object;
-  let closeQuestion: object;
+  // let closeQuestion: object;
   let goFinalResults: object;
 
   let adminQuizSessionUpdate: quizSessionStatusUpdate;
@@ -217,8 +217,8 @@ describe('Test for adminQuizSessionUpdate', () => {
     // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_OPEN');
   });
 
-  test('Question duration successfully closes', () => {
-    nextQuestionAction = { action: adminAction.NEXT_QUESTION }; // figure out how to do this
+  test('Sucessfully close question', () => {
+    nextQuestionAction = { action: adminAction.NEXT_QUESTION };
 
     requestAdminQuizSessionUpdate(
       quizId,
@@ -229,21 +229,22 @@ describe('Test for adminQuizSessionUpdate', () => {
 
     skipCountDownAction = { action: adminAction.SKIP_COUNTDOWN };
 
-    adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
+    requestAdminQuizSessionUpdate(
       quizId,
       sessionId,
       user1Token,
-      actionBody
+      showAnswerAction
     );
+
+    closeQuestion = { action: adminAction }; // figure this out, when duration closes
 
     expect(adminQuizSessionUpdate).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
     );
-
-    // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_CLOSE');
+  // get quiz session status to verify changes made to status
+  // const quizSession = getQuizSession(quizId, sessionId, user1Token);
+  // const quizSessionStatus = (quizSession.body as getQuizSession).status;
+  // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_CLOSE');
   });
 
   test('Sucessfully show answer', () => {
@@ -265,7 +266,7 @@ describe('Test for adminQuizSessionUpdate', () => {
       skipCountDownAction
     );
 
-    showAnswerAction = { action: adminAction.GO_TO_ANSWER};
+    showAnswerAction = { action: adminAction.GO_TO_ANSWER };
 
     adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
       quizId,
@@ -277,45 +278,6 @@ describe('Test for adminQuizSessionUpdate', () => {
     expect(adminQuizSessionUpdate).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
     );
-
-    test('Sucessfully close question', () => {
-      nextQuestionAction = { action: adminAction.NEXT_QUESTION };
-
-      requestAdminQuizSessionUpdate(
-        quizId,
-        sessionId,
-        user1Token,
-        nextQuestionAction
-      );
-
-      skipCountDownAction = { action: adminAction.SKIP_COUNTDOWN };
-
-      requestAdminQuizSessionUpdate(
-        quizId,
-        sessionId,
-        user1Token,
-        skipCountDownAction
-      );
-
-      showAnswerAction = { action: adminAction.GO_TO_ANSWER};
-
-      requestAdminQuizSessionUpdate(
-        quizId,
-        sessionId,
-        user1Token,
-        showAnswerAction
-      );
-
-      closeQuestion = { action: adminAction }; // figure this out, when duration closes
-
-      expect(adminQuizSessionUpdate).toStrictEqual(
-        httpStatus.SUCCESSFUL_REQUEST
-      );
-    // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_CLOSE');
-    });
 
     test('Sucessfully go to final results', () => {
       nextQuestionAction = { action: adminAction.NEXT_QUESTION };
