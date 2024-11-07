@@ -13,7 +13,8 @@ import {
   tokenReturn,
   quizCreateResponse,
   quizStartSessionResponse,
-  playerId
+  playerId,
+  quizSession
 } from '../src/interface';
 
 describe('tests for playerState', () => {
@@ -51,8 +52,9 @@ describe('tests for playerState', () => {
 
   test('success show player state', () => {
     const resplayerState = requestplayerState(playerId);
+
     const correctresponse = {
-      state: 5,
+      state: 0,
       numQuestions: 1,
       atQuestion: 1
     };

@@ -130,7 +130,7 @@ export const playerState = (playerId: number) : PlayerState => {
     }
   }
   const response: PlayerState = {
-    state: quiz.sessionState,
+    state: FindSession.sessionState,
     numQuestions: quiz.numQuestions,
     atQuestion: quiz.atQuestion
   };
