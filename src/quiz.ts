@@ -1037,6 +1037,10 @@ export const adminQuizSessionUpdate = (
     throw new Error('INVALID_OWNER');
   }
 
+  if (quizSession.sessionState == quizState.LOBBY) {
+    quizSession.isInLobby = true;
+  }
+
   // if action is 'END'
   if (action === adminAction.END) {
     // check if action can be applied to current state
@@ -1090,6 +1094,9 @@ export const adminQuizSessionUpdate = (
 
       if (updatedQuizSession.isCountdownSkipped === false) {
         updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
+        if (quizSession.isInLobby == false) {
+          quizSession.sessionQuestionPosition++;
+        }
         setData(updatedData);
       }
     }, 3000);
@@ -1105,6 +1112,9 @@ export const adminQuizSessionUpdate = (
     // update quiz session
     quizSessionState = quizState.QUESTION_OPEN;
     quizSession.isCountdownSkipped = true;
+    if (quizSession.isInLobby == false) {
+      quizSession.sessionQuestionPosition++;
+    }
   }
 
   // if action is 'ANSWER_SHOW'
