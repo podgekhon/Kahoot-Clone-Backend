@@ -9,6 +9,8 @@ import {
   messageBody,
   playerId,
   quizSession,
+  PlayerState,
+  quiz
 } from './interface';
 
 export enum quizState {
@@ -101,4 +103,37 @@ export const playerMessage = (playerId: number, message: messageBody) : emptyRet
   FindSession.messages.push(msg);
   setData(data);
   return {};
+};
+
+/**
+ *
+ * Get the status of a guest player that has already joined a session
+ * @param { number } playerId - a unique of a player
+ * @returns {PlayerState} - an object containg information of player state
+ */
+export const playerState = (playerId: number) : PlayerState => {
+  const data = getData();
+
+  const player = data.players.find(p => p.playerId === playerId);
+  if (!player) {
+    throw new Error('INVALID_PLAYER');
+  }
+
+  const sessionId = player.sessionId;
+  let quiz: quiz;
+  let FindSession: quizSession;
+  for (const q of data.quizzes) {
+    FindSession = q.activeSessions.find((session) => session.sessionId === sessionId);
+    if (FindSession) {
+      quiz = q;
+      break;
+    }
+  }
+  const response: PlayerState = {
+    state: quiz.sessionState,
+    numQuestions: quiz.numQuestions,
+    atQuestion: quiz.atQuestion
+  };
+
+  return response;
 };

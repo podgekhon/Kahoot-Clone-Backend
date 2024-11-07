@@ -241,3 +241,9 @@ export interface sessionState {
     thumbnailUrl: string;
   };
 }
+
+export interface PlayerState {
+  state: quizState,
+  numQuestions: number,
+  atQuestion: number
+}

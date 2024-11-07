@@ -64,7 +64,8 @@ import {
 
 import {
   joinPlayer,
-  playerMessage
+  playerMessage,
+  playerState
 } from './player';
 
 import { clear } from './other';
@@ -674,7 +675,8 @@ app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {
 
 // adminQuizSessionState
 const handleadminQuizSessionState = (req: Request, res: Response) => {
-  const { sessionId, quizId } = req.body;
+  const quizId = parseInt(req.params.quizId);
+  const sessionId = parseInt(req.params.sessionId);
   const token = req.headers.token as string;
   try {
     const result = adminQuizSessionState(quizId, sessionId, token);
@@ -685,7 +687,21 @@ const handleadminQuizSessionState = (req: Request, res: Response) => {
   }
 };
 
-app.get('/v1/admin/quiz/{quizid}/session/{sessionid}', handleadminQuizSessionState);
+app.get('/v1/admin/quiz/:quizId/session/:sessionId', handleadminQuizSessionState);
+
+// playerState
+const handleplayerState = (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  try {
+    const result = playerState(playerId);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.get('/v1/player/:playerId', handleplayerState);
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
