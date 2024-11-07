@@ -39,14 +39,14 @@ export interface user {
 }
 
 export interface answerOption {
-  answerId: number;
+  answerId?: number;
   answer: string;
-  colour: string;
-  correct: boolean;
+  colour?: string;
+  correct?: boolean;
 }
 
 export interface question {
-  questionId: number;
+  questionId?: number;
   question: string;
   timeLimit: number;
   points: number;
