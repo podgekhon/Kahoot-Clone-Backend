@@ -52,9 +52,9 @@ import {
   playerMessageList
 } from './player';
 
-import { 
+import {
   messageBody,
-  requestOptions 
+  requestOptions
 } from './interface';
 
 // clear
@@ -1140,13 +1140,13 @@ const requestAdminMoveQuizQuestionGeneric = (
     json: { newPosition },
     timeout: TIMEOUT_MS,
   };
-  
+
   if (version === 'v1') {
     options.json = { token, newPosition };
   } else {
     options.headers = { token };
   }
-  
+
   const res = request('PUT', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
@@ -1164,7 +1164,6 @@ export const requestAdminMoveQuizQuestionV1 = (
 export const requestAdminMoveQuizQuestionV2 = (
   quizId: number, questionId: number, token: string, newPosition: number
 ) => requestAdminMoveQuizQuestionGeneric(quizId, questionId, token, newPosition, 'v2');
-
 
 // adminQuizQuestionDuplicate
 /**
