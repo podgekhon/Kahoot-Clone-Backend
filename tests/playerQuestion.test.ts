@@ -7,6 +7,7 @@ import {
   requestjoinPlayer,
   requestPlayerQuestion,
   requestAdminQuizSessionUpdate,
+  requestadminQuizSessionState,
   httpStatus,
 } from '../src/requestHelperFunctions';
 
@@ -16,9 +17,11 @@ import {
   quizStartSessionResponse,
   playerId,
   quizQuestionCreateResponse,
-  question
+  question,
+  sessionState
 } from '../src/interface';
-import { adminAction } from '../src/quiz';
+import { adminAction, quizState} from '../src/quiz';
+import sleepSync from 'slync';
 
 beforeEach(() => {
   requestClear();
@@ -77,7 +80,7 @@ describe('tests for playerQuestion', () => {
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
     question2 = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
-    questionId2 = (question.body as quizQuestionCreateResponse).questionId;
+    questionId2 = (question2.body as quizQuestionCreateResponse).questionId;
 
     questionBody3 = {
       question: 'What is the capital of USA?',
@@ -90,7 +93,7 @@ describe('tests for playerQuestion', () => {
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
     question3 = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody3);
-    questionId3 = (question.body as quizQuestionCreateResponse).questionId;
+    questionId3 = (question3.body as quizQuestionCreateResponse).questionId;
 
     // start quiz session - copys it so changes is not affected on active quiz
     session = requestAdminStartQuizSession(quizId, usertoken, 1);
@@ -102,167 +105,213 @@ describe('tests for playerQuestion', () => {
     
   });
 
-  test.only('successfully get question when session state is QUESTION_OPEN', async () => {
+  test('successfully get question when session state is QUESTION_OPEN', () => {
     // state must be QUESTION_OPEN / QUESTION_CLOSE / ANSWER_SHOW
-    await requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    // requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    // Adding a delay to ensure the state transition completes
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
-    // console.log(`quiz state = ${(session.body as )}`)
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
 
     const questionPosition = 1;
     const positionResponse = requestPlayerQuestion(playerId, questionPosition);
-    expect(positionResponse.body).toMatchObject
-    ({
-        questionId: questionId,
-        question: questionBody.question,
-        timeLimit: questionBody.timeLimit,
-        thumbnailUrl: questionBody.thumbnailUrl,
-        points: questionBody.points,
-        answerOptions: expect.arrayContaining([
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody.answerOptions[0].answer,
-            colour: expect.any(String),
-            correct: true,
-          }),
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody.answerOptions[1].answer,
-            colour: expect.any(String),
-            correct: false,
-          }),
-        ]),
-      });
-    expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    
+  //   expect(positionResponse.body).toMatchObject({
+  //     questionId: questionId,
+  //     question: questionBody.question,
+  //     timeLimit: questionBody.timeLimit,
+  //     thumbnailUrl: questionBody.thumbnailUrl,
+  //     points: questionBody.points,
+  //     answerOptions: expect.arrayContaining([
+  //       expect.objectContaining({
+  //         answerId: expect.any(Number),
+  //         answer: questionBody.answerOptions[0].answer,
+  //         colour: expect.any(String),
+  //         correct: true,
+  //       }),
+  //       expect.objectContaining({
+  //         answerId: expect.any(Number),
+  //         answer: questionBody.answerOptions[1].answer,
+  //         colour: expect.any(String),
+  //         correct: false,
+  //       }),
+  //     ]),
+  // });
+    
+  expect(positionResponse.body).toMatchObject({
+    questionId: questionId,
+    question: questionBody.question,
+    timeLimit: questionBody.timeLimit,
+    thumbnailUrl: questionBody.thumbnailUrl,
+    points: questionBody.points,
   });
 
-  test('successfully and unsuccessfully get question at different positions', async () => {
-    // state must be QUESTION_OPEN / QUESTION_CLOSE / ANSWER_SHOW
-    await requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+  expect(positionResponse.body.answerOptions).toEqual(
+    expect.arrayContaining([
+    expect.objectContaining({
+      answerId: expect.any(Number),
+      answer: questionBody.answerOptions[0].answer,
+      colour: expect.any(String),
+    }),
+    expect.objectContaining({
+      answerId: expect.any(Number),
+      answer: questionBody.answerOptions[1].answer,
+      colour: expect.any(String),
+    }),
+    ])
+  );
+});
 
-    // Adding a delay to ensure the state transition completes
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+  test('successfully and unsuccessfully get question at different positions', () => {
+    // state must be QUESTION_OPEN / QUESTION_CLOSE / ANSWER_SHOW
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
 
     const positionResponse = requestPlayerQuestion(playerId, 1);
-    expect(positionResponse.body).toMatchObject
-    ({
-        questionId: questionId,
-        question: questionBody.question,
-        timeLimit: questionBody.timeLimit,
-        thumbnailUrl: questionBody.thumbnailUrl,
-        points: questionBody.points,
-        answerOptions: expect.arrayContaining([
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody.answerOptions[0].answer,
-            colour: expect.any(String),
-            correct: true,
-          }),
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody.answerOptions[1].answer,
-            colour: expect.any(String),
-            correct: false,
-          }),
-        ]),
-      });
+    expect(positionResponse.body).toMatchObject({
+      questionId: questionId,
+      question: questionBody.question,
+      timeLimit: questionBody.timeLimit,
+      thumbnailUrl: questionBody.thumbnailUrl,
+      points: questionBody.points,
+  });
+  
+  expect(positionResponse.body.answerOptions).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        answerId: expect.any(Number),
+        answer: questionBody.answerOptions[0].answer,
+        colour: expect.any(String),
+      }),
+      expect.objectContaining({
+        answerId: expect.any(Number),
+        answer: questionBody.answerOptions[1].answer,
+        colour: expect.any(String),
+      }),
+    ])
+  );
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
-    await requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    // Adding a delay to ensure the state transition completes
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const quizSession2 = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus2 = (quizSession2.body as sessionState).state;
+    expect(quizSessionStatus2).toStrictEqual(quizState.QUESTION_OPEN);
 
     const positionResponse2 = requestPlayerQuestion(9999, 2);
     expect(positionResponse2.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(positionResponse2.body).toStrictEqual({ error: expect.any(String) });
 
-    await requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    // Adding a delay to ensure the state transition completes
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const quizSession3 = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus3 = (quizSession3.body as sessionState).state;
+    expect(quizSessionStatus3).toStrictEqual(quizState.QUESTION_OPEN);
 
     const positionResponse3 = requestPlayerQuestion(playerId, 3);
-    expect(positionResponse3.body).toMatchObject
-    ({
+
+      expect(positionResponse3.body).toMatchObject({
         questionId: questionId3,
         question: questionBody3.question,
         timeLimit: questionBody3.timeLimit,
         thumbnailUrl: questionBody3.thumbnailUrl,
         points: questionBody3.points,
-        answerOptions: expect.arrayContaining([
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody3.answerOptions[0].answer,
-            colour: expect.any(String),
-            correct: true,
-          }),
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody3.answerOptions[1].answer,
-            colour: expect.any(String),
-            correct: false,
-          }),
-        ]),
-      });
+    });
+    
+    expect(positionResponse3.body.answerOptions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody3.answerOptions[0].answer,
+          colour: expect.any(String),
+        }),
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody3.answerOptions[1].answer,
+          colour: expect.any(String),
+        }),
+      ])
+    );
+
     expect(positionResponse3.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
-  test('successfully get question in when session state is QUESTION_CLOSE', async () => {
-    await requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    // Adding a delay to ensure the state transition completes
-    await new Promise((resolve) => setTimeout(resolve, 60000));
+  test('successfully get question in when session state is QUESTION_CLOSE', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(6 * 10000 + 4000);
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_CLOSE);
 
     const positionResponse = requestPlayerQuestion(playerId, 1);
-    expect(positionResponse.body).toMatchObject
-    ({
-        questionId: questionId,
-        question: questionBody.question,
-        timeLimit: questionBody.timeLimit,
-        thumbnailUrl: questionBody.thumbnailUrl,
-        points: questionBody.points,
-        answerOptions: expect.arrayContaining([
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody.answerOptions[0].answer,
-            colour: expect.any(String),
-            correct: true,
-          }),
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody.answerOptions[1].answer,
-            colour: expect.any(String),
-            correct: false,
-          }),
-        ]),
-      });
+    expect(positionResponse.body).toMatchObject({
+      questionId: questionId,
+      question: questionBody.question,
+      timeLimit: questionBody.timeLimit,
+      thumbnailUrl: questionBody.thumbnailUrl,
+      points: questionBody.points,
+    });
+  
+    expect(positionResponse.body.answerOptions).toEqual(
+      expect.arrayContaining([
+      expect.objectContaining({
+        answerId: expect.any(Number),
+        answer: questionBody.answerOptions[0].answer,
+        colour: expect.any(String),
+      }),
+      expect.objectContaining({
+        answerId: expect.any(Number),
+        answer: questionBody.answerOptions[1].answer,
+        colour: expect.any(String),
+      }),
+      ])
+    );
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
-  test('successfully get question in when session state is ANSWER_SHOW', () => {
+  test.only('successfully get question in when session state is ANSWER_SHOW', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4000);
+    let quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    let quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
     const positionResponse = requestPlayerQuestion(playerId, 1);
-    expect(positionResponse.body).toMatchObject
-    ({
-        questionId: questionId,
-        question: questionBody.question,
-        timeLimit: questionBody.timeLimit,
-        thumbnailUrl: questionBody.thumbnailUrl,
-        points: questionBody.points,
-        answerOptions: expect.arrayContaining([
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody.answerOptions[0].answer,
-            colour: expect.any(String),
-            correct: true,
-          }),
-          expect.objectContaining({
-            answerId: expect.any(Number),
-            answer: questionBody.answerOptions[1].answer,
-            colour: expect.any(String),
-            correct: false,
-          }),
-        ]),
-      });
+
+    quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.ANSWER_SHOW);
+
+    expect(positionResponse.body).toMatchObject({
+      questionId: questionId,
+      question: questionBody.question,
+      timeLimit: questionBody.timeLimit,
+      thumbnailUrl: questionBody.thumbnailUrl,
+      points: questionBody.points,
+    });
+  
+    expect(positionResponse.body.answerOptions).toEqual(
+      expect.arrayContaining([
+      expect.objectContaining({
+        answerId: expect.any(Number),
+        answer: questionBody.answerOptions[0].answer,
+        colour: expect.any(String),
+      }),
+      expect.objectContaining({
+        answerId: expect.any(Number),
+        answer: questionBody.answerOptions[1].answer,
+        colour: expect.any(String),
+      }),
+      ])
+    );
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
@@ -271,6 +320,7 @@ describe('tests for playerQuestion', () => {
     const positionResponse = requestPlayerQuestion(invalidPlayerId, 1);
 
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -279,6 +329,7 @@ describe('tests for playerQuestion', () => {
     const positionResponse = requestPlayerQuestion(playerId, invalidQuestionPosition);
 
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -286,6 +337,7 @@ describe('tests for playerQuestion', () => {
     // session state is LOBBY
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -294,6 +346,7 @@ describe('tests for playerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -302,6 +355,7 @@ describe('tests for playerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -310,16 +364,18 @@ describe('tests for playerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.END);
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Session is not currently on this question', async () => {
-    await requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+  test('Session is not currently on this question', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
 
     // Adding a delay to ensure the state transition completes
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    new Promise((resolve) => setTimeout(resolve, 3000));
 
     const positionResponse = requestPlayerQuestion(playerId, 2);
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
 

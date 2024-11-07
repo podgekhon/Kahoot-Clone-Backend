@@ -26,6 +26,9 @@ Example usage
   console.log(store) # Prints { 'names': ['Hayden', 'Tam', 'Rani', 'Giuliana', 'Jake'] }
 */
 
+
+
+
 /**
  * get data from the json file
  *

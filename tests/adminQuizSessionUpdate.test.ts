@@ -125,9 +125,8 @@ describe('Test for adminQuizSessionUpdate', () => {
     // expect(quizSessionStatus).toStrictEqual(quizState.END);
   });
 
-  test.only('User successfully goes to next question', () => {
+  test('User successfully goes to next question', () => {
     nextQuestionAction = adminAction.NEXT_QUESTION;
-
     adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
       quizId,
       sessionId,
@@ -137,9 +136,9 @@ describe('Test for adminQuizSessionUpdate', () => {
     
     sleepSync(4 * 1000);
 
-    console.log(expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
+    expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
-    ));
+    );
   
 
     // get quiz session status to verify changes made to status
@@ -166,18 +165,18 @@ describe('Test for adminQuizSessionUpdate', () => {
       user1Token,
       skipCountDownAction
     );
-
+    
     expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
     );
-
-    // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_OPEN');
+    
+    console.log(`adminQuizSessionUpdate.body = ${adminQuizSessionUpdate.body}`);
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, user1Token);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
   });
 
-  test('Sucessfully close question', () => {
+  test.only('Sucessfully close question', () => {
     nextQuestionAction = adminAction.NEXT_QUESTION;
 
     requestAdminQuizSessionUpdate(
@@ -200,9 +199,9 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.SUCCESSFUL_REQUEST
     );
   // get quiz session status to verify changes made to status
-  // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-  // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-  // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_CLOSE');
+  const quizSession = requestadminQuizSessionState(quizId, sessionId, user1Token);
+  const quizSessionStatus = (quizSession.body as sessionState).state;
+  expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_CLOSE);
   });
 
   test('Sucessfully show answer', () => {

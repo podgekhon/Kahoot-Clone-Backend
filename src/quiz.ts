@@ -1001,13 +1001,25 @@ export const adminQuizSessionUpdate = (
   quizId: number,
   sessionId: number,
   token: string,
-  action: adminAction
+  action: string
 ): emptyReturn => {
-  const data = getData();
+  let data = getData();
   console.log(`HI 0`);
   const tokenValidation = validateToken(token, data);
+
+  const actionEnumString = adminAction[action as keyof typeof adminAction] as unknown as string;
+
+  console.log(`actionEnumString = ${actionEnumString}`);
+  console.log(`actionEnumString type = ${typeof actionEnumString}`);
+
+  const actionEnum = adminAction[actionEnumString as keyof typeof adminAction] as unknown as number;
+
+  console.log(`actionENUM = ${actionEnum}`);
+  console.log(`actionEnum type = ${typeof actionEnum}`);
+
   // checks if validity of user token
   if ('error' in tokenValidation) {
+    console.log(`HELLO 0`);
     throw new Error('INVALID_TOKEN');
   }
   const user = tokenValidation.authUserId;
@@ -1015,32 +1027,37 @@ export const adminQuizSessionUpdate = (
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   // checks if quiz exist
   if (!quiz) {
+    console.log(`HELLO 1`);
     throw new Error('INVALID_QUIZ');
   }
 
-  const quizSession = quiz.activeSessions.find(
+  let quizSession = quiz.activeSessions.find(
     (session) => session.sessionId === sessionId
   );
     // check if sessionId does not exist
   if (!quizSession) {
+    console.log(`HELLO 2`);
     throw new Error('INVALID_SESSIONID');
   }
   let quizSessionState = quizSession.sessionState;
 
   // check if action is invalid
   if (!(action in adminAction)) {
+    console.log(`HELLO 3`);
     throw new Error('INVALID_ACTION');
   }
 
   // check if user owns quiz
   if (user !== quiz.ownerId) {
+    console.log(`HELLO 4`);
     throw new Error('INVALID_OWNER');
   }
 
   // if action is 'END'
-  if (action === adminAction.END) {
+  if (actionEnum === adminAction.END) {
     // check if action can be applied to current state
     if (quizSessionState === quizState.END) {
+      console.log(`HELLO 5`);
       throw new Error('INVALID_ACTION');
     }
 
@@ -1055,14 +1072,17 @@ export const adminQuizSessionUpdate = (
     // remove it from activeSes array
     quiz.activeSessions.splice(quizSessionIndex);
   }
+
   console.log(`HI 1`);
-  const actionString = action as string;
+  // const actionString = action as string;
   // const actionEnum = adminAction[action];
   console.log(`action = ${action}`);
   console.log(`action type = ${typeof action}`);
   console.log(`adminaction = ${adminAction.NEXT_QUESTION}`);
+
+
   // if action is 'NEXT_QUESTION'
-  if (action === adminAction.NEXT_QUESTION) {
+  if (actionEnum === adminAction.NEXT_QUESTION) {
     console.log(`HI 2`);
     // check if action can be applied to current state
     if (
@@ -1091,20 +1111,35 @@ export const adminQuizSessionUpdate = (
     //   }
 
     setTimeout(() => {
-      const updatedData = getData();
+      console.log(`HI 4`);
       const updatedQuizSession = quiz.activeSessions.find(
         (session) => session.sessionId === sessionId
       );
 
       if (updatedQuizSession.isCountdownSkipped === false) {
+        console.log(`HI 5`);
         updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
-        setData(updatedData);
+        setData(data);
+        data = getData();
+        console.log(`data question open = ${data.quizzes[0].sessionState}`);
+        // console.log(`updatedQuizSession.sessionState = ${updatedQuizSession.sessionState}`);
       }
+      console.log(Date.now());
     }, 3000);
-  }
 
+    setTimeout(() => {
+      const updatedQuizSession = quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+      if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
+        quizSession.sessionState = quizState.QUESTION_CLOSE;
+        setData(data);
+      }
+    }, 60000);
+  }
+  console.log(`HI 6`);
   // if action is 'SKIP_COUNTDOWN'
-  if (action === adminAction.SKIP_COUNTDOWN) {
+  if (actionEnum === adminAction.SKIP_COUNTDOWN) {
     // check if action can be applied to current state
     if (quizSessionState !== quizState.QUESTION_COUNTDOWN) {
       throw new Error('INVALID_ACTION');
@@ -1114,23 +1149,29 @@ export const adminQuizSessionUpdate = (
     quizSessionState = quizState.QUESTION_OPEN;
     quizSession.isCountdownSkipped = true;
   }
-
+  console.log(`HI 7`);
   // if action is 'ANSWER_SHOW'
-  if (action === adminAction.GO_TO_ANSWER) {
+  if (actionEnum === adminAction.GO_TO_ANSWER) {
+    console.log(`Im here!!!!`);
     // check if action can be applied to current state
     if (
       quizSessionState !== quizState.QUESTION_OPEN &&
       quizSessionState !== quizState.QUESTION_CLOSE
     ) {
+      console.log(`Im here!!!! 0`);
       throw new Error('INVALID_ACTION');
     }
 
     // update quiz session
+    console.log(`Im here!!!! 1`);
     quizSessionState = quizState.ANSWER_SHOW;
+    setData(data);
+    data = getData();
+    console.log(`data = ${data.quizzes[0].sessionState}`);
   }
 
   // if action is 'GO_TO_FINAL_RESULTS'
-  if (action === adminAction.GO_TO_FINAL_RESULT) {
+  if (actionEnum === adminAction.GO_TO_FINAL_RESULT) {
     // check if action can be applied to current state
     if (
       quizSessionState !== quizState.QUESTION_CLOSE &&
@@ -1141,19 +1182,7 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSessionState = quizState.FINAL_RESULTS;
-  }
 
-  if (quizSessionState === quizState.QUESTION_OPEN) {
-    setTimeout(() => {
-      const updatedData = getData();
-      const updatedQuizSession = quiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
-      );
-      if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
-        quizSession.sessionState = quizState.QUESTION_CLOSE;
-        setData(updatedData); // could also try to use updated datastore
-      }
-    }, 60000);
   }
 
   setData(data);
