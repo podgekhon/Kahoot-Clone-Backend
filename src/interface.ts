@@ -256,3 +256,9 @@ export interface PlayerState {
   numQuestions: number,
   atQuestion: number
 }
+
+export interface requestOptions {
+  json?: object;
+  headers?: Record<string, string>;
+  timeout: number;
+}

@@ -1041,7 +1041,7 @@ export const adminQuizSessionUpdate = (
     throw new Error('INVALID_OWNER');
   }
 
-  if (quizSession.sessionState == quizState.LOBBY) {
+  if (quizSession.sessionState === quizState.LOBBY) {
     quizSession.isInLobby = true;
   }
 
@@ -1098,7 +1098,7 @@ export const adminQuizSessionUpdate = (
 
       if (updatedQuizSession.isCountdownSkipped === false) {
         updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
-        if (quizSession.isInLobby == false) {
+        if (quizSession.isInLobby === false) {
           quizSession.sessionQuestionPosition++;
         }
         setData(updatedData);
@@ -1116,7 +1116,7 @@ export const adminQuizSessionUpdate = (
     // update quiz session
     quizSessionState = quizState.QUESTION_OPEN;
     quizSession.isCountdownSkipped = true;
-    if (quizSession.isInLobby == false) {
+    if (quizSession.isInLobby === false) {
       quizSession.sessionQuestionPosition++;
     }
   }
