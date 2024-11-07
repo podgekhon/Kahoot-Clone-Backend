@@ -13,15 +13,7 @@ import {
   quiz
 } from './interface';
 
-export enum quizState {
-  LOBBY,
-  QUESTION_COUNTDOWN,
-  QUESTION_OPEN,
-  ANSWER_SHOW,
-  FINAL_RESULTS,
-  END,
-}
-
+import { quizState } from './quiz';
 /**
  *
 Allow a guest player to join a session

@@ -1308,3 +1308,23 @@ export const requestplayerState = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+
+
+
+
+export const requestPlayerMessageList = (
+  playerId: number
+) : {
+  body: ReturnType <typeof playerMessageList>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}/chat`,
+    {
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
