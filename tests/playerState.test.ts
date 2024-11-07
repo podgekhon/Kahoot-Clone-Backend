@@ -13,8 +13,7 @@ import {
   tokenReturn,
   quizCreateResponse,
   quizStartSessionResponse,
-  playerId,
-  quizSession
+  playerId
 } from '../src/interface';
 
 describe('tests for playerState', () => {
