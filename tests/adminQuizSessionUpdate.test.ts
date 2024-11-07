@@ -6,7 +6,8 @@ import {
   requestAdminQuizQuestionCreateV2,
   requestAdminStartQuizSession,
   httpStatus,
-  requestAdminQuizSessionUpdate
+  requestAdminQuizSessionUpdate,
+  requestadminQuizSessionState
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
@@ -17,10 +18,12 @@ import {
   startSession,
   quizStartSessionResponse,
   quizSessionStatusUpdate,
+  sessionState
 } from '../src/interface';
+import sleepSync from 'slync';
 
 // rmb to add quizState
-import { adminAction } from '../src/quiz';
+import { adminAction, quizState } from '../src/quiz';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
@@ -122,7 +125,7 @@ describe('Test for adminQuizSessionUpdate', () => {
     // expect(quizSessionStatus).toStrictEqual(quizState.END);
   });
 
-  test('User successfully goes to next question', () => {
+  test.only('User successfully goes to next question', () => {
     nextQuestionAction = adminAction.NEXT_QUESTION;
 
     adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
@@ -131,15 +134,18 @@ describe('Test for adminQuizSessionUpdate', () => {
       user1Token,
       nextQuestionAction
     );
+    
+    sleepSync(4 * 1000);
 
-    expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
+    console.log(expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
-    );
+    ));
+  
 
     // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_COUNTDOWN');
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, user1Token);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
   });
 
   test('User successfully skips countdown', () => {

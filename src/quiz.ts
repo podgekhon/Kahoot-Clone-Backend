@@ -1004,7 +1004,7 @@ export const adminQuizSessionUpdate = (
   action: adminAction
 ): emptyReturn => {
   const data = getData();
-
+  console.log(`HI 0`);
   const tokenValidation = validateToken(token, data);
   // checks if validity of user token
   if ('error' in tokenValidation) {
@@ -1055,20 +1055,28 @@ export const adminQuizSessionUpdate = (
     // remove it from activeSes array
     quiz.activeSessions.splice(quizSessionIndex);
   }
-
+  console.log(`HI 1`);
+  const actionString = action as string;
+  // const actionEnum = adminAction[action];
+  console.log(`action = ${action}`);
+  console.log(`action type = ${typeof action}`);
+  console.log(`adminaction = ${adminAction.NEXT_QUESTION}`);
   // if action is 'NEXT_QUESTION'
   if (action === adminAction.NEXT_QUESTION) {
+    console.log(`HI 2`);
     // check if action can be applied to current state
     if (
       quizSessionState !== quizState.LOBBY &&
       quizSessionState !== quizState.ANSWER_SHOW &&
       quizSessionState !== quizState.QUESTION_CLOSE
     ) {
+      console.log(`HI`);
       throw new Error('INVALID_ACTION');
     }
-
+    
     // update quiz session
     quizSessionState = quizState.QUESTION_COUNTDOWN;
+    console.log(`quizSessionState = ${quizSessionState}`);
 
     // give quizSession countdown flag
     quizSession.isCountdownSkipped = false;
@@ -1152,6 +1160,7 @@ export const adminQuizSessionUpdate = (
   return {};
 };
 
+// Get the status of a particular quiz session
 export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
 errorMessages | sessionState => {
   const data = getData();

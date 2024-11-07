@@ -102,12 +102,13 @@ describe('tests for playerQuestion', () => {
     
   });
 
-  test.only('successfully get question in when session state is QUESTION_OPEN', async () => {
+  test.only('successfully get question when session state is QUESTION_OPEN', async () => {
     // state must be QUESTION_OPEN / QUESTION_CLOSE / ANSWER_SHOW
     await requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-
+    // requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     // Adding a delay to ensure the state transition completes
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    // console.log(`quiz state = ${(session.body as )}`)
 
     const questionPosition = 1;
     const positionResponse = requestPlayerQuestion(playerId, questionPosition);
@@ -136,7 +137,7 @@ describe('tests for playerQuestion', () => {
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
-  test.only('successfully and unsuccessfully get question at different positions', async () => {
+  test('successfully and unsuccessfully get question at different positions', async () => {
     // state must be QUESTION_OPEN / QUESTION_CLOSE / ANSWER_SHOW
     await requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
 
@@ -281,14 +282,14 @@ describe('tests for playerQuestion', () => {
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Session is LOBBY', () => {
+  test('Question position is not valid when session state is LOBBY', () => {
     // session state is LOBBY
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Session is QUESTION_COUNTDOWN', () => {
+  test('Question position is not valid when session state is QUESTION_COUNTDOWN', () => {
     // session state is QUESTION_COUNTDOWN
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     const positionResponse = requestPlayerQuestion(playerId, 1);
@@ -296,7 +297,7 @@ describe('tests for playerQuestion', () => {
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Session is FINAL_RESULT', () => {
+  test('Question position is not valid when session state is FINAL_RESULT', () => {
     //sesstion state is FINAL_RESULT
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
     const positionResponse = requestPlayerQuestion(playerId, 1);
@@ -304,7 +305,7 @@ describe('tests for playerQuestion', () => {
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('Session is END_STATE', () => {
+  test('Question position is not valid when session state is END_STATE', () => {
     // session state is END_STATE
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.END);
     const positionResponse = requestPlayerQuestion(playerId, 1);
