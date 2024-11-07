@@ -6,7 +6,8 @@ import {
   requestClear,
   requestjoinPlayer,
   httpStatus,
-  requestPlayerMessage
+  requestPlayerMessage,
+  requestPlayerMessageList
 } from '../src/requestHelperFunctions';
 
 import {
@@ -96,21 +97,18 @@ describe('tests for player message send', () => {
     expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(res.body).toStrictEqual({});
 
-    /*
-commented out bcz functions are not implemented
-// get the message list
-const msgList = requestPlayerMessageList();
-expect(msgList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-expect(msgList.body).toStrictEqual({
-messages: [
-{
-messageBody: 'hello guys',
-playerId: playerId,
-playerName: 'Xiaoyuan Ma,
-timeSent: expect.any(Number)
-}
-]
-})
-*/
+    // get the message list
+    const msgList = requestPlayerMessageList(playerId);
+    expect(msgList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    expect(msgList.body).toStrictEqual({
+    messages: [
+      {
+        messageBody: 'hello guys',
+        playerId: playerId,
+        playerName: 'Xiaoyuan ma',
+        timeSent: expect.any(Number)
+        }
+      ]
+    })
   });
 });
