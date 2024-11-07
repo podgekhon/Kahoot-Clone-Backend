@@ -81,6 +81,7 @@ export interface quizSession {
   autoStartNum: number;
   sessionQuestionPosition: number;
   isCountdownSkipped?: boolean;
+  isInLobby?: boolean;
   messages: message[];
 }
 
