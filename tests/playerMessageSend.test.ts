@@ -101,14 +101,14 @@ describe('tests for player message send', () => {
     const msgList = requestPlayerMessageList(playerId);
     expect(msgList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(msgList.body).toStrictEqual({
-    messages: [
-      {
-        messageBody: 'hello guys',
-        playerId: playerId,
-        playerName: 'Xiaoyuan ma',
-        timeSent: expect.any(Number)
+      messages: [
+        {
+          messageBody: 'hello guys',
+          playerId: playerId,
+          playerName: 'Xiaoyuan ma',
+          timeSent: expect.any(Number)
         }
       ]
-    })
+    });
   });
 });
