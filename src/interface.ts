@@ -88,9 +88,17 @@ export interface message {
   playerId: number,
   playerName: string,
   messageBody: string,
-  timesent: number
+  timeSent: number
 }
 
+export interface messageList {
+  messages: {
+    playerId: number,
+    playerName: string,
+    messageBody: string,
+    timeSent: number
+  }[]
+}
 export interface token {
   sessionId: number;
   userId: number;

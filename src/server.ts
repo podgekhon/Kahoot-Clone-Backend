@@ -65,7 +65,8 @@ import {
 import {
   joinPlayer,
   playerMessage,
-  playerState
+  playerState,
+  playerMessageList
 } from './player';
 
 import { clear } from './other';
@@ -701,6 +702,17 @@ const handleplayerState = (req: Request, res: Response) => {
   }
 };
 
+// player message list
+app.get('/v1/player/:playerId/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  try {
+    const result = playerMessageList(playerId);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+});
 app.get('/v1/player/:playerId', handleplayerState);
 
 // ====================================================================
