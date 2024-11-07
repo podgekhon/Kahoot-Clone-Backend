@@ -48,7 +48,8 @@ import {
 import {
   joinPlayer,
   playerMessage,
-  playerState
+  playerState,
+  playerMessageList
 } from './player';
 import { messageBody } from './interface';
 
@@ -1308,10 +1309,6 @@ export const requestplayerState = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
-
-
-
-
 
 export const requestPlayerMessageList = (
   playerId: number

@@ -10,7 +10,8 @@ import {
   playerId,
   quizSession,
   PlayerState,
-  quiz
+  quiz,
+  messageList
 } from './interface';
 
 import { quizState } from './quiz';
@@ -84,7 +85,7 @@ export const playerMessage = (playerId: number, message: messageBody) : emptyRet
     playerId: playerId,
     playerName: validPlayer.playerName,
     messageBody: newMessage,
-    timesent: Math.floor(Date.now() / 1000)
+    timeSent: Math.floor(Date.now() / 1000)
   };
   // find the quiz Session
   let FindSession: quizSession;
@@ -128,4 +129,27 @@ export const playerState = (playerId: number) : PlayerState => {
   };
 
   return response;
+};
+
+/**
+ *
+ * @param { number } playerId
+ * @returns
+ */
+export const playerMessageList = (playerId: number) : messageList => {
+  const data = getData();
+  // check if player exists
+  const validPlayer = data.players.find(p => p.playerId === playerId);
+  if (!validPlayer) {
+    throw new Error('INVALID_PLAYER');
+  }
+  const session = validPlayer.sessionId;
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find(s => s.sessionId === session);
+    if (FindSession) break;
+  }
+  const messages = FindSession.messages;
+
+  return { messages };
 };
