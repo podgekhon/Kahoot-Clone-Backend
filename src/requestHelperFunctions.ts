@@ -49,7 +49,8 @@ import {
   joinPlayer,
   playerMessage,
   playerState,
-  playerMessageList
+  playerMessageList,
+  playerQuestion
 } from './player';
 import { messageBody } from './interface';
 

@@ -155,6 +155,10 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Name contains invalid characters.'
   },
+  EXIST_PLAYERID: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Player ID does not exist.'
+  },
   INVALID_SESSIONID: {
     status: httpStatus.BAD_REQUEST,
     message: 'Session Id does not refer to a valid session.'
@@ -162,6 +166,18 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   SESSION_NOT_IN_LOBBY: {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in LOBBY state.'
+  },
+  SESSION_IN_LOBBY_COUNTDOWN_RESULTS_END: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in LOBBY, QUESTION_COUNTDOWN, FINAL_RESULTS or END state.'
+  },
+  SESSION_NOT_ON_QUESTION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is not currently on this question.'
+  },
+  INVALID_QUESTION_POSITION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Question position is not valid for the session this player is in.'
   },
   INVALID_ACTION: {
     status: httpStatus.BAD_REQUEST,

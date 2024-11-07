@@ -11,7 +11,8 @@ import {
   quizSession,
   PlayerState,
   quiz,
-  messageList
+  messageList,
+  question
 } from './interface';
 
 import { quizState } from './quiz';
@@ -63,6 +64,73 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
   setData(data);
   return { playerId: playerId };
 };
+
+
+/**
+ *
+ * Get the information about a question that the guest player is on.
+ *
+ * @param {number} playerId - an unique number representing a player
+ * @param {number} questionPosition - the position of a question
+ *
+ * @returns {Error} - An object containing an error message if registration fails
+ * @returns {question} - Information about a question
+ */
+export const playerQuestion = (playerId: number, questionPosition: number): question => {
+  const data = getData();
+  const player = data.players.find(p => p.playerId === playerId);
+
+  if (!player) {
+    throw new Error(`EXIST_PLAYERID`);
+  }
+
+  // Find the session the player is part of
+  let session: quizSession | undefined;
+  let quiz: quiz | undefined;
+  for (const q of data.quizzes) {
+    session = q.activeSessions.find((s) => s.sessionId === player.sessionId);
+    if (session) {
+      quiz = q;
+      // Exit loop once session is found
+      break; 
+    }
+  }
+
+  if (!session || !quiz) {
+    throw new Error(`SESSION_NOT_ON_QUESTION`);
+  }
+
+  // Check if the session state is valid
+  console.log(`QUI session state = ${session.sessionState}`);
+  if ([quizState.LOBBY, quizState.QUESTION_COUNTDOWN, quizState.FINAL_RESULTS, quizState.END].includes(session.sessionState)) {
+    throw new Error(`SESSION_IN_LOBBY_COUNTDOWN_RESULTS_END`);
+  }
+
+  // Validate the question position by using the quiz's questions array length
+  if (questionPosition < 1 || questionPosition > quiz.questions.length) {
+    throw new Error(`INVALID_QUESTION_POSITION`);
+  }
+
+  // Get the question from the quiz's questions array
+  const question = quiz.questions[questionPosition - 1];
+
+  // Construct the response object
+  const response: question = {
+    questionId: question.questionId,
+    question: question.question, 
+    timeLimit: question.timeLimit,
+    points: question.points,
+    thumbnailUrl: question.thumbnailUrl,
+    answerOptions: question.answerOptions.map(option => ({
+        answerId: option.answerId,
+        answer: option.answer,
+        colour: option.colour
+    })),
+  };
+
+  return response;
+};
+
 
 /**
  *
