@@ -16,6 +16,8 @@ import {
   playerId
 } from '../src/interface';
 
+import { quizState } from '../src/quiz';
+
 describe('tests for playerState', () => {
   let token: string;
   let quizId: number;
@@ -53,7 +55,7 @@ describe('tests for playerState', () => {
     const resplayerState = requestplayerState(playerId);
 
     const correctresponse = {
-      state: 'LOBBY',
+      state: quizState.LOBBY,
       numQuestions: 1,
       atQuestion: 1
     };
