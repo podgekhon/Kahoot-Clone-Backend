@@ -53,7 +53,7 @@ describe('tests for playerState', () => {
     const resplayerState = requestplayerState(playerId);
 
     const correctresponse = {
-      state: 0,
+      state: 'LOBBY',
       numQuestions: 1,
       atQuestion: 1
     };

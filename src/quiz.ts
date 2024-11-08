@@ -32,13 +32,13 @@ import {
 } from './interface';
 
 export enum quizState {
-  LOBBY,
-  QUESTION_COUNTDOWN,
-  QUESTION_OPEN,
-  QUESTION_CLOSE,
-  ANSWER_SHOW,
-  FINAL_RESULTS,
-  END,
+  LOBBY = 'LOBBY',
+  QUESTION_COUNTDOWN = 'COUNTDOWN',
+  QUESTION_OPEN = 'QUESTION_OPEN',
+  QUESTION_CLOSE = 'QUESTION_CLOSE',
+  ANSWER_SHOW = 'ANSWER_SHOW',
+  FINAL_RESULTS = 'FINAL_RESULT',
+  END = 'END'
 }
 
 export enum adminAction {

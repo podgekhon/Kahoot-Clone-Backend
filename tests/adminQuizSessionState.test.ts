@@ -58,7 +58,7 @@ describe('tests for adminQuizSession', () => {
     const resStartSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
 
     expect(resStartSession.body).toStrictEqual({
-      state: 0,
+      state: 'LOBBY',
       atQuestion: 1,
       players: [
         'abcde123'
