@@ -6,6 +6,7 @@ import {
   requestAdminQuizCreate,
   requestAdminQuizTransfer,
   requestAdminQuizTransferV2,
+  httpStatus
 } from '../src/requestHelperFunctions';
 import {
   quizCreateResponse,
@@ -47,7 +48,7 @@ describe('Test for adminQuizTransfer', () => {
       'One'
     );
     user1Token = (user1Response.body as tokenReturn).token;
-    expect(user1Response.statusCode).toStrictEqual(200);
+    expect(user1Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     user2Response = requestAdminAuthRegister(
       'user2@gmail.com',
@@ -55,7 +56,7 @@ describe('Test for adminQuizTransfer', () => {
       'User',
       'Two'
     );
-    expect(user2Response.statusCode).toStrictEqual(200);
+    expect(user2Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     user2Token = (user2Response.body as tokenReturn).token;
 
     user3Response = requestAdminAuthRegister(
@@ -64,11 +65,13 @@ describe('Test for adminQuizTransfer', () => {
       'User',
       'Three'
     );
-    expect(user3Response.statusCode).toStrictEqual(200);
+    expect(user3Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     user3Token = (user3Response.body as tokenReturn).token;
 
     User1QuizListResponse = requestAdminQuizList(user2Token);
-    expect(User1QuizListResponse.statusCode).toStrictEqual(200);
+    expect(User1QuizListResponse.statusCode).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
     expect(User1QuizListResponse.body).toStrictEqual({
       quizzes: []
     });
@@ -78,13 +81,21 @@ describe('Test for adminQuizTransfer', () => {
       'Math Quiz',
       'this is a math quiz'
     );
-    expect(quizCreateResponse.statusCode).toStrictEqual(200);
+    expect(quizCreateResponse.statusCode).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
     quizId = (quizCreateResponse.body as quizCreateResponse).quizId;
   });
 
   test('Valid adminQuizTransfer', () => {
-    quizTransferResponse = requestAdminQuizTransfer(quizId, user1Token, 'user2@gmail.com');
-    expect(quizTransferResponse.statusCode).toStrictEqual(200);
+    quizTransferResponse = requestAdminQuizTransfer(
+      quizId,
+      user1Token,
+      'user2@gmail.com'
+    );
+    expect(quizTransferResponse.statusCode).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
 
     User2QuizListResponse = requestAdminQuizList(user2Token);
     expect(User2QuizListResponse.body).toStrictEqual({
@@ -97,7 +108,9 @@ describe('Test for adminQuizTransfer', () => {
     });
 
     User2QuizListResponse = requestAdminQuizList(user1Token);
-    expect(User2QuizListResponse.statusCode).toStrictEqual(200);
+    expect(User2QuizListResponse.statusCode).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
     expect(User2QuizListResponse.body).toStrictEqual({
       quizzes: []
     });
@@ -110,7 +123,9 @@ describe('Test for adminQuizTransfer', () => {
       user1Token,
       'user2@gmail.com'
     );
-    expect(quizTransferResponse.statusCode).toStrictEqual(200);
+    expect(quizTransferResponse.statusCode).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
 
     User2QuizListResponse = requestAdminQuizList(user2Token);
     expect(User2QuizListResponse.body).toStrictEqual({
@@ -123,7 +138,9 @@ describe('Test for adminQuizTransfer', () => {
     });
 
     User2QuizListResponse = requestAdminQuizList(user1Token);
-    expect(User2QuizListResponse.statusCode).toStrictEqual(200);
+    expect(User2QuizListResponse.statusCode).toStrictEqual(
+      httpStatus.SUCCESSFUL_REQUEST
+    );
     expect(User2QuizListResponse.body).toStrictEqual({
       quizzes: []
     });
@@ -135,7 +152,7 @@ describe('Test for adminQuizTransfer', () => {
       user1Token,
       'notRealUser2@gmail.com'
     );
-    expect(quizTransferResponse.statusCode).toStrictEqual(400);
+    expect(quizTransferResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -145,37 +162,72 @@ describe('Test for adminQuizTransfer', () => {
       user1Token,
       'user1@gmail.com'
     );
-    expect(quizTransferResponse.statusCode).toStrictEqual(400);
+    expect(quizTransferResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error if receiver has a quiz with same name', () => {
-    quizCreateResponse = requestAdminQuizCreate(user2Token, 'Math Quiz', 'this is a math quiz');
-    expect(quizCreateResponse.statusCode).toStrictEqual(200);
+    quizCreateResponse = requestAdminQuizCreate(
+      user2Token,
+      'Math Quiz',
+      'this is a math quiz'
+    );
+    expect(quizCreateResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
-    quizTransferResponse = requestAdminQuizTransfer(quizId, user1Token, 'user2@gmail.com');
-    expect(quizTransferResponse.statusCode).toStrictEqual(400);
+    quizTransferResponse = requestAdminQuizTransfer(
+      quizId,
+      user1Token,
+      'user2@gmail.com'
+    );
+    expect(quizTransferResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
 
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('invalid token: empty token', () => {
     quizTransferResponse = requestAdminQuizTransfer(quizId, '', 'user2@gmail.com');
-    expect(quizTransferResponse.statusCode).toStrictEqual(401);
+    expect(quizTransferResponse.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
 
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('invalid token: invalid token', () => {
-    quizTransferResponse = requestAdminQuizTransfer(quizId, '9999999', 'user2@gmail.com');
-    expect(quizTransferResponse.statusCode).toStrictEqual(401);
+    quizTransferResponse = requestAdminQuizTransfer(
+      quizId,
+      '9999999',
+      'user2@gmail.com'
+    );
+    expect(quizTransferResponse.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
 
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('return error if user is not an owner of this quiz', () => {
-    quizTransferResponse = requestAdminQuizTransfer(quizId, user3Token, 'user2@gmail.com');
-    expect(quizTransferResponse.statusCode).toStrictEqual(403);
+    quizTransferResponse = requestAdminQuizTransfer(
+      quizId,
+      user3Token,
+      'user2@gmail.com'
+    );
+    expect(quizTransferResponse.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+
+    expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error for invalid quizId', () => {
+    const invalidQuizId = quizId + 1;
+    quizCreateResponse = requestAdminQuizCreate(
+      user2Token,
+      'Math Quiz',
+      'this is a math quiz'
+    );
+    expect(quizCreateResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    quizTransferResponse = requestAdminQuizTransfer(
+      invalidQuizId,
+      user1Token,
+      'user2@gmail.com'
+    );
+    expect(quizTransferResponse.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
 
     expect(quizTransferResponse.body).toStrictEqual({ error: expect.any(String) });
   });

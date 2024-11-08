@@ -81,6 +81,7 @@ export interface quizSession {
   autoStartNum: number;
   sessionQuestionPosition: number;
   isCountdownSkipped?: boolean;
+  isInLobby?: boolean;
   messages: message[];
 }
 
@@ -254,4 +255,10 @@ export interface PlayerState {
   state: quizState,
   numQuestions: number,
   atQuestion: number
+}
+
+export interface requestOptions {
+  json?: object;
+  headers?: Record<string, string>;
+  timeout: number;
 }

@@ -903,22 +903,26 @@ export const adminQuizTransfer = (
   userEmail: string
 ): emptyReturn => {
   const data = getData();
-  const receiver = data.users.find((user) => user.email === userEmail);
-  const tokenValidation = validateToken(token, data);
-  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     throw new Error('INVALID_TOKEN');
   }
-  const senderId = tokenValidation.authUserId;
+
+  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!transferredQuiz) {
+    throw new Error('INVALID_QUIZ');
+  }
 
   // checks if receiver is a real user
+  const receiver = data.users.find((user) => user.email === userEmail);
   if (!receiver) {
     throw new Error('INVALID_USEREMAIL');
   }
   const receiverId = receiver.userId;
 
   // checks if userEmail is the current logged in user
+  const senderId = tokenValidation.authUserId;
   if (senderId === receiverId) {
     throw new Error('ALREADY_OWNS');
   }
@@ -987,6 +991,7 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   return {};
 };
 
+
 /**
  * Updates quiz session status based on admin action
  *
@@ -1009,13 +1014,13 @@ export const adminQuizSessionUpdate = (
 
   const actionEnumString = adminAction[action as keyof typeof adminAction] as unknown as string;
 
-  console.log(`actionEnumString = ${actionEnumString}`);
-  console.log(`actionEnumString type = ${typeof actionEnumString}`);
+  // console.log(`actionEnumString = ${actionEnumString}`);
+  // console.log(`actionEnumString type = ${typeof actionEnumString}`);
 
   const actionEnum = adminAction[actionEnumString as keyof typeof adminAction] as unknown as number;
 
-  console.log(`actionENUM = ${actionEnum}`);
-  console.log(`actionEnum type = ${typeof actionEnum}`);
+  // console.log(`actionENUM = ${actionEnum}`);
+  // console.log(`actionEnum type = ${typeof actionEnum}`);
 
   // checks if validity of user token
   if ('error' in tokenValidation) {
@@ -1052,6 +1057,11 @@ export const adminQuizSessionUpdate = (
     console.log(`HELLO 4`);
     throw new Error('INVALID_OWNER');
   }
+
+  if (quizSession.sessionState === quizState.LOBBY) {
+    quizSession.isInLobby = true;
+  }
+  let quizTimeout: any;
 
   // if action is 'END'
   if (actionEnum === adminAction.END) {
@@ -1112,30 +1122,66 @@ export const adminQuizSessionUpdate = (
 
     setTimeout(() => {
       console.log(`HI 4`);
-      const updatedQuizSession = quiz.activeSessions.find(
+      // I want to get the 
+      const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+    const updatedQuizSession = quiz.activeSessions.find(
         (session) => session.sessionId === sessionId
-      );
+    );
 
       if (updatedQuizSession.isCountdownSkipped === false) {
         console.log(`HI 5`);
         updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
+
+        quizTimeout = setTimeout(() => {
+          // const updatedQuizSession = quiz.activeSessions.find(
+          //   (session) => session.sessionId === sessionId
+          // );
+          const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+          const updatedQuizSession = quiz.activeSessions.find(
+              (session) => session.sessionId === sessionId
+          );
+          if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
+            console.log(`I went to QUESTION_CLOSE`);
+            updatedQuizSession.sessionState = quizState.QUESTION_CLOSE;
+            // console.log(`data1 = ${JSON.stringify(data)}`);
+            setData(data);
+            console.log(Date.now);
+            // console.log(`data2 = ${JSON.stringify(data)}`);
+            console.log(`state should be 3 = ${data.quizzes[0].activeSessions.find(session => session.sessionId === sessionId).sessionState}`);
+          }
+        }, 6000);
+      
+        if (quizSession.isInLobby === false) {
+          quizSession.sessionQuestionPosition++;
+        }
         setData(data);
-        data = getData();
-        console.log(`data question open = ${data.quizzes[0].sessionState}`);
+        // data = getData();
+        console.log(Date.now);
+        console.log(`state should be 2 = ${data.quizzes[0].activeSessions.find(session => session.sessionId === sessionId).sessionState}`);
         // console.log(`updatedQuizSession.sessionState = ${updatedQuizSession.sessionState}`);
       }
       console.log(Date.now());
     }, 3000);
 
-    setTimeout(() => {
+    quizTimeout = setTimeout(() => {
+      // const updatedQuizSession = quiz.activeSessions.find(
+      //   (session) => session.sessionId === sessionId
+      // );
+      const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
       const updatedQuizSession = quiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
+          (session) => session.sessionId === sessionId
       );
       if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
-        quizSession.sessionState = quizState.QUESTION_CLOSE;
+        console.log(`I went to QUESTION_CLOSE`);
+        updatedQuizSession.sessionState = quizState.QUESTION_CLOSE;
+        // console.log(`data1 = ${JSON.stringify(data)}`);
         setData(data);
+        console.log(Date.now);
+        // console.log(`data2 = ${JSON.stringify(data)}`);
+        console.log(`state should be 3 = ${data.quizzes[0].activeSessions.find(session => session.sessionId === sessionId).sessionState}`);
       }
-    }, 60000);
+    }, 6000);
+  
   }
   console.log(`HI 6`);
   // if action is 'SKIP_COUNTDOWN'
@@ -1148,6 +1194,15 @@ export const adminQuizSessionUpdate = (
     // update quiz session
     quizSessionState = quizState.QUESTION_OPEN;
     quizSession.isCountdownSkipped = true;
+    if (quizSession.isInLobby === false) {
+      quizSession.sessionQuestionPosition++;
+    }
+    function clearQuizTimeout() {
+      if (quizTimeout) {
+        clearTimeout(quizTimeout);
+        console.log("Quiz timeout cleared.");
+      }
+    }
   }
   console.log(`HI 7`);
   // if action is 'ANSWER_SHOW'
@@ -1164,10 +1219,12 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     console.log(`Im here!!!! 1`);
-    quizSessionState = quizState.ANSWER_SHOW;
+    // quizSessionState = quizState.ANSWER_SHOW;
+    quizSession.sessionState = quizState.ANSWER_SHOW;
     setData(data);
-    data = getData();
-    console.log(`data = ${data.quizzes[0].sessionState}`);
+    // data = getData();
+    // console.log(`data = ${data.quizzes[0].sessionState}`);
+    console.log(`data = ${data.quizzes[0].activeSessions.find(session => session.sessionId === sessionId).sessionState}`);
   }
 
   // if action is 'GO_TO_FINAL_RESULTS'
@@ -1184,7 +1241,6 @@ export const adminQuizSessionUpdate = (
     quizSessionState = quizState.FINAL_RESULTS;
 
   }
-
   setData(data);
   return {};
 };

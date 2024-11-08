@@ -163,7 +163,7 @@ describe('tests for playerQuestion', () => {
   );
 });
 
-  test('successfully and unsuccessfully get question at different positions', () => {
+  test.only('successfully and unsuccessfully get question at different positions', () => {
     // state must be QUESTION_OPEN / QUESTION_CLOSE / ANSWER_SHOW
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     sleepSync(4 * 1000);
@@ -245,7 +245,7 @@ describe('tests for playerQuestion', () => {
 
   test('successfully get question in when session state is QUESTION_CLOSE', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(6 * 10000 + 4000);
+    sleepSync(6 * 1000 + 4000);
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
     expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_CLOSE);
@@ -276,7 +276,7 @@ describe('tests for playerQuestion', () => {
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
-  test.only('successfully get question in when session state is ANSWER_SHOW', () => {
+  test('successfully get question in when session state is ANSWER_SHOW', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     sleepSync(4000);
     let quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);

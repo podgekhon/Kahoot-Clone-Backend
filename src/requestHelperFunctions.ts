@@ -52,7 +52,11 @@ import {
   playerMessageList,
   playerQuestion
 } from './player';
-import { messageBody } from './interface';
+
+import {
+  messageBody,
+  requestOptions
+} from './interface';
 
 // clear
 /**
@@ -1116,33 +1120,51 @@ export const requestAdminQuizQuestionRemoveV2 = (
 
 // adminMoveQuizQuestion
 /**
- * Makes http request to move a question to a new position
+ * Makes an HTTP request to move a question to a new position
  *
- * @param { number } quizId
- * @param { number } questionId
- * @param { string } token
- * @param { number } newPosition
- * @returns { Response }
+ * @param {number} quizId
+ * @param {number} questionId
+ * @param {string} token
+ * @param {number} newPosition
+ * @param {string} version - v1 or v2
+ * @returns {Response}
  */
-export const requestAdminMoveQuizQuestion = (
-  quizId: number, questionId: number, token: string, newPosition: number
+const requestAdminMoveQuizQuestionGeneric = (
+  quizId: number, questionId: number, token: string, newPosition: number, version: string
 ): {
-  body: ReturnType <typeof adminMoveQuizQuestion>,
+  body: ReturnType<typeof adminMoveQuizQuestion>,
   statusCode: number
 } => {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
-    {
-      json: {
-        token: token,
-        newPosition: newPosition,
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/${quizId}/question/${questionId}/move`;
+
+  const options: requestOptions = {
+    json: { newPosition },
+    timeout: TIMEOUT_MS,
+  };
+
+  if (version === 'v1') {
+    options.json = { token, newPosition };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('PUT', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+/**
+ * Makes HTTP request to move a question to a new position using v1 route
+ */
+export const requestAdminMoveQuizQuestionV1 = (
+  quizId: number, questionId: number, token: string, newPosition: number
+) => requestAdminMoveQuizQuestionGeneric(quizId, questionId, token, newPosition, 'v1');
+
+/**
+ * Makes HTTP request to move a question to a new position using v2 route
+ */
+export const requestAdminMoveQuizQuestionV2 = (
+  quizId: number, questionId: number, token: string, newPosition: number
+) => requestAdminMoveQuizQuestionGeneric(quizId, questionId, token, newPosition, 'v2');
 
 // adminQuizQuestionDuplicate
 /**

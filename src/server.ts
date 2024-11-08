@@ -478,9 +478,15 @@ app.get('/v1/admin/quiz/:quizId/sessions', (req, res) => {
 });
 
 // adminMoveQuizQuestion
-app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+const handleAdminMoveQuizQuestion = (req: Request, res: Response) => {
   const { quizid, questionid } = req.params;
-  const { token, newPosition } = req.body;
+  const { newPosition } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
+  }
 
   try {
     const result = adminMoveQuizQuestion(
@@ -491,10 +497,13 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
     );
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    const mappedError = errorMap[error.message];
-    return res.status(mappedError.status).json({ error: mappedError.message });
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-});
+};
+
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move', handleAdminMoveQuizQuestion);
+app.put('/v2/admin/quiz/:quizid/question/:questionid/move', handleAdminMoveQuizQuestion);
 
 // adminAuthLogout
 const handleadminAuthLogout = (req: Request, res: Response) => {
