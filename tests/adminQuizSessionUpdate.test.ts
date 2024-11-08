@@ -6,7 +6,8 @@ import {
   requestAdminQuizQuestionCreateV2,
   requestAdminStartQuizSession,
   httpStatus,
-  requestAdminQuizSessionUpdate
+  requestAdminQuizSessionUpdate,
+  requestadminQuizSessionState
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
@@ -17,10 +18,11 @@ import {
   startSession,
   quizStartSessionResponse,
   quizSessionStatusUpdate,
+  sessionState,
 } from '../src/interface';
-
 // rmb to add quizState
-import { adminAction } from '../src/quiz';
+import { adminAction, quizState } from '../src/quiz';
+import sleepSync from 'slync';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100 * 1000;
@@ -42,6 +44,7 @@ describe('Test for adminQuizSessionUpdate', () => {
   let skipCountDownAction: adminAction;
   let showAnswerAction: adminAction;
   let goFinalResults: adminAction;
+  let getUpdatedSession: sessionState;
 
   let adminQuizSessionUpdate: quizSessionStatusUpdate;
 
@@ -96,10 +99,14 @@ describe('Test for adminQuizSessionUpdate', () => {
       startSessionResponse.body as quizStartSessionResponse
     ).sessionId;
 
-    // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual('LOBBY');
+    // get previous quiz session status to verify future state updates
+    const resStartSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    );
+    const sessionState = resStartSession.body.state;
+    expect(sessionState).toStrictEqual('LOBBY');
   });
 
   test('User successfully ends session status', () => {
@@ -109,17 +116,22 @@ describe('Test for adminQuizSessionUpdate', () => {
       quizId,
       sessionId,
       user1Token,
-      endAction
+      adminAction.END
     );
 
     expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
     );
 
-    // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual(quizState.END);
+    const getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    );
+
+    const sesionUpdated = (getUpdatedSession.body as sessionState).state;
+
+    expect(sesionUpdated).toStrictEqual(quizState.END);
   });
 
   test('User successfully goes to next question', () => {
@@ -136,10 +148,13 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.SUCCESSFUL_REQUEST
     );
 
-    // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_COUNTDOWN');
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.QUESTION_COUNTDOWN);
   });
 
   test('User successfully skips countdown', () => {
@@ -165,10 +180,13 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.SUCCESSFUL_REQUEST
     );
 
-    // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_OPEN');
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.QUESTION_OPEN);
   });
 
   test('Sucessfully close question', () => {
@@ -187,20 +205,26 @@ describe('Test for adminQuizSessionUpdate', () => {
       quizId,
       sessionId,
       user1Token,
-      showAnswerAction
+      skipCountDownAction
     );
+
+    sleepSync(61 * 1000);
 
     expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
     );
-  // get quiz session status to verify changes made to status
-  // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-  // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-  // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_CLOSE');
+
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.QUESTION_CLOSE);
   });
 
   test('Sucessfully show answer', () => {
-    nextQuestionAction = adminAction.NEXT_QUESTION; // figure out how to do this
+    nextQuestionAction = adminAction.NEXT_QUESTION;
 
     requestAdminQuizSessionUpdate(
       quizId,
@@ -231,8 +255,6 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.SUCCESSFUL_REQUEST
     );
   });
-
-  // test for invalid action in current state
 
   test('Sucessfully go to final results', () => {
     nextQuestionAction = adminAction.NEXT_QUESTION;
@@ -274,30 +296,39 @@ describe('Test for adminQuizSessionUpdate', () => {
     expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
       httpStatus.SUCCESSFUL_REQUEST
     );
-  // get quiz session status to verify changes made to status
-  // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-  // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-  // expect(quizSessionStatus).toStrictEqual('quizState.QUESTION_CLOSE');
+
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.FINAL_RESULTS);
   });
 
-  test('Returns error for invalid sessionId', () => { // use test.each for all 400 errs
+  // test('Invalid action in current state')
+
+  test('Returns error for invalid sessionId', () => {
     endAction = adminAction.END;
 
     const adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
       quizId,
-      sessionId,
+      sessionId + 1,
       user1Token,
       endAction
     );
 
     expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
-      httpStatus.SUCCESSFUL_REQUEST
+      httpStatus.BAD_REQUEST
     );
 
-    // get quiz session status to verify changes made to status
-    // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-    // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-    // expect(quizSessionStatus).toStrictEqual('LOBBY');
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.LOBBY);
   });
 
   test('Returns error for invalid token', () => {
@@ -314,10 +345,13 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.UNAUTHORIZED
     );
 
-  // get quiz session status to verify changes made to status
-  // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-  // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-  // expect(quizSessionStatus).toStrictEqual('LOBBY');
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.LOBBY);
   });
 
   test('Returns error for invalid quizId', () => { // loop thru
@@ -335,10 +369,13 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.FORBIDDEN
     );
 
-  // get quiz session status to verify changes made to status
-  // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-  // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-  // expect(quizSessionStatus).toStrictEqual('LOBBY');
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.LOBBY);
   });
 
   test('Returns error for user is not owner of quiz', () => {
@@ -364,9 +401,12 @@ describe('Test for adminQuizSessionUpdate', () => {
       httpStatus.FORBIDDEN
     );
 
-  // get quiz session status to verify changes made to status
-  // const quizSession = getQuizSession(quizId, sessionId, user1Token);
-  // const quizSessionStatus = (quizSession.body as getQuizSession).status;
-  // expect(quizSessionStatus).toStrictEqual('LOBBY');
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.LOBBY);
   });
 });

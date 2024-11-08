@@ -653,14 +653,14 @@ app.put('/v1/admin/quiz/:quizId/session/:sessionId', (
   const token = req.headers.token as string;
   const { action: actionBody } = req.body;
 
-  const action = adminAction[actionBody as keyof typeof adminAction];
+  // const action = adminAction[actionBody as keyof typeof adminAction];
 
   try {
     const result = adminQuizSessionUpdate(
       parseInt(quizId),
       parseInt(sessionId),
       token,
-      action
+      actionBody
     );
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
