@@ -15,6 +15,7 @@ import {
   quizCreateResponse,
   quizStartSessionResponse
 } from '../src/interface';
+import { quizState } from '../src/quiz';
 
 describe('tests for adminQuizSession', () => {
   let user;
@@ -58,7 +59,7 @@ describe('tests for adminQuizSession', () => {
     const resStartSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
 
     expect(resStartSession.body).toStrictEqual({
-      state: 0,
+      state: quizState.LOBBY,
       atQuestion: 1,
       players: [
         'abcde123'

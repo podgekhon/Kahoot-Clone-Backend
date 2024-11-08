@@ -32,13 +32,13 @@ import {
 } from './interface';
 
 export enum quizState {
-  LOBBY,
-  QUESTION_COUNTDOWN,
-  QUESTION_OPEN,
-  QUESTION_CLOSE,
-  ANSWER_SHOW,
-  FINAL_RESULTS,
-  END,
+  LOBBY = 'LOBBY',
+  QUESTION_COUNTDOWN = 'COUNTDOWN',
+  QUESTION_OPEN = 'QUESTION_OPEN',
+  QUESTION_CLOSE = 'QUESTION_CLOSE',
+  ANSWER_SHOW = 'ANSWER_SHOW',
+  FINAL_RESULTS = 'FINAL_RESULT',
+  END = 'END'
 }
 
 export enum adminAction {
@@ -997,7 +997,7 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
  * @param {number} quizId - An array of existing quizIds owned by user
  * @param {number} sessionId - Unique session id for quiz
  * @param {string} token - Unique session id for user
- * @param {adminAction} action - An admin action enum
+ * @param {adminAction} string - An admin action enum
  *
  * @returns {emptyReturn} - An empty upon successful registration
  */
@@ -1008,6 +1008,7 @@ export const adminQuizSessionUpdate = (
   action: adminAction
 ): emptyReturn => {
   const data = getData();
+  let timer: ReturnType<typeof setTimeout> | null = null;
 
   const tokenValidation = validateToken(token, data);
   // checks if validity of user token
@@ -1029,7 +1030,6 @@ export const adminQuizSessionUpdate = (
   if (!quizSession) {
     throw new Error('INVALID_SESSIONID');
   }
-  let quizSessionState = quizSession.sessionState;
 
   // check if action is invalid
   if (!(action in adminAction)) {
@@ -1048,12 +1048,12 @@ export const adminQuizSessionUpdate = (
   // if action is 'END'
   if (action === adminAction.END) {
     // check if action can be applied to current state
-    if (quizSessionState === quizState.END) {
+    if (quizSession.sessionState === quizState.END) {
       throw new Error('INVALID_ACTION');
     }
 
     // update quiz session state
-    quizSessionState = quizState.END;
+    quizSession.sessionState = quizState.END;
 
     // add into inactiveSes array
     quiz.inactiveSessions.push(quizSession);
@@ -1062,59 +1062,48 @@ export const adminQuizSessionUpdate = (
     const quizSessionIndex = quiz.activeSessions.indexOf(quizSession);
     // remove it from activeSes array
     quiz.activeSessions.splice(quizSessionIndex);
+
+    // clear a scheduled timer if any exist
+    if (timer) {
+      clearTimeout(timer);
+    }
   }
 
   // if action is 'NEXT_QUESTION'
   if (action === adminAction.NEXT_QUESTION) {
     // check if action can be applied to current state
     if (
-      quizSessionState !== quizState.LOBBY &&
-      quizSessionState !== quizState.ANSWER_SHOW &&
-      quizSessionState !== quizState.QUESTION_CLOSE
+      quizSession.sessionState !== quizState.LOBBY &&
+      quizSession.sessionState !== quizState.ANSWER_SHOW &&
+      quizSession.sessionState !== quizState.QUESTION_CLOSE
     ) {
       throw new Error('INVALID_ACTION');
     }
 
     // update quiz session
-    quizSessionState = quizState.QUESTION_COUNTDOWN;
-
-    // give quizSession countdown flag
-    quizSession.isCountdownSkipped = false;
+    quizSession.sessionState = quizState.QUESTION_COUNTDOWN;
 
     // set a 3s duration before state of session automatically updates
-    // setTimeout(() => {
-    //   if (quizSession.isCountdownSkipped === false) {
-    //     quizSession.sessionState = quizState.QUESTION_OPEN;
-    //     // i could call a new instance of get Data during this time to ensure
-    //     // that i am retrieving the latest updated datastore
-    //     setData(data);
-    //   }
-
-    setTimeout(() => {
-      const updatedData = getData();
-      const updatedQuizSession = quiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
-      );
-
-      if (updatedQuizSession.isCountdownSkipped === false) {
-        updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
-        if (quizSession.isInLobby === false) {
-          quizSession.sessionQuestionPosition++;
-        }
-        setData(updatedData);
-      }
+    timer = setTimeout(() => {
+      quizSession.sessionState = quizState.QUESTION_OPEN;
+      quizSession.sessionQuestionPosition++;
+      setData(data);
+      // might need a setData here
     }, 3000);
   }
 
   // if action is 'SKIP_COUNTDOWN'
   if (action === adminAction.SKIP_COUNTDOWN) {
     // check if action can be applied to current state
-    if (quizSessionState !== quizState.QUESTION_COUNTDOWN) {
+    if (quizSession.sessionState !== quizState.QUESTION_COUNTDOWN) {
       throw new Error('INVALID_ACTION');
     }
 
+    // clear 3s timer
+    clearTimeout(timer);
+
     // update quiz session
-    quizSessionState = quizState.QUESTION_OPEN;
+    quizSession.sessionState = quizState.QUESTION_OPEN;
     quizSession.isCountdownSkipped = true;
     if (quizSession.isInLobby === false) {
       quizSession.sessionQuestionPosition++;
@@ -1125,40 +1114,40 @@ export const adminQuizSessionUpdate = (
   if (action === adminAction.GO_TO_ANSWER) {
     // check if action can be applied to current state
     if (
-      quizSessionState !== quizState.QUESTION_OPEN &&
-      quizSessionState !== quizState.QUESTION_CLOSE
+      quizSession.sessionState !== quizState.QUESTION_OPEN &&
+      quizSession.sessionState !== quizState.QUESTION_CLOSE
     ) {
       throw new Error('INVALID_ACTION');
     }
 
     // update quiz session
-    quizSessionState = quizState.ANSWER_SHOW;
+    quizSession.sessionState = quizState.ANSWER_SHOW;
+
+    // clear a scheduled timer if any exist
+    if (timer) {
+      clearTimeout(timer);
+    }
   }
 
   // if action is 'GO_TO_FINAL_RESULTS'
   if (action === adminAction.GO_TO_FINAL_RESULT) {
     // check if action can be applied to current state
     if (
-      quizSessionState !== quizState.QUESTION_CLOSE &&
-      quizSessionState !== quizState.ANSWER_SHOW
+      quizSession.sessionState !== quizState.QUESTION_CLOSE &&
+      quizSession.sessionState !== quizState.ANSWER_SHOW
     ) {
       throw new Error('INVALID_ACTION');
     }
 
     // update quiz session
-    quizSessionState = quizState.FINAL_RESULTS;
+    quizSession.sessionState = quizState.FINAL_RESULTS;
   }
 
-  if (quizSessionState === quizState.QUESTION_OPEN) {
-    setTimeout(() => {
-      const updatedData = getData();
-      const updatedQuizSession = quiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
-      );
-      if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
-        quizSession.sessionState = quizState.QUESTION_CLOSE;
-        setData(updatedData); // could also try to use updated datastore
-      }
+  // to set a timer when question is open
+  if (quizSession.sessionState === quizState.QUESTION_OPEN) {
+    timer = setTimeout(() => {
+      quizSession.sessionState = quizState.QUESTION_CLOSE;
+      setData(data);
     }, 60000);
   }
 
@@ -1167,14 +1156,27 @@ export const adminQuizSessionUpdate = (
 };
 
 export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
-errorMessages | sessionState => {
+sessionState => {
   const data = getData();
 
   let FindSession: quizSession;
+  // find session if it is in active session array
   for (const quiz of data.quizzes) {
     FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
+
     if (FindSession) break;
   }
+
+  // find session if it is in inactive session array
+  if (!FindSession) {
+    for (const quiz of data.quizzes) {
+      FindSession = quiz.inactiveSessions.find((session) => session.sessionId === sessionId);
+
+      if (FindSession) break;
+    }
+  }
+
+  // after searching both active & inactive, if none, then return error
   if (!FindSession) {
     throw new Error('INVALID_SESSIONID');
   }
