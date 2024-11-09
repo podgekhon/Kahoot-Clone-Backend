@@ -2,7 +2,11 @@
 
 /// //////////// UNCOMMENT THIS LINE BELOW //////////////
 // import { TokenType } from 'yaml/dist/parse/cst.js';
-import { getData, setData } from './dataStore';
+import {
+  getData,
+  setData
+} from './dataStore';
+
 import {
   errorMessages,
   tokenReturn,
@@ -20,6 +24,8 @@ import {
 } from './helperFunctions';
 
 import validator from 'validator';
+
+import sha256 from 'crypto-js/sha256';
 /// //------ASSUMPTIONS----//////
 // assume functions are case sensitive
 // assume white space is kept
@@ -68,13 +74,13 @@ export const adminAuthRegister = (
     throw new Error('password invalid');
   }
 
-  // Register the user and update the data
+  const hashedPassword = sha256(password).toString();
   const authUserId = randomId(100000);
 
   data.users.push({
     userId: authUserId,
     email: email,
-    currentPassword: password,
+    currentPassword: hashedPassword,
     oldPasswords: [],
     nameFirst: nameFirst,
     nameLast: nameLast,
@@ -107,7 +113,7 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   }
 
   // Check if the password is correct
-  if (user.currentPassword !== password) {
+  if (user.currentPassword !== sha256(password).toString()) {
     // Increment numFailedPasswordsSinceLastLogin
     user.numFailedPasswordsSinceLastLogin += 1;
     return { error: 'Password is not correct for the given email.' };
@@ -232,7 +238,7 @@ export const adminUserPasswordUpdate = (
 
   const user = data.users.find(user => user.userId === authUserId);
 
-  if (user.currentPassword !== oldPassword) {
+  if (user.currentPassword !== sha256(oldPassword).toString()) {
     throw new Error('WRONG_PASSWORD');
   }
 
@@ -241,7 +247,7 @@ export const adminUserPasswordUpdate = (
   }
 
   // Check if the newPassword has been used before
-  if (user.oldPasswords.includes(newPassword)) {
+  if (user.oldPasswords.includes(sha256(newPassword).toString())) {
     throw new Error('NEW_PASSWORD_USED');
   }
 
@@ -255,7 +261,7 @@ export const adminUserPasswordUpdate = (
 
   // Add the current password to oldPasswords array
   user.oldPasswords.push(user.currentPassword);
-  user.currentPassword = newPassword;
+  user.currentPassword = sha256(newPassword).toString();
   setData(data);
   return {};
 };
