@@ -40,18 +40,13 @@ export function validQuestionThumbnailUrl(url: string): boolean {
 }
 
 /**
- * Generates a random hexadecimal color code.
+ * Generates a random color from a predefined list of colors.
  *
- * @returns {string} - A string representing a random hexadecimal color code,
- * starting with # followed by six hexadecimal digits.
+ * @returns {string} - A randomly chosen color from the array.
  */
 export function generateRandomColour(): string {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
+  const colours = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange'];
+  return colours[Math.floor(Math.random() * colours.length)];
 }
 
 /**
