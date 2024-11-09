@@ -20,7 +20,6 @@ import {
   quizSessionStatusUpdate,
   sessionState,
 } from '../src/interface';
-// rmb to add quizState
 import { adminAction, quizState } from '../src/quiz';
 import sleepSync from 'slync';
 
@@ -116,11 +115,18 @@ describe('Test for adminQuizSessionUpdate', () => {
   });
 
   test('User successfully ends session status', () => {
+    requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      user1Token,
+      nextQuestionAction
+    );
+
     adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
       quizId,
       sessionId,
       user1Token,
-      adminAction.END
+      endAction
     );
 
     expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
@@ -286,6 +292,34 @@ describe('Test for adminQuizSessionUpdate', () => {
     expect(getUpdatedSession.state).toStrictEqual(quizState.FINAL_RESULTS);
   });
 
+  test('Invalid END action in current state', () => {
+    requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      user1Token,
+      endAction
+    );
+
+    adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      user1Token,
+      endAction
+    );
+
+    expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
+      httpStatus.BAD_REQUEST
+    );
+
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.END);
+  });
+
   test('Invalid SKIP_COUNTDOWN action in current state', () => {
     adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
       quizId,
@@ -328,14 +362,41 @@ describe('Test for adminQuizSessionUpdate', () => {
     expect(getUpdatedSession.state).toStrictEqual(quizState.LOBBY);
   });
 
-  test('Invalid ANSWER_SHOW action in current state', () => {
+  test('Invalid NEXT_QUESTION action in current state', () => {
+    requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      user1Token,
+      nextQuestionAction
+    );
+
     adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
       quizId,
       sessionId,
       user1Token,
-      showAnswerAction
+      nextQuestionAction
     );
 
+    expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
+      httpStatus.BAD_REQUEST
+    );
+
+    getUpdatedSession = requestadminQuizSessionState(
+      quizId,
+      sessionId,
+      user1Token
+    ).body;
+
+    expect(getUpdatedSession.state).toStrictEqual(quizState.QUESTION_COUNTDOWN);
+  });
+
+  test('Invalid GO_TO_FINAL_RESULTS action in current state', () => {
+    adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
+      quizId,
+      sessionId,
+      user1Token,
+      goFinalResults
+    );
     expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
       httpStatus.BAD_REQUEST
     );
@@ -349,12 +410,14 @@ describe('Test for adminQuizSessionUpdate', () => {
     expect(getUpdatedSession.state).toStrictEqual(quizState.LOBBY);
   });
 
-  test('Invalid ANSWER_SHOW action in current state', () => {
+  test('Invalid admin action', () => {
+    const invalidAction = 'INVALID_ACTION';
+
     adminQuizSessionUpdate = requestAdminQuizSessionUpdate(
       quizId,
       sessionId,
       user1Token,
-      showAnswerAction
+      (invalidAction as unknown) as adminAction
     );
 
     expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
