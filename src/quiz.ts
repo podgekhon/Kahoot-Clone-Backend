@@ -10,7 +10,7 @@ import {
   validateAnswers,
   validQuestionThumbnailUrl,
   isSessionEnded,
-  randomId,
+  randomId
 } from './helperFunctions';
 
 import {
