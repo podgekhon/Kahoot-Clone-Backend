@@ -140,7 +140,29 @@ export const playerAnswerQuestion = (
     question.answerSubmissions = [];
   }
   question.answerSubmissions.push(playerAnswer);
-  // Update the data store
+
+  const correctAnswerIds = question.answerOptions
+    .filter(opt => opt.correct)
+    .map(opt => opt.answerId);
+
+  const isCorrect = answerIds.length === correctAnswerIds.length &&
+                  answerIds.every(id => correctAnswerIds.includes(id));
+
+  if (isCorrect) {
+    const correctSubmissions = question.answerSubmissions.filter(sub =>
+      sub.answerIds.length === correctAnswerIds.length &&
+    sub.answerIds.every(id => correctAnswerIds.includes(id))
+    ).length;
+
+    const scalingFactor = 1 / correctSubmissions;
+    const score = Math.round(question.points * scalingFactor);
+
+    const playerState = quizSession.players.find(p => p.playerId === playerId);
+    if (playerState) {
+      playerState.score = (playerState.score || 0) + score;
+    }
+  }
+
   setData(data);
 
   // Return player ID if successful
@@ -206,6 +228,7 @@ export const playerState = (playerId: number) : PlayerState => {
     }
   }
   const response: PlayerState = {
+    playerId: playerId,
     state: FindSession.sessionState,
     numQuestions: quiz.numQuestions,
     atQuestion: quiz.atQuestion
