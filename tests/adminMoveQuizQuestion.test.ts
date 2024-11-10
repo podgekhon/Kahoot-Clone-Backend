@@ -1,6 +1,6 @@
 import {
   requestAdminAuthRegister,
-  requestAdminMoveQuizQuestionV1,
+  requestAdminMoveQuizQuestion,
   requestAdminMoveQuizQuestionV2,
   requestAdminQuizCreate,
   requestAdminQuizInfo,
@@ -93,7 +93,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
   // Run each test for both v1 and v2
   ['v1', 'v2'].forEach((version) => {
     const requestMoveQuizQuestion =
-      version === 'v1' ? requestAdminMoveQuizQuestionV1 : requestAdminMoveQuizQuestionV2;
+      version === 'v1' ? requestAdminMoveQuizQuestion : requestAdminMoveQuizQuestionV2;
 
     describe(`Version ${version}`, () => {
       test('successfully moves a quiz question and verifies its new position', () => {

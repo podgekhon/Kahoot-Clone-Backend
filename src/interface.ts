@@ -260,5 +260,6 @@ export interface PlayerState {
 export interface requestOptions {
   json?: object;
   headers?: Record<string, string>;
+  qs?: Record<string, string | number | boolean>;
   timeout: number;
 }
