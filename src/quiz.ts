@@ -1174,7 +1174,6 @@ export const adminQuizSessionUpdate = (
     quizSession.sessionState = quizState.FINAL_RESULTS;
   }
 
-
   // to set a timer when question is open
   if (quizSession.sessionState === quizState.QUESTION_OPEN) {
     timers[sessionId] = setTimeout(() => {
