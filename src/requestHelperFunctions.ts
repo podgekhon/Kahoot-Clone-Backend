@@ -1297,6 +1297,7 @@ export const requestAdminQuizSessionUpdate = (
       timeout: TIMEOUT_MS,
     }
   );
+
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
