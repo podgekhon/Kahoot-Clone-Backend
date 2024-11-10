@@ -26,6 +26,7 @@ describe('tests for joinplayer', () => {
   let usertoken: string;
   let quiz;
   let quizId: number;
+  let playerName: string;
   let question;
   let questionId;
   let session;
@@ -34,9 +35,11 @@ describe('tests for joinplayer', () => {
   let playerId: number;
 
   beforeEach(() => {
+    // register an admin
     user = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
     usertoken = (user.body as tokenReturn).token;
 
+    // create a quiz
     quiz = requestAdminQuizCreate(usertoken, 'validQuizName', 'validQuizDescription');
     quizId = (quiz.body as quizCreateResponse).quizId;
 
@@ -50,13 +53,17 @@ describe('tests for joinplayer', () => {
       ],
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
+    // create a question
     question = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
     questionId = (question.body as question).questionId;
 
+    // create a session
     session = requestAdminStartQuizSession(quizId, usertoken, 1);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
-    player = requestjoinPlayer(sessionId, 'abcde123');
+    // join a player
+    playerName = 'Eric'
+    player = requestjoinPlayer(sessionId, playerName);
     playerId = (player.body as player).playerId;
 
     requestPlayerAnswerQuestion([2384], playerId, 1);
@@ -69,7 +76,7 @@ describe('tests for joinplayer', () => {
     ({
         usersRankedByScore: [
           {
-            playerName: "abcde123",
+            playerName: playerName,
             score: 45
           }
         ],

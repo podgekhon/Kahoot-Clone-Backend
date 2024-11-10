@@ -13,7 +13,8 @@ import {
   emptyReturn,
   PlayerState,
   quiz,
-  messageList
+  messageList,
+  playerResultsResponse
 } from './interface';
 
 import { quizState } from './quiz';
@@ -157,7 +158,7 @@ export const playerAnswerQuestion = (
     const scalingFactor = 1 / correctSubmissions;
     const score = Math.round(question.points * scalingFactor);
 
-    const playerState = quizSession.players.find(p => p.playerId === playerId);
+    const playerState = data.players.find(p => p.playerId === playerId);
     if (playerState) {
       playerState.score = (playerState.score || 0) + score;
     }
