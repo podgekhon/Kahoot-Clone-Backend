@@ -180,7 +180,7 @@ describe('Test for adminQuizSessionUpdate', () => {
     expect(getUpdatedSession.state).toStrictEqual(quizState.QUESTION_OPEN);
   });
 
-  test.only('Sucessfully close question', () => {
+  test('Sucessfully close question', () => {
     requestAdminQuizSessionUpdate(
       quizId,
       sessionId,
