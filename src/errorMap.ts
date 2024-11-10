@@ -59,7 +59,7 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   },
   INVALID_ANSWER_SUBMITTED: {
     status: httpStatus.BAD_REQUEST,
-    message: 'There must be at least one correct answer.'
+    message: 'Less than 1 answer ID was submitted.'
   },
   DUPLICATE_ANSWERS_SUBMITTED: {
     status: httpStatus.BAD_REQUEST,
@@ -175,6 +175,10 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in LOBBY state.'
   },
+  SESSION_NOT_OPEN: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is not in QUESTION_OPEN state.'
+  },
   INVALID_QUESTION_POSITION: {
     status: httpStatus.BAD_REQUEST,
     message: 'Question position is not valid for the quiz'
@@ -190,5 +194,21 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   PLAYERID_NOT_EXIST: {
     status: httpStatus.BAD_REQUEST,
     message: 'Player ID does not exist'
+  },
+  INVALID_ACTION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Invalid admin action.'
+  },
+  INVALID_PLAYER: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Player ID does not exist.'
+  },
+  INVALID_MESSAGE_LENGTH: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Message body is less than 1 character or more than 100 characters.'
+  },
+  INVALID_QUIZ_SESSION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'INVALID_QUIZ_SESSION'
   }
 };

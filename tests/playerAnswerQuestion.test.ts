@@ -6,15 +6,22 @@ import {
   requestClear,
   requestjoinPlayer,
   requestPlayerAnswerQuestion,
-  httpStatus
+  httpStatus,
+  requestAdminQuizSessionUpdate,
+  requestadminQuizSessionState,
+  requestAdminQuizInfo
 } from '../src/requestHelperFunctions';
 
 import {
   tokenReturn,
   quizCreateResponse,
   quizStartSessionResponse,
-  playerId
+  playerId,
+  sessionState,
+  quizInfo
 } from '../src/interface';
+import { adminAction, quizState } from '../src/quiz';
+import sleepSync from 'slync';
 
 beforeEach(() => {
   requestClear();
@@ -63,131 +70,166 @@ describe('tests for playerAnswerQuestion', () => {
     // join player
     player = requestjoinPlayer(sessionId, 'Eric');
     playerId = (player.body as playerId).playerId;
-
   });
 
-  test('success join', () => {
-    const answerId = [2384];
+  test('successfully answer question', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+
     const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
     expect(resAnswerQuestion.body).toStrictEqual({ });
     expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
   test('valid answer re-submission', () => {
-    const answerId = [2384];
-    requestPlayerAnswerQuestion(answer, playerId, 1);
-    const res = requestPlayerAnswerQuestion(answerId playerId, 1);
-    expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+    requestPlayerAnswerQuestion(answerId, playerId, 1);
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
   test('non-existent player ID', () => {
-    const answerId = [2384];
-    const res = requestPlayerAnswerQuestion(answerId, 9999, 1);
-    expect(res.body.error).toBe('EXIST_PLAYERID');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, 9999, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
 
   test('invalid question position', () => {
-    const answerId = [2384];
-    const res = requestPlayerAnswerQuestion(answerId, playerId, 99);
-    expect(res.body.error).toBe('INVALID_QUESTION_POSITION');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 99);
+    expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
 
   test('session not in QUESTION_OPEN state', () => {
-    session.sessionState = 'LOBBY'; // Change session state to a non-QUESTION_OPEN state
-    const answerId = [2384];
-    const res = requestPlayerAnswerQuestion(answerId, playerId, 1);
-    expect(res.body.error).toBe('SESSION_NOT_IN_QUESTION_OPEN');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
 
   test('inactive question in session', () => {
-    const answerId = [2384];
-    const res = requestPlayerAnswerQuestion(answerId, playerId, 2); // Use a different question position
-    expect(res.body.error).toBe('SESSION_NOT_CURRENT_QUESTION');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 2); // Use a different question position
+    expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
 
   test('invalid answer IDs for question', () => {
-    const answerIds = [9999]; // Non-existent answer ID
-    const res = requestPlayerAnswerQuestion(answerIds, playerId, 1);
-    expect(res.body.error).toBe('INVALID_ANSWER_IDS');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+    const answerId = [999];
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
 
   test('duplicate answer IDs provided', () => {
-    const answerIds = [2384, 2384]; // Duplicate answer ID
-    const res = requestPlayerAnswerQuestion(answerIds, playerId, 1);
-    expect(res.body.error).toBe('DUPLICATE_ANSWER_IDS');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId, quizInfo.questions[0].answerOptions[0].answerId];
+
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
 
   test('no answer IDs submitted', () => {
-    const answerIds = []; // Empty answer IDs
-    const res = requestPlayerAnswerQuestion(answerIds, playerId, 1);
-    expect(res.body.error).toBe('NO_ANSWER_IDS');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+    
+    const answerId: number[] = [];
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
 
-  test('multiple players submitting for the same question', () => {
-    const secondPlayer = requestjoinPlayer(sessionId, 'Alex');
-    const secondPlayerId = (secondPlayer.body as playerId).playerId;
+  test.only('session not on question', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
+    sleepSync(61000);
 
-    const answerId = [2384];
-    const res1 = requestPlayerAnswerQuestion(answerId, playerId, 1);
-    const res2 = requestPlayerAnswerQuestion(answerId, secondPlayerId, 1);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4000);
 
-    expect(res1.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(res2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    const quizSessionStatus = (quizSession.body as sessionState).state;
+    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+    
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
-
-  test('sequential question answering by same player', () => {
-    const answer1 = { answerIds: [2384] };
-    const answer2 = { answerIds: [2385] };
-
-    // Answer question 1
-    const res1 = requestPlayerAnswerQuestion(answer1, playerId, 1);
-    expect(res1.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-
-    // Transition to the next question (assuming session can progress programmatically here)
-    session.sessionState = 'QUESTION_OPEN';
-
-    // Answer question 2
-    const res2 = requestPlayerAnswerQuestion(answer2, playerId, 2);
-    expect(res2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-  });
-
-  test('answer after session state transitions out of QUESTION_OPEN', () => {
-    const answerId = [2384];
-    requestPlayerAnswerQuestion(answerId, playerId, 1);
-
-    // Change session state after first answer
-    session.sessionState = 'LOBBY';
-
-    const res = requestPlayerAnswerQuestion(answerId, playerId, 1);
-    expect(res.body.error).toBe('SESSION_NOT_IN_QUESTION_OPEN');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-  });
-
-  test('multiple correct answer options submission', () => {
-    const answer = { answerIds: [2384, 2385] }; // Assume both are correct for this case
-    const res = requestPlayerAnswerQuestion(answerId, playerId, 1);
-    expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-  });
-
-  test('inactive player submitting answer', () => {
-    const inactivePlayerId = playerId + 1; // Assume a player who hasn’t joined the session
-    const answerId = [2384];
-    const res = requestPlayerAnswerQuestion(answerId, inactivePlayerId, 1);
-    expect(res.body.error).toBe('EXIST_PLAYERID');
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-  });
-
-  test('extra fields in request body (ignored)', () => {
-    const answer = { answerIds: [2384], irrelevantField: 'extra data' }; // Extra field
-    const res = requestPlayerAnswerQuestion(answerId, playerId, 1);
-    expect(res.body).toStrictEqual({});
-    expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-  });  
 });

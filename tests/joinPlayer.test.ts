@@ -14,10 +14,6 @@ import {
   quizStartSessionResponse
 } from '../src/interface';
 
-beforeEach(() => {
-  requestClear();
-});
-
 describe('tests for joinplayer', () => {
   let user;
   let usertoken: string;
@@ -27,6 +23,8 @@ describe('tests for joinplayer', () => {
   let sessionId: number;
 
   beforeEach(() => {
+    requestClear();
+
     user = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
     usertoken = (user.body as tokenReturn).token;
 

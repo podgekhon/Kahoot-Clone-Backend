@@ -5,22 +5,18 @@ import {
 } from './helperFunctions';
 
 import {
-  errorMessages,
+  messageBody,
   playerId,
   quizSession,
   answerSubmission,
-  emptyReturn
+  errorMessages,
+  emptyReturn,
+  PlayerState,
+  quiz,
+  messageList
 } from './interface';
 
-export enum quizState {
-  LOBBY,
-  QUESTION_COUNTDOWN,
-  QUESTION_OPEN,
-  ANSWER_SHOW,
-  FINAL_RESULTS,
-  END,
-}
-
+import { quizState } from './quiz';
 /**
  *
 Allow a guest player to join a session
@@ -31,7 +27,7 @@ Allow a guest player to join a session
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {playerId} - A Number which is the playerId of player
  */
-export const joinPlayer = (sessionId: number, playerName: string): errorMessages | playerId => {
+export const joinPlayer = (sessionId: number, playerName: string): playerId => {
   const data = getData();
 
   const existingPlayer = data.players.find((player) => player.playerName === playerName);
@@ -70,34 +66,6 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
   return { playerId: playerId };
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  *
  * Allow the current player to submit answer(s) to the currently active question.
@@ -111,84 +79,156 @@ export const joinPlayer = (sessionId: number, playerName: string): errorMessages
  */
 export const playerAnswerQuestion = (answerIds: number[], playerId: number, questionPosition: number): errorMessages | emptyReturn => {
   const data = getData();
-
-  // If player ID does not exist
-   // const validPlayerId = data.players.find(player => player.playerId === playerId);
-  // if (!validPlayerId) {
-  //   return { error: "Player ID does not exist" };
-  // }
+  // find player
   const player = data.players.find(p => p.playerId === playerId);
   if (!player) {
-    throw new Error(`PLAYERID_NOT_EXIST`);
+    throw new Error('PLAYERID_NOT_EXIST');
   }
-
+  // get session of player
   const session = player.sessionId;
-  // if (!session) {
-  //   return { error: "Player's session does not exist" };
-  // }
 
   // Find the quiz associated with the session and check the state
   const quiz = data.quizzes.find(q =>
     q.activeSessions.some(as => as.sessionId === session)
   );
 
-  // if (!quiz) {
-  //   return { error: "Quiz not found for the session" };
-  // }
-
   // Retrieve quiz session in active sessions
   const quizSession = quiz.activeSessions.find(as => as.sessionId === session);
-  // if (!quizSession) {
-  //   throw new Error(`SESSION_NOT_ACTIVE`);
-  // }
 
   // Check if the session state is QUESTION_OPEN
   if (quizSession.sessionState !== quizState.QUESTION_OPEN) {
-    throw new Error(`SESSION_NOT_OPEN`);
-  }
-
-  // If session is not currently on this question
-  if (quizSession.sessionQuestionPosition !== questionPosition) {
-    throw new Error(`SESSION_NOT_ON_QUESTION`);
+    throw new Error('SESSION_NOT_OPEN');
   }
 
   // If question position is not valid for the session this player is in
   if (questionPosition < 1 || questionPosition > quiz.numQuestions) {
-    throw new Error(`INVALID_QUESTION_POSITION`);
+    throw new Error('INVALID_QUESTION_POSITION');
+  }
+
+  // If session is not currently on this question
+  if (quizSession.sessionQuestionPosition !== questionPosition) {
+    throw new Error('SESSION_NOT_ON_QUESTION');
   }
 
   const question = quiz.questions[questionPosition - 1];
-  // if (!question) {
-  //   return { error: "Invalid question position" };
-  // }
-
 
   // Answer IDs are not valid for this particular question
   const validAnswerIds = new Set(question.answerOptions.map(option => option.answerId));
   for (const answerId of answerIds) {
     if (!validAnswerIds.has(answerId)) {
-      throw new Error(`INVALID_ANSWERID`);
+      throw new Error('INVALID_ANSWERID');
     }
   }
-
   // There are duplicate answer IDs provided
   const uniqueAnswers = new Set(answerIds);
   if (uniqueAnswers.size !== answerIds.length) {
-    throw new Error(`DUPLICATE_ANSWERS_SUBMITTED`);
+    throw new Error('DUPLICATE_ANSWERS_SUBMITTED');
   }
 
   // Less than 1 answer ID was submitted
   if (answerIds.length < 1) {
-    throw new Error(`INVALID_ANSWER_SUBMITTED`);
+    throw new Error('INVALID_ANSWER_SUBMITTED');
   }
 
   // Record the answer submission
-  const playerAnswer: answerSubmission = { playerId, answerIds };
+  const playerAnswer: answerSubmission = { answerIds, playerId };
+  if (!question.answerSubmissions) {
+    question.answerSubmissions = [];
+  }
   question.answerSubmissions.push(playerAnswer);
-
   // Update the data store
   setData(data);
 
   // Return player ID if successful
-  return { playerId };
-}
+  return { };
+};
+
+/**
+ *
+ * @param { number } playerId - playerId to identify which user is sending msgs
+ * @param { string } message - player's  msgs to be sent
+ * @returns {} - empty object
+ */
+export const playerMessage = (playerId: number, message: messageBody) : emptyReturn => {
+  const data = getData();
+  const newMessage = message.messageBody;
+  const validPlayer = data.players.find(p => p.playerId === playerId);
+  if (!validPlayer) {
+    throw new Error('INVALID_PLAYER');
+  }
+  if (newMessage.length < 1 || newMessage.length > 100) {
+    throw new Error('INVALID_MESSAGE_LENGTH');
+  }
+  const quizSessionId = validPlayer.sessionId;
+  const msg = {
+    playerId: playerId,
+    playerName: validPlayer.playerName,
+    messageBody: newMessage,
+    timeSent: Math.floor(Date.now() / 1000)
+  };
+  // find the quiz Session
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find(session => session.sessionId === quizSessionId);
+    if (FindSession) break;
+  }
+  FindSession.messages.push(msg);
+  setData(data);
+  return {};
+};
+
+/**
+ *
+ * Get the status of a guest player that has already joined a session
+ * @param { number } playerId - a unique of a player
+ * @returns {PlayerState} - an object containg information of player state
+ */
+export const playerState = (playerId: number) : PlayerState => {
+  const data = getData();
+
+  const player = data.players.find(p => p.playerId === playerId);
+  if (!player) {
+    throw new Error('INVALID_PLAYER');
+  }
+
+  const sessionId = player.sessionId;
+  let quiz: quiz;
+  let FindSession: quizSession;
+  for (const q of data.quizzes) {
+    FindSession = q.activeSessions.find((session) => session.sessionId === sessionId);
+    if (FindSession) {
+      quiz = q;
+      break;
+    }
+  }
+  const response: PlayerState = {
+    state: FindSession.sessionState,
+    numQuestions: quiz.numQuestions,
+    atQuestion: quiz.atQuestion
+  };
+
+  return response;
+};
+
+/**
+ *
+ * @param { number } playerId
+ * @returns
+ */
+export const playerMessageList = (playerId: number) : messageList => {
+  const data = getData();
+  // check if player exists
+  const validPlayer = data.players.find(p => p.playerId === playerId);
+  if (!validPlayer) {
+    throw new Error('INVALID_PLAYER');
+  }
+  const session = validPlayer.sessionId;
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find(s => s.sessionId === session);
+    if (FindSession) break;
+  }
+  const messages = FindSession.messages;
+
+  return { messages };
+};

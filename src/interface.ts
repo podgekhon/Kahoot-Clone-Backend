@@ -1,12 +1,17 @@
 /// ///////////// interface for dataStore /////////////////
 import { adminAuthRegister, adminAuthLogin } from './auth';
+
 import {
   adminQuizCreate,
   adminQuizList,
+  adminQuizQuestionCreate,
   adminQuizTransfer,
   adminTrashList,
-  quizState
+  quizState,
+  adminStartQuizSession,
+  adminQuizSessionUpdate
 } from './quiz';
+
 export interface dataStore {
   users: user[],
   quizzes: quiz[],
@@ -62,6 +67,7 @@ export interface answer {
 export interface quiz {
   quizId: number;
   ownerId: number;
+  atQuestion?: number;
   sessionState: quizState;
   name: string;
   description: string;
@@ -84,13 +90,34 @@ export interface quizSession {
   quizCopy: quizCopy;
   autoStartNum: number;
   sessionQuestionPosition: number;
+  isCountdownSkipped?: boolean;
+  isInLobby?: boolean;
+  messages: message[];
 }
 
+export interface message {
+  playerId: number,
+  playerName: string,
+  messageBody: string,
+  timeSent: number
+}
+
+export interface messageList {
+  messages: {
+    playerId: number,
+    playerName: string,
+    messageBody: string,
+    timeSent: number
+  }[]
+}
 export interface token {
   sessionId: number;
   userId: number;
 }
 
+export interface messageBody {
+  messageBody: string
+}
 /// /////////////// interface for auth.ts/////////////////////
 
 export interface errorMessages {
@@ -188,6 +215,60 @@ export interface trashList {
   statusCode: number;
 }
 
+export interface questionCreate {
+  body: ReturnType<typeof adminQuizQuestionCreate>;
+  statusCode: number;
+}
+
+export interface startSession {
+  body: ReturnType<typeof adminStartQuizSession>;
+  statusCode: number; // this might be a copy of quizStartSessionResponse
+}
 export interface playerId {
   playerId: number;
+}
+
+export interface quizSessionStatusUpdate {
+  body: ReturnType<typeof adminQuizSessionUpdate>;
+  statusCode: number;
+}
+export interface sessionState {
+  state: quizState;
+  atQuestion: number;
+  players: string[];
+  metadata: {
+    quizId: number;
+    name: string;
+    timeCreated: number;
+    timeLastEdited: number;
+    description: string;
+    numQuestions: number;
+    questions: {
+      questionId: number;
+      question: string;
+      timeLimit: number;
+      thumbnailUrl: string;
+      points: number;
+      answerOptions: {
+        answerId: number;
+        answer: string;
+        colour: string;
+        correct: boolean;
+      }[];
+    }[];
+    timeLimit: number;
+    thumbnailUrl: string;
+  };
+}
+
+export interface PlayerState {
+  state: quizState,
+  numQuestions: number,
+  atQuestion: number
+}
+
+export interface requestOptions {
+  json?: object;
+  headers?: Record<string, string>;
+  timeout: number;
 }
