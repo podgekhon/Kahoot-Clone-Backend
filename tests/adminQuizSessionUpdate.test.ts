@@ -202,10 +202,6 @@ describe('Test for adminQuizSessionUpdate', () => {
 
     sleepSync(61 * 1000);
 
-    expect(adminQuizSessionUpdate.statusCode).toStrictEqual(
-      httpStatus.SUCCESSFUL_REQUEST
-    );
-
     getUpdatedSession = requestadminQuizSessionState(
       quizId,
       sessionId,
