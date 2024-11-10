@@ -1,5 +1,3 @@
-import request from 'sync-request-curl';
-import { port, url } from '../src/config.json';
 import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
@@ -7,7 +5,8 @@ import {
   requestAdminStartQuizSession,
   httpStatus,
   requestAdminQuizSessionUpdate,
-  requestadminQuizSessionState
+  requestadminQuizSessionState,
+  requestClear
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
@@ -20,16 +19,8 @@ import {
   quizSessionStatusUpdate,
   sessionState,
 } from '../src/interface';
-// rmb to add quizState
 import { adminAction, quizState } from '../src/quiz';
 import sleepSync from 'slync';
-
-const SERVER_URL = `${url}:${port}`;
-const TIMEOUT_MS = 100 * 1000;
-
-beforeEach(() => {
-  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
-});
 
 describe('Test for adminQuizSessionUpdate', () => {
   let user1Response: userAuthRegister;
@@ -49,6 +40,7 @@ describe('Test for adminQuizSessionUpdate', () => {
   let adminQuizSessionUpdate: quizSessionStatusUpdate;
 
   beforeEach(() => {
+    requestClear();
     user1Response = requestAdminAuthRegister(
       'user1@gmail.com',
       'validPassword1',

@@ -37,6 +37,9 @@ describe('tests for playerQuestion', () => {
   let question;
   let questionId: number;
   let questionBody: question;
+  let question2;
+  let questionId2: number;
+  let questionBody2: question;
   let question3;
   let questionId3: number;
   let questionBody3: question;
@@ -65,6 +68,19 @@ describe('tests for playerQuestion', () => {
     };
     question = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
     questionId = (question.body as quizQuestionCreateResponse).questionId;
+
+    questionBody2 = {
+      question: 'What is the capital of China?',
+      timeLimit: 4,
+      points: 5,
+      answerOptions: [
+        { answer: 'Beijing', correct: true },
+        { answer: 'Shanghai', correct: false },
+      ],
+      thumbnailUrl: 'http://google.com/some/image/path.jpg'
+    };
+    question2 = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
+    questionId2 = (question2.body as quizQuestionCreateResponse).questionId;
 
     questionBody3 = {
       question: 'What is the capital of USA?',

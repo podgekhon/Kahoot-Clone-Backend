@@ -49,6 +49,7 @@ export enum adminAction {
   END
 }
 
+const timers: { [key: number]: ReturnType<typeof setTimeout> } = {};
 /**
  * Update the thumbnail for a specific quiz.
  *
@@ -1008,8 +1009,6 @@ export const adminQuizSessionUpdate = (
   action: adminAction
 ): emptyReturn => {
   const data = getData();
-  let timer: ReturnType<typeof setTimeout> | null = null;
-
   const tokenValidation = validateToken(token, data);
   // checks if validity of user token
   if ('error' in tokenValidation) {
@@ -1023,12 +1022,23 @@ export const adminQuizSessionUpdate = (
     throw new Error('INVALID_QUIZ');
   }
 
-  const quizSession = quiz.activeSessions.find(
+  let quizSession :quizSession;
+  // get quiz session from active array
+  quizSession = quiz.activeSessions.find(
     (session) => session.sessionId === sessionId
   );
-    // check if sessionId does not exist
+
+  // check if session exist in active
   if (!quizSession) {
-    throw new Error('INVALID_SESSIONID');
+    // if not, check in inactive array
+    quizSession = quiz.inactiveSessions.find(
+      (session) => session.sessionId === sessionId
+    );
+
+    // else, throw erorr
+    if (!quizSession) {
+      throw new Error('INVALID_SESSIONID');
+    }
   }
 
   // check if action is invalid
@@ -1047,7 +1057,6 @@ export const adminQuizSessionUpdate = (
 
   // if action is 'END'
   if (action === adminAction.END) {
-    // check if action can be applied to current state
     if (quizSession.sessionState === quizState.END) {
       throw new Error('INVALID_ACTION');
     }
@@ -1064,8 +1073,9 @@ export const adminQuizSessionUpdate = (
     quiz.activeSessions.splice(quizSessionIndex);
 
     // clear a scheduled timer if any exist
-    if (timer) {
-      clearTimeout(timer);
+    if (timers[sessionId]) {
+      clearTimeout(timers[sessionId]);
+      delete timers[sessionId];
     }
   }
 
@@ -1085,10 +1095,10 @@ export const adminQuizSessionUpdate = (
     quizSession.sessionState = quizState.QUESTION_COUNTDOWN;
 
     // set a 3s duration before state of session automatically updates
-    timer = setTimeout(() => {
+    timers[sessionId] = setTimeout(() => {
       quizSession.sessionState = quizState.QUESTION_OPEN;
       if (quizSession.sessionState === quizState.QUESTION_OPEN) {
-        timer = setTimeout(() => {
+        timers[sessionId] = setTimeout(() => {
           quizSession.sessionState = quizState.QUESTION_CLOSE;
           setData(data);
         }, 60000);
@@ -1097,7 +1107,6 @@ export const adminQuizSessionUpdate = (
         quizSession.sessionQuestionPosition++;
       }
       setData(data);
-      // might need a setData here
     }, 3000);
     // to set a timer when question is open
     const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -1105,7 +1114,7 @@ export const adminQuizSessionUpdate = (
       (session) => session.sessionId === sessionId
     );
     if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
-      timer = setTimeout(() => {
+      timers[sessionId] = setTimeout(() => {
         quizSession.sessionState = quizState.QUESTION_CLOSE;
         setData(data);
       }, 60000);
@@ -1119,8 +1128,9 @@ export const adminQuizSessionUpdate = (
       throw new Error('INVALID_ACTION');
     }
 
-    // clear 3s timer
-    clearTimeout(timer);
+    // checks if clear 3s timer
+    clearTimeout(timers[sessionId]);
+    delete timers[sessionId];
 
     // update quiz session
     quizSession.sessionState = quizState.QUESTION_OPEN;
@@ -1144,8 +1154,9 @@ export const adminQuizSessionUpdate = (
     quizSession.sessionState = quizState.ANSWER_SHOW;
 
     // clear a scheduled timer if any exist
-    if (timer) {
-      clearTimeout(timer);
+    if (timers[sessionId]) {
+      clearTimeout(timers[sessionId]);
+      delete timers[sessionId];
     }
   }
 
@@ -1161,6 +1172,15 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSession.sessionState = quizState.FINAL_RESULTS;
+  }
+
+
+  // to set a timer when question is open
+  if (quizSession.sessionState === quizState.QUESTION_OPEN) {
+    timers[sessionId] = setTimeout(() => {
+      quizSession.sessionState = quizState.QUESTION_CLOSE;
+      setData(data);
+    }, 60000);
   }
 
   setData(data);
