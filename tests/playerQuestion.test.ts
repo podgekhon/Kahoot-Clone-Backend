@@ -163,7 +163,7 @@ describe('tests for playerQuestion', () => {
   );
 });
 
-  test.only('successfully and unsuccessfully get question at different positions', () => {
+  test('successfully and unsuccessfully get question at different positions', () => {
     // state must be QUESTION_OPEN / QUESTION_CLOSE / ANSWER_SHOW
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     sleepSync(4 * 1000);
