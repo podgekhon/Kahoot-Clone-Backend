@@ -677,14 +677,12 @@ const handlePlayerQuestion = (req: Request, res: Response) => {
   try {
     const result = playerQuestion(parseInt(playerId), parseInt(questionPosition));
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-    catch (error) {
-      const { status, message } = errorMap[error.message];
-      return res.status(status).json({ error: message });
-    }
-}
+};
 app.get('/v1/player/:playerId/question/:questionPosition', handlePlayerQuestion);
-
 
 // player message
 app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {

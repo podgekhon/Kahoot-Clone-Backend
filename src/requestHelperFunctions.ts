@@ -1265,8 +1265,6 @@ export const requestPlayerQuestion = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
-
 // adminQuizSessionUpdate
 /**
  * Makes http request to update quiz session status

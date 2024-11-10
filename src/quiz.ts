@@ -991,7 +991,6 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   return {};
 };
 
-
 /**
  * Updates quiz session status based on admin action
  *
@@ -1103,14 +1102,14 @@ export const adminQuizSessionUpdate = (
     // to set a timer when question is open
     const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
     const updatedQuizSession = quiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
+      (session) => session.sessionId === sessionId
     );
     if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
-    timer = setTimeout(() => {
-      quizSession.sessionState = quizState.QUESTION_CLOSE;
-      setData(data);
-    }, 60000);
-  }
+      timer = setTimeout(() => {
+        quizSession.sessionState = quizState.QUESTION_CLOSE;
+        setData(data);
+      }, 60000);
+    }
   }
 
   // if action is 'SKIP_COUNTDOWN'
@@ -1167,7 +1166,6 @@ export const adminQuizSessionUpdate = (
   setData(data);
   return {};
 };
-
 
 // Get the status of a particular quiz session
 export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):

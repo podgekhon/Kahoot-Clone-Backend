@@ -20,7 +20,7 @@ import {
   question,
   sessionState
 } from '../src/interface';
-import { adminAction, quizState} from '../src/quiz';
+import { adminAction, quizState } from '../src/quiz';
 import sleepSync from 'slync';
 
 beforeEach(() => {
@@ -37,9 +37,6 @@ describe('tests for playerQuestion', () => {
   let question;
   let questionId: number;
   let questionBody: question;
-  let question2;
-  let questionId2: number;
-  let questionBody2: question;
   let question3;
   let questionId3: number;
   let questionBody3: question;
@@ -69,19 +66,6 @@ describe('tests for playerQuestion', () => {
     question = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
     questionId = (question.body as quizQuestionCreateResponse).questionId;
 
-    questionBody2 = {
-      question: 'What is the capital of China?',
-      timeLimit: 4,
-      points: 5,
-      answerOptions: [
-        { answer: 'Beijing', correct: true },
-        { answer: 'Shanghai', correct: false },
-      ],
-      thumbnailUrl: 'http://google.com/some/image/path.jpg'
-    };
-    question2 = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
-    questionId2 = (question2.body as quizQuestionCreateResponse).questionId;
-
     questionBody3 = {
       question: 'What is the capital of USA?',
       timeLimit: 4,
@@ -102,7 +86,6 @@ describe('tests for playerQuestion', () => {
     // add a player
     player = requestjoinPlayer(sessionId, 'abcde123');
     playerId = (player.body as playerId).playerId;
-    
   });
 
   test('successfully get question when session state is QUESTION_OPEN', () => {
@@ -116,52 +99,30 @@ describe('tests for playerQuestion', () => {
 
     const questionPosition = 1;
     const positionResponse = requestPlayerQuestion(playerId, questionPosition);
-    
-  //   expect(positionResponse.body).toMatchObject({
-  //     questionId: questionId,
-  //     question: questionBody.question,
-  //     timeLimit: questionBody.timeLimit,
-  //     thumbnailUrl: questionBody.thumbnailUrl,
-  //     points: questionBody.points,
-  //     answerOptions: expect.arrayContaining([
-  //       expect.objectContaining({
-  //         answerId: expect.any(Number),
-  //         answer: questionBody.answerOptions[0].answer,
-  //         colour: expect.any(String),
-  //         correct: true,
-  //       }),
-  //       expect.objectContaining({
-  //         answerId: expect.any(Number),
-  //         answer: questionBody.answerOptions[1].answer,
-  //         colour: expect.any(String),
-  //         correct: false,
-  //       }),
-  //     ]),
-  // });
-    
-  expect(positionResponse.body).toMatchObject({
-    questionId: questionId,
-    question: questionBody.question,
-    timeLimit: questionBody.timeLimit,
-    thumbnailUrl: questionBody.thumbnailUrl,
-    points: questionBody.points,
-  });
 
-  expect(positionResponse.body.answerOptions).toEqual(
-    expect.arrayContaining([
-    expect.objectContaining({
-      answerId: expect.any(Number),
-      answer: questionBody.answerOptions[0].answer,
-      colour: expect.any(String),
-    }),
-    expect.objectContaining({
-      answerId: expect.any(Number),
-      answer: questionBody.answerOptions[1].answer,
-      colour: expect.any(String),
-    }),
-    ])
-  );
-});
+    expect(positionResponse.body).toMatchObject({
+      questionId: questionId,
+      question: questionBody.question,
+      timeLimit: questionBody.timeLimit,
+      thumbnailUrl: questionBody.thumbnailUrl,
+      points: questionBody.points,
+    });
+
+    expect(positionResponse.body.answerOptions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody.answerOptions[0].answer,
+          colour: expect.any(String),
+        }),
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody.answerOptions[1].answer,
+          colour: expect.any(String),
+        }),
+      ])
+    );
+  });
 
   test('successfully and unsuccessfully get question at different positions', () => {
     // state must be QUESTION_OPEN / QUESTION_CLOSE / ANSWER_SHOW
@@ -179,22 +140,22 @@ describe('tests for playerQuestion', () => {
       timeLimit: questionBody.timeLimit,
       thumbnailUrl: questionBody.thumbnailUrl,
       points: questionBody.points,
-  });
-  
-  expect(positionResponse.body.answerOptions).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({
-        answerId: expect.any(Number),
-        answer: questionBody.answerOptions[0].answer,
-        colour: expect.any(String),
-      }),
-      expect.objectContaining({
-        answerId: expect.any(Number),
-        answer: questionBody.answerOptions[1].answer,
-        colour: expect.any(String),
-      }),
-    ])
-  );
+    });
+
+    expect(positionResponse.body.answerOptions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody.answerOptions[0].answer,
+          colour: expect.any(String),
+        }),
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody.answerOptions[1].answer,
+          colour: expect.any(String),
+        }),
+      ])
+    );
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
@@ -217,14 +178,14 @@ describe('tests for playerQuestion', () => {
 
     const positionResponse3 = requestPlayerQuestion(playerId, 3);
 
-      expect(positionResponse3.body).toMatchObject({
-        questionId: questionId3,
-        question: questionBody3.question,
-        timeLimit: questionBody3.timeLimit,
-        thumbnailUrl: questionBody3.thumbnailUrl,
-        points: questionBody3.points,
+    expect(positionResponse3.body).toMatchObject({
+      questionId: questionId3,
+      question: questionBody3.question,
+      timeLimit: questionBody3.timeLimit,
+      thumbnailUrl: questionBody3.thumbnailUrl,
+      points: questionBody3.points,
     });
-    
+
     expect(positionResponse3.body.answerOptions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -258,19 +219,19 @@ describe('tests for playerQuestion', () => {
       thumbnailUrl: questionBody.thumbnailUrl,
       points: questionBody.points,
     });
-  
+
     expect(positionResponse.body.answerOptions).toEqual(
       expect.arrayContaining([
-      expect.objectContaining({
-        answerId: expect.any(Number),
-        answer: questionBody.answerOptions[0].answer,
-        colour: expect.any(String),
-      }),
-      expect.objectContaining({
-        answerId: expect.any(Number),
-        answer: questionBody.answerOptions[1].answer,
-        colour: expect.any(String),
-      }),
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody.answerOptions[0].answer,
+          colour: expect.any(String),
+        }),
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody.answerOptions[1].answer,
+          colour: expect.any(String),
+        }),
       ])
     );
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
@@ -297,39 +258,39 @@ describe('tests for playerQuestion', () => {
       thumbnailUrl: questionBody.thumbnailUrl,
       points: questionBody.points,
     });
-  
+
     expect(positionResponse.body.answerOptions).toEqual(
       expect.arrayContaining([
-      expect.objectContaining({
-        answerId: expect.any(Number),
-        answer: questionBody.answerOptions[0].answer,
-        colour: expect.any(String),
-      }),
-      expect.objectContaining({
-        answerId: expect.any(Number),
-        answer: questionBody.answerOptions[1].answer,
-        colour: expect.any(String),
-      }),
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody.answerOptions[0].answer,
+          colour: expect.any(String),
+        }),
+        expect.objectContaining({
+          answerId: expect.any(Number),
+          answer: questionBody.answerOptions[1].answer,
+          colour: expect.any(String),
+        }),
       ])
     );
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
   test('Invalid playerId', () => {
-    const invalidPlayerId = 9999; 
+    const invalidPlayerId = 9999;
     const positionResponse = requestPlayerQuestion(invalidPlayerId, 1);
 
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Question position is not valid for the session this player is in', () => {
-    const invalidQuestionPosition = 999; 
+    const invalidQuestionPosition = 999;
     const positionResponse = requestPlayerQuestion(playerId, invalidQuestionPosition);
 
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -337,7 +298,7 @@ describe('tests for playerQuestion', () => {
     // session state is LOBBY
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -346,16 +307,15 @@ describe('tests for playerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
+    console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Question position is not valid when session state is FINAL_RESULT', () => {
-    //sesstion state is FINAL_RESULT
+    // sesstion state is FINAL_RESULT
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -364,20 +324,14 @@ describe('tests for playerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.END);
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Session is not currently on this question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
 
-    // Adding a delay to ensure the state transition completes
-    new Promise((resolve) => setTimeout(resolve, 3000));
-
     const positionResponse = requestPlayerQuestion(playerId, 2);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`)
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-
   });
 });
