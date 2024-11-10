@@ -436,6 +436,7 @@ export const requestAdminQuizRemoveV2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+
 // adminQuizInfo
 /**
  * Makes http request to get quiz information
@@ -487,6 +488,7 @@ export const requestAdminQuizInfoV2 = (
 
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
 
 // adminQuizNameUpdate v1
 /**

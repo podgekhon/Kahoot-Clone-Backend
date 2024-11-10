@@ -293,20 +293,23 @@ describe('tests for playerQuestion', () => {
   });
 
   test('Invalid playerId', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4000);
     const invalidPlayerId = 9999;
     const positionResponse = requestPlayerQuestion(invalidPlayerId, 1);
 
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`);
+    // console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Question position is not valid for the session this player is in', () => {
-    const invalidQuestionPosition = 999;
-    const positionResponse = requestPlayerQuestion(playerId, invalidQuestionPosition);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4000);
+    const positionResponse = requestPlayerQuestion(playerId, 9999);
 
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`);
+    // console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -314,7 +317,7 @@ describe('tests for playerQuestion', () => {
     // session state is LOBBY
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`);
+    // console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -323,7 +326,7 @@ describe('tests for playerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     const positionResponse = requestPlayerQuestion(playerId, 1);
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    console.log(`error = ${JSON.stringify(positionResponse.body)}`);
+    // console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -347,6 +350,7 @@ describe('tests for playerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
 
     const positionResponse = requestPlayerQuestion(playerId, 2);
+    // console.log(`error = ${JSON.stringify(positionResponse.body)}`);
     expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
     expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });

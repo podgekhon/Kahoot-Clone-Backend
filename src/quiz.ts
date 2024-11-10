@@ -259,6 +259,7 @@ export const adminStartQuizSession = (
   const newQuizSession: quizSession = {
     sessionId: randomId(10000),
     sessionState: quizState.LOBBY,
+    isInLobby: true,
     quizCopy,
     autoStartNum,
     sessionQuestionPosition: 1,
@@ -606,6 +607,7 @@ export const adminQuizInfo = (token: string, quizId: number, version: string): q
 
   return response;
 };
+
 
 /**
   * Update the name of the relevant quiz
@@ -1051,10 +1053,6 @@ export const adminQuizSessionUpdate = (
     throw new Error('INVALID_OWNER');
   }
 
-  if (quizSession.sessionState === quizState.LOBBY) {
-    quizSession.isInLobby = true;
-  }
-
   // if action is 'END'
   if (action === adminAction.END) {
     if (quizSession.sessionState === quizState.END) {
@@ -1096,15 +1094,17 @@ export const adminQuizSessionUpdate = (
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
+      if (quizSession.isInLobby === false) {
+        quizSession.sessionQuestionPosition++;
+      } else {
+        quizSession.isInLobby = false;
+      }
       quizSession.sessionState = quizState.QUESTION_OPEN;
       if (quizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
           quizSession.sessionState = quizState.QUESTION_CLOSE;
           setData(data);
         }, 60000);
-      }
-      if (quizSession.isInLobby === false) {
-        quizSession.sessionQuestionPosition++;
       }
       setData(data);
     }, 3000);
@@ -1127,6 +1127,11 @@ export const adminQuizSessionUpdate = (
     if (quizSession.sessionState !== quizState.QUESTION_COUNTDOWN) {
       throw new Error('INVALID_ACTION');
     }
+    if (quizSession.isInLobby === false) {
+      quizSession.sessionQuestionPosition++;
+    } else {
+      quizSession.isInLobby = false;
+    }
 
     // checks if clear 3s timer
     clearTimeout(timers[sessionId]);
@@ -1135,9 +1140,6 @@ export const adminQuizSessionUpdate = (
     // update quiz session
     quizSession.sessionState = quizState.QUESTION_OPEN;
     quizSession.isCountdownSkipped = true;
-    if (quizSession.isInLobby === false) {
-      quizSession.sessionQuestionPosition++;
-    }
   }
 
   // if action is 'ANSWER_SHOW'
