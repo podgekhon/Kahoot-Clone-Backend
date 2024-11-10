@@ -5,10 +5,12 @@ import {
 } from './helperFunctions';
 
 import {
-  emptyReturn,
   messageBody,
   playerId,
   quizSession,
+  answerSubmission,
+  errorMessages,
+  emptyReturn,
   PlayerState,
   quiz,
   messageList
@@ -62,6 +64,87 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
   data.players.push(newPlayer);
   setData(data);
   return { playerId: playerId };
+};
+
+/**
+ *
+ * Allow the current player to submit answer(s) to the currently active question.
+ *
+ * @param {number[]} answerIds - an array of answerIds
+ * @param {number} playerId - an unique identifier for a player
+ * @param {number} questionPosition - an unique identifier for a player
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {emptyReturn} - A Number which is the playerId of player
+ */
+export const playerAnswerQuestion = (
+  answerIds: number[],
+  playerId: number,
+  questionPosition: number
+): errorMessages | emptyReturn => {
+  const data = getData();
+  // find player
+  const player = data.players.find(p => p.playerId === playerId);
+  if (!player) {
+    throw new Error('PLAYERID_NOT_EXIST');
+  }
+  // get session of player
+  const session = player.sessionId;
+
+  // Find the quiz associated with the session and check the state
+  const quiz = data.quizzes.find(q =>
+    q.activeSessions.some(as => as.sessionId === session)
+  );
+
+  // Retrieve quiz session in active sessions
+  const quizSession = quiz.activeSessions.find(as => as.sessionId === session);
+
+  // Check if the session state is QUESTION_OPEN
+  if (quizSession.sessionState !== quizState.QUESTION_OPEN) {
+    throw new Error('SESSION_NOT_OPEN');
+  }
+
+  // If question position is not valid for the session this player is in
+  if (questionPosition < 1 || questionPosition > quiz.numQuestions) {
+    throw new Error('INVALID_QUESTION_POSITION');
+  }
+
+  // If session is not currently on this question
+  if (quizSession.sessionQuestionPosition !== questionPosition) {
+    throw new Error('SESSION_NOT_ON_QUESTION');
+  }
+
+  const question = quiz.questions[questionPosition - 1];
+
+  // Answer IDs are not valid for this particular question
+  const validAnswerIds = new Set(question.answerOptions.map(option => option.answerId));
+  for (const answerId of answerIds) {
+    if (!validAnswerIds.has(answerId)) {
+      throw new Error('INVALID_ANSWERID');
+    }
+  }
+  // There are duplicate answer IDs provided
+  const uniqueAnswers = new Set(answerIds);
+  if (uniqueAnswers.size !== answerIds.length) {
+    throw new Error('DUPLICATE_ANSWERS_SUBMITTED');
+  }
+
+  // Less than 1 answer ID was submitted
+  if (answerIds.length < 1) {
+    throw new Error('INVALID_ANSWER_SUBMITTED');
+  }
+
+  // Record the answer submission
+  const playerAnswer: answerSubmission = { answerIds, playerId };
+  if (!question.answerSubmissions) {
+    question.answerSubmissions = [];
+  }
+  question.answerSubmissions.push(playerAnswer);
+  // Update the data store
+  setData(data);
+
+  // Return player ID if successful
+  return { };
 };
 
 /**

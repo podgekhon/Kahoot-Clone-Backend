@@ -23,7 +23,7 @@ export interface dataStore {
 export interface player {
   playerId: number,
   playerName: string,
-  sessionId: number
+  sessionId: number,
 }
 
 export interface user {
@@ -45,13 +45,23 @@ export interface answerOption {
   correct: boolean;
 }
 
+export interface answerSubmission {
+  answerIds: number[];
+  playerId: number;
+}
+
 export interface question {
   questionId: number;
   question: string;
   timeLimit: number;
   points: number;
   answerOptions: answerOption[];
+  answerSubmissions?: answerSubmission[];
   thumbnailUrl?: string;
+}
+
+export interface answer {
+  answerIds: number[];
 }
 
 export interface quiz {
