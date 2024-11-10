@@ -263,7 +263,7 @@ export interface sessionState {
 }
 
 export interface PlayerState {
-  playerId: number;
+  playerId?: number;
   state: quizState,
   numQuestions: number,
   atQuestion: number

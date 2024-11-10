@@ -228,7 +228,6 @@ export const playerState = (playerId: number) : PlayerState => {
     }
   }
   const response: PlayerState = {
-    playerId: playerId,
     state: FindSession.sessionState,
     numQuestions: quiz.numQuestions,
     atQuestion: quiz.atQuestion
