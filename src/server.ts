@@ -411,7 +411,6 @@ app.get('/v2/admin/quiz/:quizid', (req: Request, res: Response) => {
   handleAdminQuizInfo(req, res, 'v2');
 });
 
-
 // adminQuizUpdateThumbnail
 app.put('/v1/admin/quiz/:quizid/thumbnail', (req: Request, res: Response) => {
   const { quizid } = req.params;
