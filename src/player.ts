@@ -101,7 +101,7 @@ export const playerQuestion = (playerId: number, questionPosition: number): ques
   }
 
   // Check if the session state is valid
-  console.log(`QUI session state = ${session.sessionState}`);
+  // console.log(`QUI session state = ${session.sessionState}`);
   if ([quizState.LOBBY, quizState.QUESTION_COUNTDOWN, quizState.FINAL_RESULTS, quizState.END].includes(session.sessionState)) {
     throw new Error(`SESSION_IN_LOBBY_COUNTDOWN_RESULTS_END`);
   }
