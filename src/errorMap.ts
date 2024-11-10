@@ -179,6 +179,10 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in QUESTION_OPEN state.'
   },
+  SESSION_NOT_IN_END: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'There is a session for this quiz is not in END state.'
+  },
   INVALID_QUESTION_POSITION: {
     status: httpStatus.BAD_REQUEST,
     message: 'Question position is not valid for the quiz'

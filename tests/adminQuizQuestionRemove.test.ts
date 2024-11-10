@@ -8,6 +8,8 @@ import {
   requestAdminQuizQuestionRemoveV2,
   requestAdminQuizRemove,
   requestAdminQuizRemoveV2,
+  requestAdminQuizSessionUpdate,
+  requestAdminStartQuizSession,
   requestClear
 } from '../src/requestHelperFunctions';
 
@@ -15,11 +17,18 @@ import {
   tokenReturn,
   quizCreateResponse,
   quizQuestionCreateResponse,
+  startSession,
+  quizStartSessionResponse,
 } from '../src/interface';
 
 import {
   httpStatus
 } from '../src/requestHelperFunctions';
+
+import { adminAction } from '../src/quiz';
+
+import sleepSync from 'slync';
+
 
 beforeEach(() => {
   requestClear();
@@ -27,14 +36,14 @@ beforeEach(() => {
 
 const routeVersions = [
   {
-    name: 'v1',
+    version: 'v1',
     removeFunction: requestAdminQuizQuestionRemove,
     createFunction: requestAdminQuizCreate,
     createQuestionFunction: requestAdminQuizQuestionCreate,
     removeQuizFunction: requestAdminQuizRemove
   },
   {
-    name: 'v2',
+    version: 'v2',
     removeFunction: requestAdminQuizQuestionRemoveV2,
     createFunction: requestAdminQuizCreateV2,
     createQuestionFunction: requestAdminQuizQuestionCreateV2,
@@ -42,9 +51,9 @@ const routeVersions = [
   }
 ];
 
-describe.each(routeVersions)('Tests for $name route', (
+describe.each(routeVersions)('Tests for $version route', (
   {
-    name,
+    version,
     removeFunction,
     createFunction,
     createQuestionFunction,
@@ -70,7 +79,7 @@ describe.each(routeVersions)('Tests for $name route', (
     );
     quiz = resCreateQuiz.body as quizCreateResponse;
 
-    const questionBody = name === 'v2'
+    const questionBody = version === 'v2'
       ? {
           question: 'What is the capital of Australia?',
           timeLimit: 4,
@@ -115,7 +124,6 @@ describe.each(routeVersions)('Tests for $name route', (
     const user2 = resRegisterUser2.body as tokenReturn;
 
     const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user2.token);
-
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -124,7 +132,6 @@ describe.each(routeVersions)('Tests for $name route', (
     const invalidQuizId = 9999;
 
     const resRemoveQuestion = removeFunction(invalidQuizId, question.questionId, user.token);
-
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -133,21 +140,18 @@ describe.each(routeVersions)('Tests for $name route', (
     const invalidquestion = question.questionId + 1;
 
     const resRemoveQuestion = removeFunction(quiz.quizId, invalidquestion, user.token);
-
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when token is empty', () => {
     const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, '');
-
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('returns error when token is invalid', () => {
     const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, 'invalidToken');
-
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
@@ -166,17 +170,23 @@ describe.each(routeVersions)('Tests for $name route', (
     removeQuizFunction(quiz.quizId, user.token);
 
     const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user.token);
-
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
 
   // TO BE Implemented
-  // test('returns error when quiz is not in END state', () => {
-
-  //   const resRemoveQuestion = removeFunction(quiz.quizId, questionId, user.token);
-
-  //   expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
-  //   expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
-  // });
+  if (version === 'v2') {
+    test('returns error when quiz is not in END state', () => {
+      const resSession = requestAdminStartQuizSession(quiz.quizId, user.token, 1);
+      const sessionId = (resSession.body as quizStartSessionResponse).sessionId;
+      requestAdminQuizSessionUpdate(quiz.quizId, sessionId, user.token, adminAction.NEXT_QUESTION)
+  
+      sleepSync(4000);
+  
+      const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user.token);
+  
+      expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+      expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
+    });
+  }
 });
