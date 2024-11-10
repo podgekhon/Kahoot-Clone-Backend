@@ -24,7 +24,9 @@ import { adminAction } from '../src/quiz';
 
 describe('Test for adminGetFinalResults', () => {
   let user1Response: userAuthRegister;
+  let user2Response: userAuthRegister;
   let user1Token: string;
+  let user2Token: string;
   let quizCreateResponse: quizCreate;
   let quizId: number;
   let quizQuestionCreateResponse: questionCreate;
@@ -47,14 +49,24 @@ describe('Test for adminGetFinalResults', () => {
     );
 
     user1Token = (user1Response.body as tokenReturn).token;
-    expect(user1Response.statusCode).toStrictEqual(200);
+    expect(user1Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    user2Response = requestAdminAuthRegister(
+      'user2@gmail.com',
+      'validPassword2',
+      'User',
+      'Two'
+    );
+
+    user2Token = (user2Response.body as tokenReturn).token;
+    expect(user1Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     quizCreateResponse = requestAdminQuizCreate(
       user1Token,
       'validQuizName',
       'validQuizDescription'
     );
-    expect(quizCreateResponse.statusCode).toStrictEqual(200);
+    expect(quizCreateResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     quizId = (quizCreateResponse.body as quizCreateResponse).quizId;
 
     const questionBody = {
@@ -104,7 +116,7 @@ describe('Test for adminGetFinalResults', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, nextQuestionAction);
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, skipCountDownAction);
 
-    // players answer question
+    // players submit answer question
 
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, goFinalResults);
 
@@ -196,6 +208,24 @@ describe('Test for adminGetFinalResults', () => {
       quizId + 1,
       sessionId,
       user1Token
+    );
+
+    expect(adminGetFinalResults.statusCode).toStrictEqual(
+      httpStatus.FORBIDDEN
+    );
+    expect(adminGetFinalResults.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('Return error for user does not own quiz', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, nextQuestionAction);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, skipCountDownAction);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, showAnswerAction);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, goFinalResults);
+
+    adminGetFinalResults = requestAdminGetFinalResults(
+      quizId,
+      sessionId,
+      user2Token
     );
 
     expect(adminGetFinalResults.statusCode).toStrictEqual(

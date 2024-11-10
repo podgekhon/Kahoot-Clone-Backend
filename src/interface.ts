@@ -254,7 +254,8 @@ export interface sessionState {
 export interface PlayerState {
   state: quizState,
   numQuestions: number,
-  atQuestion: number
+  atQuestion: number,
+  score?: number,
 }
 
 export interface requestOptions {

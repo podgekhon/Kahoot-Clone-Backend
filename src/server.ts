@@ -723,6 +723,11 @@ app.get('/v1/player/:playerId/chat', (req: Request, res: Response) => {
 });
 app.get('/v1/player/:playerId', handleplayerState);
 
+app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (
+  req: Request,
+  res: Response
+) => {
+});
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================

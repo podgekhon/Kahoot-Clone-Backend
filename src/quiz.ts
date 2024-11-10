@@ -1213,12 +1213,12 @@ sessionState => {
   }
 
   const matchedPlayers = data.players.filter(player => player.sessionId === sessionId);
-  const PLayersname = matchedPlayers.map(player => player.playerName);
+  const Playersname = matchedPlayers.map(player => player.playerName);
 
   const response : sessionState = {
     state: FindSession.sessionState,
     atQuestion: validQuiz.atQuestion,
-    players: PLayersname,
+    players: Playersname,
     metadata: {
       quizId: validQuiz.quizId,
       name: validQuiz.name,
@@ -1245,4 +1245,51 @@ sessionState => {
   };
 
   return response;
+};
+
+export const adminGetFinalResults = (
+  quizId: number,
+  sessionId: number,
+  token: string
+) => {
+  const data = getData();
+
+  // validate token
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+  // if real, get userId
+  const user = tokenValidation.authUserId;
+
+  // get quiz & check if it exist
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!quiz) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // get quiz session & check if it exist
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+  if (!quizSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  // check if quiz session state is not FINAL_RESULT
+  if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
+    throw new Error('INVALID_QUIZ_SESSION');
+  }
+
+  // first, sort the player
+  const usersRankedByScore = [];
+  const playerList = adminQuizSessionState(quizId, sessionId, token).players;
+
+  // first approach:
+  // get the list of players
+  // create an array of obj containing player name and score
+  // then sort
+  // return the players score
+  // for questionResults:[]
+  // use playerQuestionResults to display all question results in session
 };
