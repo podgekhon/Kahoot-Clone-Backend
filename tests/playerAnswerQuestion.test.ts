@@ -27,10 +27,6 @@ beforeEach(() => {
   requestClear();
 });
 
-/*
-Allow the current player to submit answer(s) to the currently active question. Question position starts at 1
-Note: An answer can be re-submitted once first selection is made, as long as game is in the right state
-*/
 describe('tests for playerAnswerQuestion', () => {
   let user;
   let usertoken: string;
@@ -79,7 +75,6 @@ describe('tests for playerAnswerQuestion', () => {
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
     const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
-
 
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
@@ -161,7 +156,7 @@ describe('tests for playerAnswerQuestion', () => {
     const quizSessionStatus = (quizSession.body as sessionState).state;
     expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
 
-    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 2); // Use a different question position
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 2);
     expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
@@ -186,7 +181,8 @@ describe('tests for playerAnswerQuestion', () => {
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
-    const answerId = [quizInfo.questions[0].answerOptions[0].answerId, quizInfo.questions[0].answerOptions[0].answerId];
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId,
+      quizInfo.questions[0].answerOptions[0].answerId];
 
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
@@ -201,11 +197,10 @@ describe('tests for playerAnswerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     sleepSync(4 * 1000);
 
-    
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
     expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
-    
+
     const answerId: number[] = [];
     const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
     expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
@@ -227,7 +222,7 @@ describe('tests for playerAnswerQuestion', () => {
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
     const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
-    
+
     const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
     expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);

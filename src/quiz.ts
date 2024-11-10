@@ -1,7 +1,6 @@
 import { getData, setData } from './dataStore';
 import {
   generateRandomColour,
-  generateRandomName,
   validateToken,
   isStringValid,
   isNameLengthValid,
@@ -29,8 +28,6 @@ import {
   quizStartSessionResponse,
   viewQuizSessionsResponse,
   quizCopy,
-  playerId,
-  answerSubmission,
   sessionState
 } from './interface';
 

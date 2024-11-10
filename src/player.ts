@@ -77,7 +77,11 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
  * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - A Number which is the playerId of player
  */
-export const playerAnswerQuestion = (answerIds: number[], playerId: number, questionPosition: number): errorMessages | emptyReturn => {
+export const playerAnswerQuestion = (
+  answerIds: number[],
+  playerId: number,
+  questionPosition: number
+): errorMessages | emptyReturn => {
   const data = getData();
   // find player
   const player = data.players.find(p => p.playerId === playerId);
