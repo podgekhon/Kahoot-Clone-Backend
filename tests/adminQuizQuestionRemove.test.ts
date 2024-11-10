@@ -17,7 +17,6 @@ import {
   tokenReturn,
   quizCreateResponse,
   quizQuestionCreateResponse,
-  startSession,
   quizStartSessionResponse,
 } from '../src/interface';
 
@@ -28,7 +27,6 @@ import {
 import { adminAction } from '../src/quiz';
 
 import sleepSync from 'slync';
-
 
 beforeEach(() => {
   requestClear();
@@ -179,12 +177,12 @@ describe.each(routeVersions)('Tests for $version route', (
     test('returns error when quiz is not in END state', () => {
       const resSession = requestAdminStartQuizSession(quiz.quizId, user.token, 1);
       const sessionId = (resSession.body as quizStartSessionResponse).sessionId;
-      requestAdminQuizSessionUpdate(quiz.quizId, sessionId, user.token, adminAction.NEXT_QUESTION)
-  
+      requestAdminQuizSessionUpdate(quiz.quizId, sessionId, user.token, adminAction.NEXT_QUESTION);
+
       sleepSync(4000);
-  
+
       const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user.token);
-  
+
       expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
       expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
     });
