@@ -222,7 +222,8 @@ describe('tests for playerQuestion', () => {
 
   test('successfully get question in when session state is QUESTION_CLOSE', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(6 * 10000 + 4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
+    sleepSync(61 * 1000);
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
     expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_CLOSE);

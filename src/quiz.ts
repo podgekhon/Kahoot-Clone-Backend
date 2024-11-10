@@ -608,7 +608,6 @@ export const adminQuizInfo = (token: string, quizId: number, version: string): q
   return response;
 };
 
-
 /**
   * Update the name of the relevant quiz
   *
@@ -1100,10 +1099,17 @@ export const adminQuizSessionUpdate = (
         quizSession.isInLobby = false;
       }
       quizSession.sessionState = quizState.QUESTION_OPEN;
-      if (quizSession.sessionState === quizState.QUESTION_OPEN) {
+      quizSession.sessionQuestionPosition++;
+
+      const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+      const updatedQuizSession = quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+
+      // after 3s, add 60s timer for question open
+      if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
           quizSession.sessionState = quizState.QUESTION_CLOSE;
-          setData(data);
         }, 60000);
       }
       setData(data);
@@ -1139,7 +1145,15 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSession.sessionState = quizState.QUESTION_OPEN;
-    quizSession.isCountdownSkipped = true;
+    if (quizSession.isInLobby === false) {
+      quizSession.sessionQuestionPosition++;
+    }
+
+    // set the 60s timer
+    timers[sessionId] = setTimeout(() => {
+      quizSession.sessionState = quizState.QUESTION_CLOSE;
+      setData(data);
+    }, 60000);
   }
 
   // if action is 'ANSWER_SHOW'
@@ -1174,14 +1188,6 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSession.sessionState = quizState.FINAL_RESULTS;
-  }
-
-  // to set a timer when question is open
-  if (quizSession.sessionState === quizState.QUESTION_OPEN) {
-    timers[sessionId] = setTimeout(() => {
-      quizSession.sessionState = quizState.QUESTION_CLOSE;
-      setData(data);
-    }, 60000);
   }
 
   setData(data);
