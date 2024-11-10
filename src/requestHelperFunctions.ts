@@ -1,5 +1,6 @@
 import request from 'sync-request-curl';
 import { port, url } from './config.json';
+import { adminAction, adminQuizSessionUpdate } from './quiz';
 
 const SERVER_URL = `${url}:${port}`;
 const TIMEOUT_MS = 100000;
@@ -40,12 +41,22 @@ import {
   adminTrashList,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  adminQuizSessionState
 } from './quiz';
 
 import {
-  joinPlayer
+  joinPlayer,
+  playerAnswerQuestion,
+  playerMessage,
+  playerState,
+  playerMessageList
 } from './player';
+
+import {
+  messageBody,
+  requestOptions
+} from './interface';
 
 // clear
 /**
@@ -609,7 +620,7 @@ export const requestAdminQuizDescriptionUpdateV2 = (
 export const requestAdminStartQuizSession = (
   quizId: number, token: string, autoStartNum: number
 ): {
-  body: ReturnType<typeof adminStartQuizSession> | { error: string },
+  body: ReturnType<typeof adminStartQuizSession>,
   statusCode: number
 } => {
   const res = request(
@@ -1109,33 +1120,51 @@ export const requestAdminQuizQuestionRemoveV2 = (
 
 // adminMoveQuizQuestion
 /**
- * Makes http request to move a question to a new position
+ * Makes an HTTP request to move a question to a new position
  *
- * @param { number } quizId
- * @param { number } questionId
- * @param { string } token
- * @param { number } newPosition
- * @returns { Response }
+ * @param {number} quizId
+ * @param {number} questionId
+ * @param {string} token
+ * @param {number} newPosition
+ * @param {string} version - v1 or v2
+ * @returns {Response}
  */
-export const requestAdminMoveQuizQuestion = (
-  quizId: number, questionId: number, token: string, newPosition: number
+const requestAdminMoveQuizQuestionGeneric = (
+  quizId: number, questionId: number, token: string, newPosition: number, version: string
 ): {
-  body: ReturnType <typeof adminMoveQuizQuestion>,
+  body: ReturnType<typeof adminMoveQuizQuestion>,
   statusCode: number
 } => {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/move`,
-    {
-      json: {
-        token: token,
-        newPosition: newPosition,
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/${quizId}/question/${questionId}/move`;
+
+  const options: requestOptions = {
+    json: { newPosition },
+    timeout: TIMEOUT_MS,
+  };
+
+  if (version === 'v1') {
+    options.json = { token, newPosition };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('PUT', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+/**
+ * Makes HTTP request to move a question to a new position using v1 route
+ */
+export const requestAdminMoveQuizQuestionV1 = (
+  quizId: number, questionId: number, token: string, newPosition: number
+) => requestAdminMoveQuizQuestionGeneric(quizId, questionId, token, newPosition, 'v1');
+
+/**
+ * Makes HTTP request to move a question to a new position using v2 route
+ */
+export const requestAdminMoveQuizQuestionV2 = (
+  quizId: number, questionId: number, token: string, newPosition: number
+) => requestAdminMoveQuizQuestionGeneric(quizId, questionId, token, newPosition, 'v2');
 
 // adminQuizQuestionDuplicate
 /**
@@ -1205,6 +1234,142 @@ export const requestjoinPlayer = (
       json: {
         sessionId: sessionId,
         playerName: playerName
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// adminQuizSessionUpdate
+/**
+ * Makes http request to update quiz session status
+ *
+ * @param { number } quizId
+ * @param { number } sessionId
+ * @param { string } token
+ * @param { adminAction } action
+ * @returns { Response }
+ */
+export const requestAdminQuizSessionUpdate = (
+  quizId: number,
+  sessionId: number,
+  token: string,
+  actionBody: adminAction
+): {
+  body: ReturnType <typeof adminQuizSessionUpdate>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    {
+      headers: { token },
+      json: {
+        action: actionBody
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestPlayerMessage = (
+  playerId: number,
+  message: messageBody
+) : {
+  body: ReturnType <typeof playerMessage>,
+  statusCode: number
+} => {
+  const res = request(
+    'POST',
+    SERVER_URL + `/v1/player/${playerId}/chat`,
+    {
+      json: {
+        message: message,
+      },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestadminQuizSessionState = (
+  quizId: number, sessionId: number, token: string
+): {
+  body: ReturnType <typeof adminQuizSessionState>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}`,
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        quizId: quizId,
+        sessionId: sessionId
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestplayerState = (
+  playerId: number
+): {
+  body: ReturnType <typeof playerState>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}`,
+    {
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestPlayerMessageList = (
+  playerId: number
+) : {
+  body: ReturnType <typeof playerMessageList>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}/chat`,
+    {
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Allow the current player to submit answer(s) to the currently active question.
+ *
+ * @param { number[] } answerIds
+ * @param { number } playerId
+ * @param { number } questionPosition
+ * @returns { Response }
+ */
+export const requestPlayerAnswerQuestion = (
+  answerIds: number[], playerId: number, questionPosition: number
+): {
+  body: ReturnType <typeof playerAnswerQuestion>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/player/${playerId}/question/${questionPosition}/answer`,
+    {
+      json: {
+        answerIds: answerIds
       },
       timeout: TIMEOUT_MS,
     }

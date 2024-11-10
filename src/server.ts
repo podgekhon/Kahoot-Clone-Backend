@@ -56,16 +56,21 @@ import {
   adminTrashEmpty,
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
-  adminViewQuizSessions
+  adminViewQuizSessions,
+  adminQuizSessionUpdate,
+  adminQuizSessionState
 } from './quiz';
 
 import {
-  joinPlayer
+  joinPlayer,
+  playerAnswerQuestion,
+  playerMessage,
+  playerState,
+  playerMessageList
 } from './player';
 
 import { clear } from './other';
 import { errorMap } from './errorMap';
-
 enum httpStatus {
   UNAUTHORIZED = 401,
   BAD_REQUEST = 400,
@@ -472,9 +477,15 @@ app.get('/v1/admin/quiz/:quizId/sessions', (req, res) => {
 });
 
 // adminMoveQuizQuestion
-app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: Response) => {
+const handleAdminMoveQuizQuestion = (req: Request, res: Response) => {
   const { quizid, questionid } = req.params;
-  const { token, newPosition } = req.body;
+  const { newPosition } = req.body;
+  let token;
+  if (req.body.token) {
+    token = req.body.token;
+  } else if (req.headers.token) {
+    token = req.headers.token as string;
+  }
 
   try {
     const result = adminMoveQuizQuestion(
@@ -485,10 +496,13 @@ app.put('/v1/admin/quiz/:quizid/question/:questionid/move', (req: Request, res: 
     );
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (error) {
-    const mappedError = errorMap[error.message];
-    return res.status(mappedError.status).json({ error: mappedError.message });
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-});
+};
+
+app.put('/v1/admin/quiz/:quizid/question/:questionid/move', handleAdminMoveQuizQuestion);
+app.put('/v2/admin/quiz/:quizid/question/:questionid/move', handleAdminMoveQuizQuestion);
 
 // adminAuthLogout
 const handleadminAuthLogout = (req: Request, res: Response) => {
@@ -566,7 +580,7 @@ const handleAdminQuizTransfer = (
   req: Request,
   res: Response
 ) => {
-  const { quizid } = req.params;
+  const { quizId } = req.params;
   const { userEmail } = req.body;
 
   let token;
@@ -577,7 +591,7 @@ const handleAdminQuizTransfer = (
   }
 
   try {
-    const result = adminQuizTransfer(parseInt(quizid), token, userEmail);
+    const result = adminQuizTransfer(parseInt(quizId), token, userEmail);
     return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
   } catch (err) {
     const mappedError = errorMap[err.message];
@@ -585,9 +599,9 @@ const handleAdminQuizTransfer = (
   }
 };
 
-app.post('/v1/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
+app.post('/v1/admin/quiz/:quizId/transfer', handleAdminQuizTransfer);
 
-app.post('/v2/admin/quiz/:quizid/transfer', handleAdminQuizTransfer);
+app.post('/v2/admin/quiz/:quizId/transfer', handleAdminQuizTransfer);
 
 const handleAdminTrashEmpty = (req: Request, res: Response) => {
   const { quizIds } = req.query;
@@ -628,6 +642,104 @@ const handlejoinPlayer = (req: Request, res: Response) => {
 };
 
 app.post('/v1/player/join', handlejoinPlayer);
+
+// quiz session update
+app.put('/v1/admin/quiz/:quizId/session/:sessionId', (
+  req: Request,
+  res: Response
+) => {
+  const { quizId } = req.params;
+  const { sessionId } = req.params;
+  const token = req.headers.token as string;
+  const { action: actionBody } = req.body;
+
+  // const action = adminAction[actionBody as keyof typeof adminAction];
+
+  try {
+    const result = adminQuizSessionUpdate(
+      parseInt(quizId),
+      parseInt(sessionId),
+      token,
+      actionBody
+    );
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
+
+// player message
+app.post('/v1/player/:playerId/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  const { message } = req.body;
+
+  try {
+    const result = playerMessage(playerId, message);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+});
+
+// adminQuizSessionState
+const handleadminQuizSessionState = (req: Request, res: Response) => {
+  const quizId = parseInt(req.params.quizId);
+  const sessionId = parseInt(req.params.sessionId);
+  const token = req.headers.token as string;
+  try {
+    const result = adminQuizSessionState(quizId, sessionId, token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+app.get('/v1/admin/quiz/:quizId/session/:sessionId', handleadminQuizSessionState);
+
+// playerState
+const handleplayerState = (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  try {
+    const result = playerState(playerId);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+// player message list
+app.get('/v1/player/:playerId/chat', (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  try {
+    const result = playerMessageList(playerId);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+});
+app.get('/v1/player/:playerId', handleplayerState);
+
+// playerAnswerQuestion
+const handlePlayerAnswerQuestion = (req: Request, res: Response) => {
+  const { answerIds } = req.body;
+  // const { playerId, questionPosition } = req.params;
+  // const answerIds = req.body.answerIds;
+  const playerId = parseInt(req.params.playerId);
+  const questionPosition = parseInt(req.params.questionPosition);
+  try {
+    const result = playerAnswerQuestion(answerIds, playerId, questionPosition);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.put('/v1/player/:playerId/question/:questionPosition/answer', handlePlayerAnswerQuestion);
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

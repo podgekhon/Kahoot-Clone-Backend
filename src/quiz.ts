@@ -10,7 +10,7 @@ import {
   validateAnswers,
   validQuestionThumbnailUrl,
   isSessionEnded,
-  randomId,
+  randomId
 } from './helperFunctions';
 
 import {
@@ -28,17 +28,28 @@ import {
   quizStartSessionResponse,
   viewQuizSessionsResponse,
   quizCopy,
+  sessionState
 } from './interface';
 
 export enum quizState {
-  LOBBY,
-  QUESTION_COUNTDOWN,
-  QUESTION_OPEN,
-  ANSWER_SHOW,
-  FINAL_RESULTS,
-  END,
+  LOBBY = 'LOBBY',
+  QUESTION_COUNTDOWN = 'COUNTDOWN',
+  QUESTION_OPEN = 'QUESTION_OPEN',
+  QUESTION_CLOSE = 'QUESTION_CLOSE',
+  ANSWER_SHOW = 'ANSWER_SHOW',
+  FINAL_RESULTS = 'FINAL_RESULT',
+  END = 'END'
 }
 
+export enum adminAction {
+  NEXT_QUESTION,
+  SKIP_COUNTDOWN,
+  GO_TO_ANSWER,
+  GO_TO_FINAL_RESULT,
+  END
+}
+
+const timers: { [key: number]: ReturnType<typeof setTimeout> } = {};
 /**
  * Update the thumbnail for a specific quiz.
  *
@@ -169,6 +180,7 @@ export const adminQuizCreate = (
   const newQuiz: quiz = {
     quizId: randomId(10000),
     ownerId: authUserId,
+    atQuestion: 1,
     sessionState: quizState.END,
     name: name,
     description: description,
@@ -249,7 +261,9 @@ export const adminStartQuizSession = (
     sessionState: quizState.LOBBY,
     quizCopy,
     autoStartNum,
-    sessionQuestionPosition: 1
+    sessionQuestionPosition: 1,
+    messages: [],
+    players: []
   };
 
   quiz.activeSessions.push(newQuizSession);
@@ -889,24 +903,28 @@ export const adminQuizTransfer = (
   quizId: number,
   token: string,
   userEmail: string
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
-  const receiver = data.users.find((user) => user.email === userEmail);
-  const tokenValidation = validateToken(token, data);
-  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
 
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
     throw new Error('INVALID_TOKEN');
   }
-  const senderId = tokenValidation.authUserId;
+
+  const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!transferredQuiz) {
+    throw new Error('INVALID_QUIZ');
+  }
 
   // checks if receiver is a real user
+  const receiver = data.users.find((user) => user.email === userEmail);
   if (!receiver) {
     throw new Error('INVALID_USEREMAIL');
   }
   const receiverId = receiver.userId;
 
   // checks if userEmail is the current logged in user
+  const senderId = tokenValidation.authUserId;
   if (senderId === receiverId) {
     throw new Error('ALREADY_OWNS');
   }
@@ -973,4 +991,265 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   setData(data);
 
   return {};
+};
+
+/**
+ * Updates quiz session status based on admin action
+ *
+ * @param {number} quizId - An array of existing quizIds owned by user
+ * @param {number} sessionId - Unique session id for quiz
+ * @param {string} token - Unique session id for user
+ * @param {adminAction} string - An admin action enum
+ *
+ * @returns {emptyReturn} - An empty upon successful registration
+ */
+export const adminQuizSessionUpdate = (
+  quizId: number,
+  sessionId: number,
+  token: string,
+  action: adminAction
+): emptyReturn => {
+  const data = getData();
+  const tokenValidation = validateToken(token, data);
+  // checks if validity of user token
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+  const user = tokenValidation.authUserId;
+
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  // checks if quiz exist
+  if (!quiz) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  let quizSession :quizSession;
+  // get quiz session from active array
+  quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+
+  // check if session exist in active
+  if (!quizSession) {
+    // if not, check in inactive array
+    quizSession = quiz.inactiveSessions.find(
+      (session) => session.sessionId === sessionId
+    );
+
+    // else, throw erorr
+    if (!quizSession) {
+      throw new Error('INVALID_SESSIONID');
+    }
+  }
+
+  // check if action is invalid
+  if (!(action in adminAction)) {
+    throw new Error('INVALID_ACTION');
+  }
+
+  // check if user owns quiz
+  if (user !== quiz.ownerId) {
+    throw new Error('INVALID_OWNER');
+  }
+
+  if (quizSession.sessionState === quizState.LOBBY) {
+    quizSession.isInLobby = true;
+  }
+
+  // if action is 'END'
+  if (action === adminAction.END) {
+    if (quizSession.sessionState === quizState.END) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session state
+    quizSession.sessionState = quizState.END;
+
+    // add into inactiveSes array
+    quiz.inactiveSessions.push(quizSession);
+
+    // get index of quizSession in activeSes array
+    const quizSessionIndex = quiz.activeSessions.indexOf(quizSession);
+    // remove it from activeSes array
+    quiz.activeSessions.splice(quizSessionIndex);
+
+    // clear a scheduled timer if any exist
+    if (timers[sessionId]) {
+      clearTimeout(timers[sessionId]);
+      delete timers[sessionId];
+    }
+  }
+
+  // if action is 'NEXT_QUESTION'
+  if (action === adminAction.NEXT_QUESTION) {
+    // check if action can be applied to current state
+    if (
+      quizSession.sessionState !== quizState.LOBBY &&
+      quizSession.sessionState !== quizState.ANSWER_SHOW &&
+      quizSession.sessionState !== quizState.QUESTION_CLOSE
+    ) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSession.sessionState = quizState.QUESTION_COUNTDOWN;
+
+    // set a 3s duration before state of session automatically updates
+    timers[sessionId] = setTimeout(() => {
+      quizSession.sessionState = quizState.QUESTION_OPEN;
+      if (quizSession.isInLobby === false) {
+        quizSession.sessionQuestionPosition++;
+      } else {
+        quizSession.isInLobby = false;
+      }
+
+      const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+      const updatedQuizSession = quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+
+      // after 3s, add 60s timer for question open
+      if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
+        timers[sessionId] = setTimeout(() => {
+          quizSession.sessionState = quizState.QUESTION_CLOSE;
+        }, 60000);
+      }
+      setData(data);
+    }, 3000);
+  }
+
+  // if action is 'SKIP_COUNTDOWN'
+  if (action === adminAction.SKIP_COUNTDOWN) {
+    // check if action can be applied to current state
+    if (quizSession.sessionState !== quizState.QUESTION_COUNTDOWN) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // checks if clear 3s timer
+    clearTimeout(timers[sessionId]);
+    delete timers[sessionId];
+
+    // update quiz session
+    quizSession.sessionState = quizState.QUESTION_OPEN;
+    if (quizSession.isInLobby === false) {
+      quizSession.sessionQuestionPosition++;
+    } else {
+      quizSession.isInLobby = false;
+    }
+
+    // set the 60s timer
+    timers[sessionId] = setTimeout(() => {
+      quizSession.sessionState = quizState.QUESTION_CLOSE;
+      setData(data);
+    }, 60000);
+  }
+
+  // if action is 'ANSWER_SHOW'
+  if (action === adminAction.GO_TO_ANSWER) {
+    // check if action can be applied to current state
+    if (
+      quizSession.sessionState !== quizState.QUESTION_OPEN &&
+      quizSession.sessionState !== quizState.QUESTION_CLOSE
+    ) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSession.sessionState = quizState.ANSWER_SHOW;
+
+    // clear a scheduled timer if any exist
+    if (timers[sessionId]) {
+      clearTimeout(timers[sessionId]);
+      delete timers[sessionId];
+    }
+  }
+
+  // if action is 'GO_TO_FINAL_RESULTS'
+  if (action === adminAction.GO_TO_FINAL_RESULT) {
+    // check if action can be applied to current state
+    if (
+      quizSession.sessionState !== quizState.QUESTION_CLOSE &&
+      quizSession.sessionState !== quizState.ANSWER_SHOW
+    ) {
+      throw new Error('INVALID_ACTION');
+    }
+
+    // update quiz session
+    quizSession.sessionState = quizState.FINAL_RESULTS;
+  }
+
+  setData(data);
+  return {};
+};
+
+export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
+sessionState => {
+  const data = getData();
+
+  let FindSession: quizSession;
+  // find session if it is in active session array
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
+
+    if (FindSession) break;
+  }
+
+  // find session if it is in inactive session array
+  if (!FindSession) {
+    for (const quiz of data.quizzes) {
+      FindSession = quiz.inactiveSessions.find((session) => session.sessionId === sessionId);
+
+      if (FindSession) break;
+    }
+  }
+
+  // after searching both active & inactive, if none, then return error
+  if (!FindSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+  const authUserId = tokenValidation.authUserId;
+
+  const validQuiz = data.quizzes.find(q => q.quizId === quizId);
+  if (validQuiz.ownerId !== authUserId) {
+    throw new Error('INVALID_OWNER');
+  }
+
+  const matchedPlayers = data.players.filter(player => player.sessionId === sessionId);
+  const PLayersname = matchedPlayers.map(player => player.playerName);
+
+  const response : sessionState = {
+    state: FindSession.sessionState,
+    atQuestion: FindSession.sessionQuestionPosition,
+    players: PLayersname,
+    metadata: {
+      quizId: validQuiz.quizId,
+      name: validQuiz.name,
+      timeCreated: validQuiz.timeCreated,
+      timeLastEdited: validQuiz.timeLastEdited,
+      description: validQuiz.description,
+      numQuestions: validQuiz.numQuestions,
+      questions: validQuiz.questions.map(question => ({
+        questionId: question.questionId,
+        question: question.question,
+        timeLimit: question.timeLimit,
+        thumbnailUrl: question.thumbnailUrl || '',
+        points: question.points,
+        answerOptions: question.answerOptions.map(option => ({
+          answerId: option.answerId,
+          answer: option.answer,
+          colour: option.colour,
+          correct: option.correct
+        }))
+      })),
+      timeLimit: validQuiz.timeLimit,
+      thumbnailUrl: validQuiz.thumbnailUrl || '',
+    }
+  };
+
+  return response;
 };
