@@ -158,7 +158,6 @@ describe.each(routeVersions)('Tests for $name route', (
 
     // Attempt to remove the question again
     const resRemoveQuestion = removeFunction(quiz.quizId, question.questionId, user.token);
-
     expect(resRemoveQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resRemoveQuestion.body).toStrictEqual({ error: expect.any(String) });
   });
