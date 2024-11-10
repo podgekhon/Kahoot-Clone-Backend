@@ -371,54 +371,48 @@ export const requestAdminQuizCreateV2 = (
 
 // adminQuizRemove
 /**
- * Makes http request to remove a quiz
+ * Makes an HTTP request to remove a quiz
  *
- * @param { number } quizId
- * @param { string } token
- * @returns { Response }
+ * @param {number} quizId
+ * @param {string} token
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminQuizRemove = (
-  quizId: number, token: string
+const requestAdminQuizRemoveGeneric = (
+  quizId: number,
+  token: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminQuizRemove>,
+  body: ReturnType<typeof adminQuizRemove>,
   statusCode: number
 } => {
-  const res = request(
-    'DELETE',
-    SERVER_URL + `/v1/admin/quiz/${quizId}`,
-    {
-      qs: { token },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/${quizId}`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+  };
+
+  if (version === 'v1') {
+    options.qs = { token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('DELETE', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
 /**
- * Makes http request to remove a quiz
- *
- * @param { number } quizId
- * @param { string } token
- * @returns { Response }
+ * Makes an HTTP request to remove a quiz using v1 route
  */
-export const requestAdminQuizRemoveV2 = (
-  quizId: number, token: string
-): {
-  body: ReturnType <typeof adminQuizRemove>,
-  statusCode: number
-} => {
-  const res = request(
-    'DELETE',
-    SERVER_URL + `/v2/admin/quiz/${quizId}`,
-    {
-      headers: {
-        token: token
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+export const requestAdminQuizRemove = (quizId: number, token: string) =>
+  requestAdminQuizRemoveGeneric(quizId, token, 'v1');
+
+/**
+ * Makes an HTTP request to remove a quiz using v2 route
+ */
+export const requestAdminQuizRemoveV2 = (quizId: number, token: string) =>
+  requestAdminQuizRemoveGeneric(quizId, token, 'v2');
 
 // adminQuizInfo
 
@@ -470,72 +464,60 @@ export const requestAdminQuizInfoV2 = (
   token: string
 ) => requestAdminQuizInfoGeneric(quizId, token, 'v2');
 
-// adminQuizNameUpdate v1
+// adminQuizNameUpdate
 /**
- * Makes http request to update quiz name
+ * Makes an HTTP request to update quiz name
  *
- * @param { number } quizId
- * @param { string } token
- * @param { string } name
- * @returns { Response }
+ * @param {number} quizId - the Id of the quiz to update
+ * @param {string} token
+ * @param {string} name - new name of the quiz
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminQuizNameUpdate = (
-  quizId: number, token: string, name: string
+const requestAdminQuizNameUpdateGeneric = (
+  quizId: number,
+  token: string,
+  name: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminQuizNameUpdate>,
+  body: ReturnType<typeof adminQuizNameUpdate>,
   statusCode: number
 } => {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/name`,
-    {
-      json: {
-        token: token,
-        name: name,
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/${quizId}/name`;
+
+  const options: requestOptions = {
+    json: { name },
+    timeout: TIMEOUT_MS,
+  };
+
+  if (version === 'v1') {
+    options.json = { token, name };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('PUT', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminQuizNameUpdate v2
 /**
- * Makes http request to update quiz name
- *
- * @param { number } quizId
- * @param { string } token
- * @param { string } name
- * @returns { Response }
+ * Makes an HTTP request to update quiz name using v1 route
  */
-export const requestAdminQuizNameUpdateV2 = (
-  quizId: number, token: string, name: string
-): {
-  body: ReturnType <typeof adminQuizNameUpdate>,
-  statusCode: number
-} => {
-  const res = request(
-    'PUT',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/name`,
-    {
-      headers: {
-        token: token
-      },
-      json: {
-        name: name,
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+export const requestAdminQuizNameUpdate = (quizId: number, token: string, name: string) =>
+  requestAdminQuizNameUpdateGeneric(quizId, token, name, 'v1');
+
+/**
+ * Makes an HTTP request to update quiz name using v2 route
+ */
+export const requestAdminQuizNameUpdateV2 = (quizId: number, token: string, name: string) =>
+  requestAdminQuizNameUpdateGeneric(quizId, token, name, 'v2');
 
 // adminQuizDescriptionUpdate
 /**
  * Makes an HTTP request to update a quiz description
  *
- * @param {number} quizId 
- * @param {string} token 
+ * @param {number} quizId
+ * @param {string} token
  * @param {string} description - new quiz description
  * @param {string} version - "v1" or "v2"
  * @returns {Response}
@@ -968,7 +950,6 @@ export const requestAdminQuizQuestionCreateV2 = (
   quizId: number, token: string, questionBody: object
 ) => requestAdminQuizQuestionCreateGeneric(quizId, token, questionBody, 'v2');
 
-
 // adminQuizQuestionUpdate
 /**
  * Makes an HTTP request to update a question
@@ -1019,55 +1000,52 @@ export const requestAdminQuizQuestionUpdateV2 = (
 
 // adminQuizQuestionRemove v1
 /**
- * Makes http requets to remove a question
+ * Makes an HTTP request to remove a quiz question
  *
- * @param { number } quizId
- * @param { number } questionId
- * @param { string } token
- * @returns { Response }
+ * @param {number} quizId
+ * @param {number} questionId
+ * @param {string} token
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminQuizQuestionRemove = (
-  quizId: number, questionId: number, token: string
+const requestAdminQuizQuestionRemoveGeneric = (
+  quizId: number,
+  questionId: number,
+  token: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminQuizQuestionRemove>,
+  body: ReturnType<typeof adminQuizQuestionRemove>,
   statusCode: number
 } => {
-  const res = request(
-    'DELETE',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}`,
-    {
-      qs: { token: token },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/${quizId}/question/${questionId}`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+  };
+
+  if (version === 'v1') {
+    options.qs = { token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('DELETE', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminQuizQuestionRemove v2
 /**
- * Makes http requets to remove a question
- *
- * @param { number } quizId
- * @param { number } questionId
- * @param { string } token
- * @returns { Response }
+ * Makes an HTTP request to remove a quiz question using v1 route
+ */
+export const requestAdminQuizQuestionRemove = (
+  quizId: number, questionId: number, token: string
+) => requestAdminQuizQuestionRemoveGeneric(quizId, questionId, token, 'v1');
+
+/**
+ * Makes an HTTP request to remove a quiz question using v2 route
  */
 export const requestAdminQuizQuestionRemoveV2 = (
   quizId: number, questionId: number, token: string
-): {
-  body: ReturnType <typeof adminQuizQuestionRemove>,
-  statusCode: number
-} => {
-  const res = request(
-    'DELETE',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}`,
-    {
-      headers: { token: token },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+) => requestAdminQuizQuestionRemoveGeneric(quizId, questionId, token, 'v2');
 
 // adminMoveQuizQuestion
 /**
@@ -1119,59 +1097,54 @@ export const requestAdminMoveQuizQuestionV2 = (
 
 // adminQuizQuestionDuplicate
 /**
- * Makes http request to duplicate a quiz
+ * Makes an HTTP request to duplicate a quiz question
  *
- * @param { number } quizId
- * @param { number } questionId
- * @param { string } token
- * @returns { Response }
+ * @param {number} quizId - the Id of the quiz
+ * @param {number} questionId - the Id of the question to duplicate
+ * @param {string} token
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminQuizQuestionDuplicate = (
-  quizId: number, questionId: number, token: string
+const requestAdminQuizQuestionDuplicateGeneric = (
+  quizId: number,
+  questionId: number,
+  token: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminQuizQuestionDuplicate>,
+  body: ReturnType<typeof adminQuizQuestionDuplicate>,
   statusCode: number
 } => {
-  const res = request(
-    'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/question/${questionId}/duplicate`,
-    {
-      json: {
-        token: token,
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/${quizId}/question/${questionId}/duplicate`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+  };
+
+  if (version === 'v1') {
+    options.json = { token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('POST', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
 /**
- * Makes http request to duplicate a quiz
- *
- * @param { number } quizId
- * @param { number } questionId
- * @param { string } token
- * @returns { Response }
+ * Makes an HTTP request to duplicate a quiz question using v1 route
+ */
+export const requestAdminQuizQuestionDuplicate = (
+  quizId: number, questionId: number, token: string
+) => requestAdminQuizQuestionDuplicateGeneric(quizId, questionId, token, 'v1');
+
+/**
+ * Makes an HTTP request to duplicate a quiz question using v2 route
  */
 export const requestAdminQuizQuestionDuplicateV2 = (
   quizId: number, questionId: number, token: string
-): {
-  body: ReturnType <typeof adminQuizQuestionDuplicate>,
-  statusCode: number
-} => {
-  const res = request(
-    'POST',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/question/${questionId}/duplicate`,
-    {
-      headers: {
-        token: token,
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+) => requestAdminQuizQuestionDuplicateGeneric(quizId, questionId, token, 'v2');
 
+// joinPlayer
 export const requestjoinPlayer = (
   sessionId: number, playerName: string
 ): {
