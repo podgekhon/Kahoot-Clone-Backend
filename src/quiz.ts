@@ -1096,7 +1096,11 @@ export const adminQuizSessionUpdate = (
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
       quizSession.sessionState = quizState.QUESTION_OPEN;
-      quizSession.sessionQuestionPosition++;
+      if (quizSession.isInLobby === false) {
+        quizSession.sessionQuestionPosition++;
+      } else {
+        quizSession.isInLobby = false;
+      }
 
       const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
       const updatedQuizSession = quiz.activeSessions.find(
@@ -1128,6 +1132,8 @@ export const adminQuizSessionUpdate = (
     quizSession.sessionState = quizState.QUESTION_OPEN;
     if (quizSession.isInLobby === false) {
       quizSession.sessionQuestionPosition++;
+    } else {
+      quizSession.isInLobby = false;
     }
 
     // set the 60s timer
@@ -1292,4 +1298,4 @@ export const adminGetFinalResults = (
   // return the players score
   // for questionResults:[]
   // use playerQuestionResults to display all question results in session
-};
+ };
