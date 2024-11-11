@@ -47,8 +47,9 @@ export interface answerOption {
 }
 
 export interface answerSubmission {
-  answerIds: number[];
-  playerId: number;
+  answerIds: number[],
+  playerId: number,
+  answerTime: number,
 }
 
 export interface question {
@@ -94,6 +95,7 @@ export interface quizSession {
   isCountdownSkipped?: boolean;
   isInLobby?: boolean;
   messages: message[];
+  players: PlayerState[];
 }
 
 export interface message {
@@ -281,17 +283,4 @@ export interface requestOptions {
   json?: object;
   headers?: Record<string, string>;
   timeout: number;
-}
-
-export interface playerResultsResponse {
-  usersRankedByScore: {
-    playerName: string,
-    score: number
-  }[],
-  questionResults: {
-    questionId: number,
-    playersCorrect: string[],
-    averageAnswerTime: number,
-    percentCorrect: number,
-  }[]
 }
