@@ -30,8 +30,20 @@ let data = {
           question: string;
           timeLimit: number;
           points: number;
-          answerOptions: answerOption[];
-          answerSubmissions?: answerSubmission[];
+          answerOptions: [
+            {
+              answerId: number;
+              answer: string;
+              colour: string;
+              correct: boolean;
+            }
+          ]
+          answerSubmissions?: [
+            {
+              answerIds: number[];
+              playerId: number;
+            }
+          ]
           thumbnailUrl?: string;
         },
       ]

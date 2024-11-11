@@ -6,6 +6,9 @@ import {
   requestClear,
   requestjoinPlayer,
   requestPlayerAnswerQuestion,
+  requestAdminQuizSessionUpdate,
+  requestAdminQuizInfo,
+  requestPlayerResults, 
   httpStatus
 } from '../src/requestHelperFunctions';
 
@@ -14,8 +17,15 @@ import {
   quizCreateResponse,
   quizStartSessionResponse,
   player,
-  question
+  question,
+  quizInfo
 } from '../src/interface';
+
+import {
+  adminAction
+} from '../src/quiz'
+
+import sleepSync from 'slync';
 
 beforeEach(() => {
   requestClear();
@@ -66,108 +76,245 @@ describe('tests for joinplayer', () => {
     player = requestjoinPlayer(sessionId, playerName);
     playerId = (player.body as player).playerId;
 
-    requestPlayerAnswerQuestion([2384], playerId, 1);
-
   });
 
-  test('success join', () => {
+  test('successfully answer question for 1 player', () => {
+    // update state to question_open
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+    // get answer for question from quizinfo
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+    const questionId = [quizInfo.questions[0].questionId];
+    
+    // answer question
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    // go to final_results
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+
     const resultsResponse = requestPlayerResults(playerId);
     expect(resultsResponse.body).toMatchObject
     ({
         usersRankedByScore: [
           {
             playerName: playerName,
-            score: 45
+            score: 5
           }
         ],
         questionResults: [
           {
-            questionId: 5546,
+            questionId: questionId,
             playersCorrect: [
-              "Hayden"
+              "Eric"
             ],
-            averageAnswerTime: 45,
-            percentCorrect: 54
+            averageAnswerTime: 1,
+            percentCorrect: 100
           }
         ]
     });
 
-    expect(resStartSession.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    expect(resultsResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
-  test('Successful player results retrieval - single player session', () => {
+  test('successfully answer question for multiple players', () => {
+    const player2 = requestjoinPlayer(sessionId, 'Patrick');
+    const playerId2 = (player2.body as player).playerId;
+
+    const player3 = requestjoinPlayer(sessionId, 'Andrew');
+    const playerId3 = (player3.body as player).playerId;
+    
+    // update state to question_open
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+    // get answer for question from quizinfo
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+    const wrongAnswerId = [quizInfo.questions[0].answerOptions[1].answerId];
+    const questionId = [quizInfo.questions[0].questionId];
+    
+    // answer question for player 1
+    // time to answer question should start from Q_open
+    const resAnswerQuestion1 = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion1.body).toStrictEqual({ });
+    expect(resAnswerQuestion1.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    // answer question for player 2
+    sleepSync(3 * 1000);
+    const resAnswerQuestion2 = requestPlayerAnswerQuestion(answerId, playerId2, 1);
+    expect(resAnswerQuestion2.body).toStrictEqual({ });
+    expect(resAnswerQuestion2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    const resAnswerQuestion3 = requestPlayerAnswerQuestion(wrongAnswerId, playerId3, 1);
+    expect(resAnswerQuestion3.body).toStrictEqual({ });
+    expect(resAnswerQuestion3.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    // go to final_results
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+
     const resultsResponse = requestPlayerResults(playerId);
-    expect(resultsResponse.statusCode).toBe(httpStatus.SUCCESSFUL_REQUEST);
-    expect(resultsResponse.body).toMatchObject({
-      usersRankedByScore: [{ playerName: "abcde123", score: 5 }],
-      questionResults: [
-        {
-          questionId,
-          playersCorrect: ["abcde123"],
-          averageAnswerTime: expect.any(Number),
-          percentCorrect: 100
-        }
-      ]
+    expect(resultsResponse.body).toMatchObject
+    ({
+        usersRankedByScore: [
+          {
+            playerName: playerName,
+            score: 5
+          }
+        ],
+        questionResults: [
+          {
+            questionId: questionId,
+            playersCorrect: [
+              "Eric",
+              "Patrick"
+            ],
+            averageAnswerTime: 3,
+            percentCorrect: 200/3
+          }
+        ]
     });
+
+    expect(resultsResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
-  test('Successful player results retrieval - multiple players with varied scores', () => {
-    const player2 = requestjoinPlayer(sessionId, 'player2');
-    const player2Id = (player2.body as player).playerId;
+  test('successfully answer multiple questions correctly for one player', () => {
+    // Create an additional question
+    const questionBody2 = {
+      question: 'What is the largest planet?',
+      timeLimit: 5,
+      points: 10,
+      answerOptions: [
+        { answer: 'Jupiter', correct: true },
+        { answer: 'Mars', correct: false },
+      ],
+      thumbnailUrl: 'http://google.com/some/other/image/path.jpg'
+    };
+    const question2 = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
+    const questionId2 = (question2.body as question).questionId;
+
+    // Answer first question
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+    const resQuizInfo1 = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo1 = resQuizInfo1.body as quizInfo;
+    const answerId1 = [quizInfo1.questions[0].answerOptions[0].answerId];
+    const questionId1 = [quizInfo1.questions[0].questionId];
+
+    const resAnswerQuestion1 = requestPlayerAnswerQuestion(answerId1, playerId, 1);
+    expect(resAnswerQuestion1.body).toStrictEqual({});
+    expect(resAnswerQuestion1.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    // Answer second question
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+    const resQuizInfo2 = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo2 = resQuizInfo2.body as quizInfo;
+    const answerId2 = [quizInfo2.questions[1].answerOptions[0].answerId];
+
+    const resAnswerQuestion2 = requestPlayerAnswerQuestion(answerId2, playerId, 1);
+    expect(resAnswerQuestion2.body).toStrictEqual({});
+    expect(resAnswerQuestion2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    // Go to final_results
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+
     const resultsResponse = requestPlayerResults(playerId);
+    expect(resultsResponse.body).toMatchObject({
+        usersRankedByScore: [
+          {
+            playerName: "Eric",
+            score: 15
+          }
+        ],
+        questionResults: [
+          {
+            questionId: questionId1,
+            playersCorrect: ["Eric"],
+            averageAnswerTime: 1,
+            percentCorrect: 100
+          },
+          {
+            questionId: questionId2,
+            playersCorrect: ["Eric"],
+            averageAnswerTime: 1,
+            percentCorrect: 100
+          }
+        ]
+    });
 
-    expect(resultsResponse.statusCode).toBe(httpStatus.SUCCESSFUL_REQUEST);
-    expect(resultsResponse.body.usersRankedByScore).toEqual([
-      { playerName: 'abcde123', score: expect.any(Number) },
-      { playerName: 'player2', score: expect.any(Number) }
-    ]);
-  });
-
-  test('Error when player ID does not exist', () => {
-    const invalidPlayerId = 9999; // Assuming this ID doesn't exist
-    const resultsResponse = requestPlayerResults(invalidPlayerId);
-
-    expect(resultsResponse.statusCode).toBe(httpStatus.BAD_REQUEST);
-    expect(resultsResponse.body).toMatchObject({ error: "Player ID does not exist" });
-  });
-
-  test('Error when session state is not FINAL_RESULTS', () => {
-    const resultsResponse = requestPlayerResults(playerId);
-
-    expect(resultsResponse.statusCode).toBe(httpStatus.BAD_REQUEST);
-    expect(resultsResponse.body).toMatchObject({ error: "Session is not in FINAL_RESULTS state" });
-  });
-
-  test('Error for non-participating player ID', () => {
-    const otherPlayer = requestjoinPlayer(sessionId, 'otherPlayer');
-    const otherPlayerId = (otherPlayer.body as player).playerId;
-
-    const invalidPlayerId = otherPlayerId + 1; // Assuming this ID is invalid for the session
-    const resultsResponse = requestPlayerResults(invalidPlayerId);
-
-    expect(resultsResponse.statusCode).toBe(httpStatus.BAD_REQUEST);
-    expect(resultsResponse.body).toMatchObject({ error: "Player did not participate in the session" });
-  });
-
-  test('Handle session with no questions', () => {
-    const emptyQuiz = requestAdminQuizCreate(usertoken, 'Empty Quiz', 'No questions');
-    const emptyQuizId = (emptyQuiz.body as quizCreateResponse).quizId;
-    const emptySession = requestAdminStartQuizSession(emptyQuizId, usertoken, 1);
-    const emptySessionId = (emptySession.body as quizStartSessionResponse).sessionId;
-
-    const playerInEmptySession = requestjoinPlayer(emptySessionId, 'playerInEmpty');
-    const playerInEmptySessionId = (playerInEmptySession.body as player).playerId;
-
-    const resultsResponse = requestPlayerResults(playerInEmptySessionId);
-    expect(resultsResponse.statusCode).toBe(httpStatus.SUCCESSFUL_REQUEST);
-    expect(resultsResponse.body.questionResults).toEqual([]);
-  });
-
-  test('Handle session with no players', () => {
-    const emptyResultsResponse = requestPlayerResults(playerId);
-    expect(emptyResultsResponse.statusCode).toBe(httpStatus.BAD_REQUEST);
-    expect(emptyResultsResponse.body).toMatchObject({ error: "No players in session" });
-  });
-
-
+    expect(resultsResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 });
+
+  test('answer question incorrectly for one player', () => {
+    // Update state to question_open
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    // Get the incorrect answer ID for the question
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const incorrectAnswerId = [quizInfo.questions[0].answerOptions[1].answerId];
+    const questionId = [quizInfo.questions[0].questionId];
+
+    // Player answers the question incorrectly
+    const resAnswerQuestion = requestPlayerAnswerQuestion(incorrectAnswerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({});
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    // Go to final_results
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+
+    const resultsResponse = requestPlayerResults(playerId);
+    expect(resultsResponse.body).toMatchObject({
+        usersRankedByScore: [
+          {
+            playerName: "Eric",
+            score: 0
+          }
+        ],
+        questionResults: [
+          {
+            questionId: questionId,
+            playersCorrect: [], 
+            averageAnswerTime: 1,
+            percentCorrect: 0
+          }
+        ]
+    });
+
+    expect(resultsResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+  });
+
+  test('should return BAD_REQUEST if player ID does not exist', () => {
+    // Attempt to get results for a non-existent player
+    const resultsResponse = requestPlayerResults(999);
+    expect(resultsResponse.statusCode).toBe(httpStatus.BAD_REQUEST);
+    expect(resultsResponse.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('should return BAD_REQUEST if session is not in FINAL_RESULTS state', () => {
+    // update state to question_open
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+    // get answer for question from quizinfo
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+    const questionId = [quizInfo.questions[0].questionId];
+    
+    // answer question
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    const resultsResponse = requestPlayerResults(playerId);
+    expect(resultsResponse.statusCode).toBe(httpStatus.BAD_REQUEST);
+    expect(resultsResponse.body).toStrictEqual({ error: expect.any(String) });
+  });
+});
+
+
