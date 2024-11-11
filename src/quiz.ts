@@ -28,7 +28,8 @@ import {
   quizStartSessionResponse,
   viewQuizSessionsResponse,
   quizCopy,
-  sessionState
+  sessionState,
+  PlayerState
 } from './interface';
 
 export enum quizState {
@@ -261,6 +262,7 @@ export const adminStartQuizSession = (
     sessionState: quizState.LOBBY,
     quizCopy,
     autoStartNum,
+    isInLobby: true,
     sessionQuestionPosition: 1,
     messages: []
   };
@@ -369,7 +371,6 @@ export const adminQuizQuestionCreate = (
       correct: answer.correct
     }))
   };
-
   if (version === 'v2') {
     newQuestion.thumbnailUrl = questionBody.thumbnailUrl;
   }
@@ -815,9 +816,11 @@ export const adminQuizQuestionRemove = (
   }
 
   // Any session for this quiz is not in END state
-  // if (quiz.state !== quizState.END) {
-  //   throw new Error('INVALID_OWNER');
-  // }
+  const hasActiveSession = quiz.activeSessions.some(
+    session => session.sessionState !== quizState.END);
+  if (hasActiveSession) {
+    throw new Error('SESSION_NOT_IN_END');
+  }
 
   // Question Id does not refer to a valid question within this quiz
   const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
@@ -828,7 +831,6 @@ export const adminQuizQuestionRemove = (
   quiz.questions.splice(questionIndex, 1);
   quiz.numQuestions--;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
-
   setData(data);
   return {};
 };
@@ -1077,6 +1079,13 @@ export const adminQuizSessionUpdate = (
       clearTimeout(timers[sessionId]);
       delete timers[sessionId];
     }
+
+    // Find and update all players in the session
+    data.players.forEach((player: PlayerState) => {
+      if (player.sessionId === sessionId) {
+        player.atQuestion = 0;
+      }
+    });
   }
 
   // if action is 'NEXT_QUESTION'
@@ -1096,7 +1105,20 @@ export const adminQuizSessionUpdate = (
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
       quizSession.sessionState = quizState.QUESTION_OPEN;
-      quizSession.sessionQuestionPosition++;
+      // get question_open time
+      quizSession.questionOpenTime = Date.now();
+      if (quizSession.isInLobby === false) {
+        quizSession.sessionQuestionPosition++;
+      } else {
+        quizSession.isInLobby = false;
+      }
+
+      // Find and update all players in the session
+      data.players.forEach((player: PlayerState) => {
+        if (player.sessionId === sessionId) {
+          player.atQuestion = (player.atQuestion ?? 0) + 1;
+        }
+      });
 
       const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
       const updatedQuizSession = quiz.activeSessions.find(
@@ -1128,6 +1150,8 @@ export const adminQuizSessionUpdate = (
     quizSession.sessionState = quizState.QUESTION_OPEN;
     if (quizSession.isInLobby === false) {
       quizSession.sessionQuestionPosition++;
+    } else {
+      quizSession.isInLobby = false;
     }
 
     // set the 60s timer
@@ -1169,6 +1193,13 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSession.sessionState = quizState.FINAL_RESULTS;
+
+    // Find and update all players in the session
+    data.players.forEach((player: PlayerState) => {
+      if (player.sessionId === sessionId) {
+        player.atQuestion = 0;
+      }
+    });
   }
 
   setData(data);
@@ -1217,7 +1248,7 @@ sessionState => {
 
   const response : sessionState = {
     state: FindSession.sessionState,
-    atQuestion: validQuiz.atQuestion,
+    atQuestion: FindSession.sessionQuestionPosition,
     players: PLayersname,
     metadata: {
       quizId: validQuiz.quizId,

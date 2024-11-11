@@ -57,7 +57,7 @@ describe('tests for playerState', () => {
     const correctresponse = {
       state: quizState.LOBBY,
       numQuestions: 1,
-      atQuestion: 1
+      atQuestion: 1,
     };
     expect(resplayerState.body).toStrictEqual(correctresponse);
     expect(resplayerState.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
