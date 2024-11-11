@@ -50,9 +50,10 @@ import {
   playerAnswerQuestion,
   playerMessage,
   playerState,
-  playerMessageList,
   playerQuestion,
-  playerResults
+  playerResults,
+  playerMessageList,
+  playerQuestionResult
 } from './player';
 
 import {
@@ -1396,6 +1397,22 @@ export const requestPlayerResults = (
     SERVER_URL + `/v1/player/${playerId}/results`,
     {
       timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestPlayerQuestionResult = (
+  playerId: number, questionPosition: number
+): {
+  body: ReturnType <typeof playerQuestionResult>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}/question/${questionPosition}/results`,
+    {
+      timeout: TIMEOUT_MS
     }
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
