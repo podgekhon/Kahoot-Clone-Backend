@@ -1,5 +1,6 @@
 /// ///////////// interface for dataStore /////////////////
 import { adminAuthRegister, adminAuthLogin } from './auth';
+import { joinPlayer } from './player';
 
 import {
   adminQuizCreate,
@@ -96,6 +97,7 @@ export interface quizSession {
   isInLobby?: boolean;
   messages: message[];
   players: PlayerState[];
+  questionOpenTime?: number;
 }
 
 export interface message {
@@ -283,4 +285,9 @@ export interface requestOptions {
   json?: object;
   headers?: Record<string, string>;
   timeout: number;
+}
+
+export interface playerJoinRes {
+  body: ReturnType<typeof joinPlayer>,
+  statusCode: number;
 }

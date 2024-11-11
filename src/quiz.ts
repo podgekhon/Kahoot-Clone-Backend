@@ -264,7 +264,8 @@ export const adminStartQuizSession = (
     autoStartNum,
     isInLobby: true,
     sessionQuestionPosition: 1,
-    messages: []
+    messages: [],
+    players: []
   };
 
   quiz.activeSessions.push(newQuizSession);

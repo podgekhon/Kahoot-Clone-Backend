@@ -9,7 +9,8 @@ import {
   requestClear,
   requestAdminGetFinalResults,
   requestPlayerAnswerQuestion,
-  requestAdminQuizInfo
+  requestAdminQuizInfo,
+  requestjoinPlayer
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
@@ -19,27 +20,28 @@ import {
   questionCreate,
   startSession,
   quizStartSessionResponse,
-  GetFinalResults
+  GetFinalResults,
+  playerJoinRes,
+  player,
+  quizInfo
 } from '../src/interface';
 import { adminAction } from '../src/quiz';
-// import sleepSync from 'slync';
+import sleepSync from 'slync';
 
 describe('Test for adminGetFinalResults', () => {
   let user1Response: userAuthRegister;
   let user2Response: userAuthRegister;
   let user1Token: string;
   let user2Token: string;
+  let player2Name: string;
+  let player2Id: number;
+  let player2JoinRes: playerJoinRes;
   let quizCreateResponse: quizCreate;
   let quizId: number;
   let quizQuestionCreateResponse: questionCreate;
   let startSessionResponse: startSession;
   let sessionId: number;
-  const nextQuestionAction: adminAction = adminAction.NEXT_QUESTION;
-  const skipCountDownAction: adminAction = adminAction.SKIP_COUNTDOWN;
-  const showAnswerAction: adminAction = adminAction.GO_TO_ANSWER;
-  const goFinalResults: adminAction = adminAction.GO_TO_FINAL_RESULT;
   let adminGetFinalResults: GetFinalResults;
-  let resAnswerQuestion: any;
 
   beforeEach(() => {
     requestClear();
@@ -110,23 +112,29 @@ describe('Test for adminGetFinalResults', () => {
     );
     const sessionState = resStartSession.body.state;
     expect(sessionState).toStrictEqual('LOBBY');
-  });
 
-  test.only('User successfully gets final results', () => {
-    // player join session
+    // player join
+    player2Name = 'player2';
+    player2JoinRes = requestjoinPlayer(sessionId, player2Name);
+    player2Id = (player2JoinRes.body as player).playerId;
 
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, nextQuestionAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, skipCountDownAction);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
 
-    // players submit answer question
-    const resQuizInfo = requestAdminQuizInfo(quizId, user2Token);
+    // player answers question
+    const resQuizInfo = requestAdminQuizInfo(quizId, user1Token);
     const quizInfo = resQuizInfo.body as quizInfo;
     const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
 
-    resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, player2Id, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, goFinalResults);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_ANSWER);
+  });
 
+  test.only('User successfully gets final results', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
       sessionId,
@@ -139,7 +147,7 @@ describe('Test for adminGetFinalResults', () => {
     expect(adminGetFinalResults.body).toStrictEqual({
       usersRankedByScore: [
         {
-          playerName: 'player1',
+          playerName: player2Name,
           score: expect.any(Number)
         }
       ],
@@ -147,7 +155,7 @@ describe('Test for adminGetFinalResults', () => {
         {
           questionId: expect.any(Number),
           plaeyersCorrect: [
-            'player1'
+            player2Name
           ],
           averageAnswerTime: expect.any(Number),
           percentCorrect: expect.any(Number)
@@ -157,10 +165,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for invalid SessionId', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, nextQuestionAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, skipCountDownAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, showAnswerAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, goFinalResults);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
@@ -188,10 +193,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for invalid token', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, nextQuestionAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, skipCountDownAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, showAnswerAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, goFinalResults);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
@@ -206,10 +208,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for invalid quizId', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, nextQuestionAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, skipCountDownAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, showAnswerAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, goFinalResults);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId + 1,
@@ -224,10 +223,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for user does not own quiz', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, nextQuestionAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, skipCountDownAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, showAnswerAction);
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, goFinalResults);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
