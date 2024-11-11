@@ -1270,6 +1270,8 @@ export const adminGetFinalResults = (
   // if real, get userId
   const user = tokenValidation.authUserId;
 
+  // check if user owns the quiz
+
   // get quiz & check if it exist
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!quiz) {
@@ -1304,13 +1306,58 @@ export const adminGetFinalResults = (
   // sort players based on score
   const usersRankedByScore = playerList.sort((player1, player2) => player2.score - player1.score);
 
-  // figure out database structure, how to store player info
+  // to get questionResults array
+  const questionResults = quiz.questions.map(
+    (question) => {
+      // find the correct answer option & Id
+      const correctAnswerOption = question.answerOptions.find(option => option.correct);
+      const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
 
-  // first approach:
-  // get the list of players
-  // create an array of obj containing player name and score
-  // then sort
-  // return the players score
-  // for questionResults:[]
-  // use playerQuestionResults to display all question results in session
+      // get an array of playerStates of players who selected the correct ans option
+      const playersCorrect = (question.answerSubmissions || []).filter(
+        submission => {
+          // find the player that submitted ans
+          const player = data.players.find((player) => player.playerId === submission.playerId);
+          // check if player had correct answer
+          return player &&
+          correctAnswerId !== null &&
+          submission.answerIds.includes(correctAnswerId);
+        }
+      ).map(
+        (submission) => {
+          const player = data.players.find((player) => player.playerId === submission.playerId);
+          return player ? player.playerName || '' : '';
+        }
+      );
+
+      // get the total answer time
+      const totalAnswerTime = (question.answerSubmissions || []).reduce((acc, submission) => {
+        // find user associated with submission
+        const player = data.players.find(
+          (player) => player.playerId === submission.playerId &&
+          player.sessionId === quizSession.sessionId
+        );
+
+        // check if player is currently at this question
+        const answerTime = player && player.atQuestion === question.questionId
+          ? (player.atQuestion || 0)
+          : 0;
+        return acc + answerTime;
+      }, 0);
+
+      const averageAnswerTime = playersCorrect.length > 0
+        ? totalAnswerTime / playersCorrect.length
+        : 0;
+      const percentCorrect = (playersCorrect.length / data.players.length) * 100;
+
+      return {
+        questionId: question.questionId,
+        playersCorrect,
+        averageAnswerTime,
+        percentCorrect
+      };
+    }
+  );
+
+  return { usersRankedByScore, questionResults };
 };

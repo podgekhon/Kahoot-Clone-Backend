@@ -747,6 +747,9 @@ const handlePlayerAnswerQuestion = (req: Request, res: Response) => {
 
 app.put('/v1/player/:playerId/question/:questionPosition/answer', handlePlayerAnswerQuestion);
 
+// adminGetFinalResults
+app.get('')
+
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================
