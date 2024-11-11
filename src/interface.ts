@@ -46,8 +46,9 @@ export interface answerOption {
 }
 
 export interface answerSubmission {
-  answerIds: number[];
-  playerId: number;
+  answerIds: number[],
+  playerId: number,
+  answerTime: number,
 }
 
 export interface question {
@@ -93,6 +94,7 @@ export interface quizSession {
   isCountdownSkipped?: boolean;
   isInLobby?: boolean;
   messages: message[];
+  questionOpenTime?: number;
 }
 
 export interface message {
@@ -278,10 +280,7 @@ export interface requestOptions {
 }
 
 export interface playerResultsResponse {
-  usersRankedByScore: {
-    playerName: string,
-    score: number
-  }[],
+  usersRankedByScore: usersRankedByScore[],
   questionResults: {
     questionId: number,
     playersCorrect: string[],
@@ -290,3 +289,7 @@ export interface playerResultsResponse {
   }[]
 }
 
+export interface usersRankedByScore {
+  playerName: string,
+  score: number
+}

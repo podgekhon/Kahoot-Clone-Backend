@@ -742,9 +742,7 @@ const handlePlayerAnswerQuestion = (req: Request, res: Response) => {
 
 app.put('/v1/player/:playerId/question/:questionPosition/answer', handlePlayerAnswerQuestion);
 
-
-
-// playerAnswerQuestion
+// playerResults
 const handlePlayerResults = (req: Request, res: Response) => {
   const playerId = parseInt(req.params.playerId);
   try {
@@ -756,9 +754,7 @@ const handlePlayerResults = (req: Request, res: Response) => {
   }
 };
 
-app.put('/v1/player/:playerId/results', handlePlayerResults);
-
-
+app.get('/v1/player/:playerId/results', handlePlayerResults);
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

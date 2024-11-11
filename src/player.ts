@@ -14,7 +14,7 @@ import {
   PlayerState,
   quiz,
   messageList,
-  playerResultsResponse
+  playerResultsResponse,
 } from './interface';
 
 import { quizState } from './quiz';
@@ -57,9 +57,11 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
 
   const playerId = data.players.length + 1;
   const newPlayer = {
-    playerId,
-    playerName,
-    sessionId,
+    playerId: playerId,
+    playerName: playerName,
+    sessionId: sessionId,
+    atQuestion: 0,
+    score: 0,
   };
 
   data.players.push(newPlayer);
@@ -114,7 +116,6 @@ export const playerAnswerQuestion = (
   if (quizSession.sessionQuestionPosition !== questionPosition) {
     throw new Error('SESSION_NOT_ON_QUESTION');
   }
-
   const question = quiz.questions[questionPosition - 1];
 
   // Answer IDs are not valid for this particular question
@@ -135,8 +136,10 @@ export const playerAnswerQuestion = (
     throw new Error('INVALID_ANSWER_SUBMITTED');
   }
 
+  const answerTime = (Date.now() - quizSession.questionOpenTime) / 1000;
+
   // Record the answer submission
-  const playerAnswer: answerSubmission = { answerIds, playerId };
+  const playerAnswer: answerSubmission = { answerIds, playerId, answerTime };
   if (!question.answerSubmissions) {
     question.answerSubmissions = [];
   }
@@ -260,8 +263,6 @@ export const playerMessageList = (playerId: number) : messageList => {
   return { messages };
 };
 
-
-
 /**
  *
 Get the final results for a whole session a player is playing in
@@ -269,7 +270,8 @@ Get the final results for a whole session a player is playing in
  * @param {number} playerId - an unique identifier for a player
  *
  * @returns {errorMessages} - An object containing an error message if registration fails
- * @returns {playerResultsResponse} - An object containing the final results for a whole session a player is playing in
+ * @returns {playerResultsResponse} - An object containing the final results for a whole
+ * session a player is playing in
  */
 export const playerResults = (playerId: number): playerResultsResponse | errorMessages => {
   // Check if the player ID exists in the session data
@@ -277,7 +279,7 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
   const player = data.players.find(p => p.playerId === playerId);
 
   if (!player) {
-    throw new Error('EXIST_PLAYERID');
+    throw new Error('PLAYERID_NOT_EXIST');
   }
 
   // Find the session the player is part of
@@ -295,7 +297,7 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
 
   // Check if the session is in the FINAL_RESULTS state
   if (session.sessionState !== quizState.FINAL_RESULTS) {
-    return { error: "Session is not in FINAL_RESULTS state" };
+    throw new Error('SESSION_NOT_IN_FINAL_RESULT');
   }
 
   // Construct usersRankedByScore array
@@ -305,7 +307,7 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
       playerName: player.playerName,
       score: player.score
     }));
-
+  // Sort by score in descending order
   const usersRankedByScore = sessionPlayers.sort((a, b) => b.score - a.score);
 
   const questionResults = quiz.questions.map(q => {
@@ -313,31 +315,30 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
     const correctAnswerOption = q.answerOptions.find(option => option.correct);
     const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
 
+    // Find players who answered correctly
     const playersCorrect = (q.answerSubmissions || [])
       .filter(submission => {
-        // Find the player associated with this submission
-        const player = data.players.find(p => p.playerId === submission.playerId && p.sessionId === session.sessionId);
-        // Check if this player's answerIds include the correct answer ID
-        return player && correctAnswerId !== null && submission.answerIds.includes(correctAnswerId);
+        // Check if this submission includes the correct answer ID
+        return correctAnswerId !== null && submission.answerIds.includes(correctAnswerId);
       })
       .map(submission => {
         // Map each submission to the player's name
         const player = data.players.find(p => p.playerId === submission.playerId);
         return player ? player.playerName || '' : '';
-      });
+      })
+      // Sort alphabetically by player name
+      .sort((a, b) => a.localeCompare(b));
 
-    const totalAnswerTime = (q.answerSubmissions || []).reduce((acc, submission) => {
-        const player = data.players.find(p => p.playerId === submission.playerId && p.sessionId === session.sessionId);
-        const answerTime = player && player.atQuestion === q.questionId ? (player.atQuestion || 0) : 0;
-        return acc + answerTime;
-    }, 0);
+    // Calculate total and average answer time
+    const totalAnswerTime = (q.answerSubmissions || []).reduce((acc, submission) => acc + (
+      submission.answerTime || 0), 0);
+    const attemptedPlayersCount = q.answerSubmissions ? q.answerSubmissions.length : 0;
+    const averageAnswerTime = attemptedPlayersCount > 0
+      ? Math.round(totalAnswerTime / attemptedPlayersCount)
+      : 0;
 
-    const averageAnswerTime = playersCorrect.length > 0 ? totalAnswerTime / playersCorrect.length : 0;
-    const percentCorrect = (playersCorrect.length / data.players.length) * 100;
-    // round percentage to nearest integer
-    // const percentCorrect = playersCorrect.length > 0 
-    // ? Math.round((playersCorrect.length / data.players.length) * 100) 
-    // : 0;
+    // Calculate percent correct
+    const percentCorrect = Math.round((playersCorrect.length / data.players.length) * 100);
 
     return {
       questionId: q.questionId,
@@ -346,5 +347,6 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
       percentCorrect
     };
   });
-return { usersRankedByScore, questionResults };
-}
+
+  return { usersRankedByScore, questionResults };
+};

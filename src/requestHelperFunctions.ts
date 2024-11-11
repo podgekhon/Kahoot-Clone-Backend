@@ -1378,7 +1378,6 @@ export const requestPlayerAnswerQuestion = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 /**
  * Get the final results for a whole session a player is playing in
  *
