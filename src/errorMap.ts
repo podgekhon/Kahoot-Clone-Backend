@@ -175,6 +175,10 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in LOBBY state.'
   },
+  SESSION_NOT_IN_FINAL_RESULT: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is not in FINAL_RESULT state.'
+  },
   SESSION_NOT_OPEN: {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in QUESTION_OPEN state.'

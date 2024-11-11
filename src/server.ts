@@ -66,7 +66,8 @@ import {
   playerAnswerQuestion,
   playerMessage,
   playerState,
-  playerMessageList
+  playerMessageList,
+  playerResults
 } from './player';
 
 import { clear } from './other';
@@ -740,6 +741,20 @@ const handlePlayerAnswerQuestion = (req: Request, res: Response) => {
 };
 
 app.put('/v1/player/:playerId/question/:questionPosition/answer', handlePlayerAnswerQuestion);
+
+// playerResults
+const handlePlayerResults = (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  try {
+    const result = playerResults(playerId);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.get('/v1/player/:playerId/results', handlePlayerResults);
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
