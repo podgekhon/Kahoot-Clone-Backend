@@ -207,7 +207,7 @@ describe('tests for playerAnswerQuestion', () => {
     expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
 
-  test.only('session not on question', () => {
+  test('session not on question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
     sleepSync(61000);

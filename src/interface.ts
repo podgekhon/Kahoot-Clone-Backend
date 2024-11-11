@@ -93,6 +93,7 @@ export interface quizSession {
   isCountdownSkipped?: boolean;
   isInLobby?: boolean;
   messages: message[];
+  players: PlayerState[];
 }
 
 export interface message {
@@ -262,13 +263,11 @@ export interface sessionState {
 }
 
 export interface PlayerState {
-  playerId?: number,
-  sessionId?: number,
-  playerName?: string,
-  state?: quizState,
-  numQuestions?: number,
-  atQuestions?: number,
-  score?: number,
+  playerId?: number;
+  state: quizState,
+  numQuestions: number,
+  atQuestion: number
+  score?: number
 }
 
 export interface requestOptions {
