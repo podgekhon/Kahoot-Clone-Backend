@@ -13,7 +13,8 @@ import {
   emptyReturn,
   PlayerState,
   quiz,
-  messageList
+  messageList,
+  questionResult
 } from './interface';
 
 import { quizState } from './quiz';
@@ -258,3 +259,16 @@ export const playerMessageList = (playerId: number) : messageList => {
 
   return { messages };
 };
+
+
+export const playerQuestionResult = (playerId: number, questionPosition: number): questionResult => {
+  const res = {
+    questionId: 1,
+    playersCorrect: [
+      'Hayden'
+    ],
+    averageAnswerTime: 45,
+    percentCorrect: 45
+  }
+  return res ;
+}
