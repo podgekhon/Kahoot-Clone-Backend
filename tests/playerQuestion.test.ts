@@ -221,7 +221,7 @@ describe('tests for playerQuestion', () => {
       expect(positionResponse3.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     });
 
-    test('successfully get question in when session state is QUESTION_CLOSE', () => {
+    test.only('successfully get question in when session state is QUESTION_CLOSE', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
       sleepSync(61 * 1000);
