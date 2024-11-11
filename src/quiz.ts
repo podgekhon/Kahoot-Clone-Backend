@@ -262,8 +262,7 @@ export const adminStartQuizSession = (
     quizCopy,
     autoStartNum,
     sessionQuestionPosition: 1,
-    messages: [],
-    players: []
+    messages: []
   };
 
   quiz.activeSessions.push(newQuizSession);
