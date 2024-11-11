@@ -1129,6 +1129,7 @@ export const adminQuizSessionUpdate = (
       if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
           quizSession.sessionState = quizState.QUESTION_CLOSE;
+          setData(data);
         }, 60000);
       }
       setData(data);
