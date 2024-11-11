@@ -83,7 +83,7 @@ export interface quiz {
   inactiveSessions: quizSession[]
 }
 
-////////////////// interface for player.ts //////////////////
+/// /////////////// interface for player.ts //////////////////
 export type quizCopy = Omit<quiz, 'activeSessions' | 'inactiveSessions'>;
 
 export interface quizSession {

@@ -1401,7 +1401,6 @@ export const requestPlayerResults = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-
 export const requestPlayerQuestionResult = (
   playerId: number, questionPosition: number
 ): {
@@ -1416,4 +1415,4 @@ export const requestPlayerQuestionResult = (
     }
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-}
+};

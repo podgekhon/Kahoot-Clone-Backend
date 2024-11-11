@@ -8,9 +8,8 @@ import {
   requestPlayerAnswerQuestion,
   httpStatus,
   requestAdminQuizSessionUpdate,
-  requestadminQuizSessionState,
   requestAdminQuizInfo,
-	requestPlayerQuestionResult
+  requestPlayerQuestionResult
 } from '../src/requestHelperFunctions';
 
 import {
@@ -18,13 +17,10 @@ import {
   quizCreateResponse,
   quizStartSessionResponse,
   playerId,
-  sessionState,
   quizInfo,
-	questionCreate,
-	quizQuestionCreateResponse,
+  quizQuestionCreateResponse,
 } from '../src/interface';
-import { token } from 'morgan';
-import { adminAction, quizState } from '../src/quiz';
+import { adminAction } from '../src/quiz';
 import sleepSync from 'slync';
 
 describe('tests for player question result', () => {
@@ -32,10 +28,10 @@ describe('tests for player question result', () => {
   let quizId: number;
   let sessionId: number;
   let playerId: number;
-	let questionId: number;
+  let questionId: number;
   beforeEach(() => {
-		// clear up everything first
-		requestClear();
+    // clear up everything first
+    requestClear();
     // register user
     const user = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
     usertoken = (user.body as tokenReturn).token;
@@ -54,7 +50,7 @@ describe('tests for player question result', () => {
       ],
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
-		const questionBody2 = {
+    const questionBody2 = {
       question: 'What is the capital of China?',
       timeLimit: 4,
       points: 5,
@@ -79,84 +75,82 @@ describe('tests for player question result', () => {
     playerId = (player.body as playerId).playerId;
   });
 
-	test('player Id does not exist', () => {
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
-
-		// go to ANSWER_SHOW state
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
-
-		// get result
-		const res = requestPlayerQuestionResult(-1, 1);
-		expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-		expect(res.body).toStrictEqual({ error: expect.any(String) });
-	});
-
-	test('invalid question position', () => {
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
-
-		// go to ANSWER_SHOW state
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
-
-		// get result
-		const res = requestPlayerQuestionResult(playerId, -1);
-		expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-		expect(res.body).toStrictEqual({ error: expect.any(String) });
-	});
-
-	test('session is not in ANSWER_SHOW state', () => {
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
-
-		// get result
-		const res = requestPlayerQuestionResult(playerId, 1);
-		expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-		expect(res.body).toStrictEqual({ error: expect.any(String) });
-	});
-
-	test('session is not currently on this question', () => {
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
-
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
-		sleepSync(61000);
-		// get result
-		const res = requestPlayerQuestionResult(playerId, 1);
-		expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-		expect(res.body).toStrictEqual({ error: expect.any(String) });
-	})
-
-	test('successful case', () => {
-		// answer question
+  test('player Id does not exist', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     sleepSync(4 * 1000);
 
+    // go to ANSWER_SHOW state
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
+
+    // get result
+    const res = requestPlayerQuestionResult(-1, 1);
+    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(res.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('invalid question position', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    // go to ANSWER_SHOW state
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
+
+    // get result
+    const res = requestPlayerQuestionResult(playerId, -1);
+    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(res.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('session is not in ANSWER_SHOW state', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    // get result
+    const res = requestPlayerQuestionResult(playerId, 1);
+    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(res.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('session is not currently on this question', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
+    sleepSync(61000);
+
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4000);
+    // get result
+    const res = requestPlayerQuestionResult(playerId, 1);
+    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(res.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('successful case', () => {
+    // update state to question_open
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4 * 1000);
+
+    // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
     const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
-
-    const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
-    const quizSessionStatus = (quizSession.body as sessionState).state;
-    expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
-
+    // answer question
     const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
     expect(resAnswerQuestion.body).toStrictEqual({ });
     expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-		// get question result
-		requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
-		const res = requestPlayerQuestionResult(playerId, 1);
-		expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-		expect(res.body).toStrictEqual(
-			{
-				questionId: questionId,
-				playersCorrect: [
-					'Eric'
-				],
-				averageAnswerTime: expect.any(Number),
-				percentCorrect: 100
-			}
-		);
-	});
+
+    // get question result
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
+    const res = requestPlayerQuestionResult(playerId, 1);
+    expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    expect(res.body).toStrictEqual(
+      {
+        questionId: questionId,
+        playersCorrect: [
+          'Eric'
+        ],
+        averageAnswerTime: 1,
+        percentCorrect: 100
+      }
+    );
+  });
 });
