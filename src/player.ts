@@ -14,10 +14,13 @@ import {
   PlayerState,
   quiz,
   messageList,
+  question,
   playerResultsResponse,
+  questionResult
 } from './interface';
 
 import { quizState } from './quiz';
+/**
 /**
  *
 Allow a guest player to join a session
@@ -116,8 +119,8 @@ export const playerAnswerQuestion = (
   if (quizSession.sessionQuestionPosition !== questionPosition) {
     throw new Error('SESSION_NOT_ON_QUESTION');
   }
-  const question = quiz.questions[questionPosition - 1];
-
+  // const question = quiz.questions[questionPosition - 1];
+  const question = quizSession.quizCopy.questions[questionPosition - 1];
   // Answer IDs are not valid for this particular question
   const validAnswerIds = new Set(question.answerOptions.map(option => option.answerId));
   for (const answerId of answerIds) {
@@ -284,11 +287,9 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
 
   // Find the session the player is part of
   let session: quizSession | undefined;
-  let quiz: quiz | undefined;
   for (const q of data.quizzes) {
     session = q.activeSessions.find((s) => s.sessionId === player.sessionId);
     if (session) {
-      quiz = q;
       // Exit loop once session is found
       break;
     }
@@ -310,7 +311,7 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
   // Sort by score in descending order
   const usersRankedByScore = sessionPlayers.sort((a, b) => b.score - a.score);
 
-  const questionResults = quiz.questions.map(q => {
+  const questionResults = session.quizCopy.questions.map(q => {
     // Find the correct answer ID for this question by looking at answerOptions
     const correctAnswerOption = q.answerOptions.find(option => option.correct);
     const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
@@ -349,4 +350,152 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
   });
 
   return { usersRankedByScore, questionResults };
+};
+
+/**
+ *
+ * @param { number } playerId
+ * @param { number } questionPosition
+ * @returns
+ */
+export const playerQuestionResult = (
+  playerId: number,
+  questionPosition: number
+): questionResult => {
+  const data = getData();
+  const player = data.players.find(p => p.playerId === playerId);
+
+  if (!player) {
+    throw new Error('INVALID_PLAYER');
+  }
+
+  // Find the session the player is part of
+  let session: quizSession | undefined;
+  let quiz: quiz | undefined;
+  for (const q of data.quizzes) {
+    session = q.activeSessions.find((s) => s.sessionId === player.sessionId);
+    if (session) {
+      quiz = q;
+      break;
+    }
+  }
+  const question = session.quizCopy.questions[questionPosition - 1];
+  // const question = quiz.questions[questionPosition - 1];
+  if (session.sessionState !== quizState.ANSWER_SHOW) {
+    throw new Error('SESSION_NOT_IN_ANSWER_SHOW');
+  }
+  if (questionPosition < 1 || questionPosition > quiz.numQuestions) {
+    throw new Error('INVALID_QUESTION_POSITION');
+  }
+  if (session.sessionQuestionPosition !== questionPosition) {
+    throw new Error('SESSION_NOT_ON_QUESTION');
+  }
+  const correctAnswerOption = question.answerOptions.find(option => option.correct);
+  const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
+  // find players answered correctly
+  const playersCorrect = (question.answerSubmissions || [])
+    .filter(submission => {
+      return correctAnswerId !== null && submission.answerIds.includes(correctAnswerId);
+    })
+    .map(submission => {
+      const player = data.players.find(p => p.playerId === submission.playerId);
+      return player ? player.playerName || '' : '';
+    })
+    .sort((a, b) => a.localeCompare(b));
+
+  // average answer time
+  const totalAnswerTime = (question.answerSubmissions || []).reduce(
+    (acc, submission) => acc + (submission.answerTime || 0),
+    0
+  );
+  const attemptedPlayersCount = question.answerSubmissions ? question.answerSubmissions.length : 0;
+  const averageAnswerTime = attemptedPlayersCount > 0
+    ? Math.round(totalAnswerTime / attemptedPlayersCount)
+    : 0;
+
+  // percentage of correctness
+  const percentCorrect = Math.round((playersCorrect.length / data.players.length) * 100);
+
+  const res = {
+    questionId: question.questionId,
+    playersCorrect,
+    averageAnswerTime,
+    percentCorrect
+  };
+
+  return res;
+};
+
+/**
+ *
+ * Get the information about a question that the guest player is on.
+ *
+ * @param {number} playerId - an unique number representing a player
+ * @param {number} questionPosition - the position of a question
+ *
+ * @returns {Error} - An object containing an error message if registration fails
+ * @returns {question} - Information about a question
+ */
+export const playerQuestion = (playerId: number, questionPosition: number): question => {
+  const data = getData();
+  const player = data.players.find(p => p.playerId === playerId);
+  if (!player) {
+    throw new Error('EXIST_PLAYERID');
+  }
+  // Find the session the player is part of
+  let session: quizSession | undefined;
+  let quiz: quiz | undefined;
+  for (const q of data.quizzes) {
+    session = q.activeSessions.find((s) => s.sessionId === player.sessionId);
+    if (session) {
+      quiz = q;
+      // Exit loop once session is found
+      break;
+    }
+  }
+
+  // Ensure that both quiz and session are found
+  if (!session || !quiz) {
+    throw new Error('SESSION_IN_END');
+  }
+
+  // Check if the session state is valid
+  type QuizState = typeof quizState.LOBBY | typeof quizState.QUESTION_COUNTDOWN
+  | typeof quizState.FINAL_RESULTS;
+  const errorMessages: Record<QuizState, string> = {
+    [quizState.LOBBY]: 'SESSION_IN_LOBBY',
+    [quizState.QUESTION_COUNTDOWN]: 'SESSION_IN_COUNTDOWN',
+    [quizState.FINAL_RESULTS]: 'SESSION_IN_RESULTS'
+  };
+
+  if (Object.keys(errorMessages).includes(session.sessionState)) {
+    throw new Error(errorMessages[session.sessionState as QuizState]);
+  }
+
+  if (session.sessionQuestionPosition !== questionPosition) {
+    throw new Error('SESSION_NOT_ON_QUESTION');
+  }
+
+  // Validate the question position by using the quiz's questions array length
+  if (questionPosition < 1 || questionPosition > quiz.questions.length) {
+    throw new Error('INVALID_QUESTION_POSITION');
+  }
+  // Get the question from the quiz's questions array
+  const question = quiz.questions[questionPosition - 1];
+
+  // Construct the response object
+  const response: question = {
+    questionId: question.questionId,
+    question: question.question,
+    timeLimit: question.timeLimit,
+    points: question.points,
+    thumbnailUrl: question.thumbnailUrl,
+    answerOptions: question.answerOptions.map(option => ({
+      answerId: option.answerId,
+      answer: option.answer,
+      colour: option.colour
+    })),
+  };
+
+  return response;
 };

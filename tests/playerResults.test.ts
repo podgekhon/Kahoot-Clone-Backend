@@ -43,7 +43,7 @@ describe('tests for playerResults', () => {
   let sessionId: number;
   let player;
   let playerId: number;
-
+  let questionId2: number;
   beforeEach(() => {
     // register an admin
     user = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
@@ -63,9 +63,22 @@ describe('tests for playerResults', () => {
       ],
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
+    const questionBody2 = {
+      question: 'What is the largest planet?',
+      timeLimit: 5,
+      points: 10,
+      answerOptions: [
+        { answer: 'Jupiter', correct: true },
+        { answer: 'Mars', correct: false },
+      ],
+      thumbnailUrl: 'http://google.com/some/other/image/path.jpg'
+    };
+
     // create a question
     question = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
     questionId = (question.body as question).questionId;
+    const question2 = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
+    questionId2 = (question2.body as question).questionId;
 
     // create a session
     session = requestAdminStartQuizSession(quizId, usertoken, 1);
@@ -112,6 +125,12 @@ describe('tests for playerResults', () => {
           ],
           averageAnswerTime: 1,
           percentCorrect: 100
+        },
+        {
+          questionId: questionId2,
+          playersCorrect: [],
+          averageAnswerTime: 0,
+          percentCorrect: 0
         }
       ]
     });
@@ -181,7 +200,14 @@ describe('tests for playerResults', () => {
           ],
           averageAnswerTime: 3,
           percentCorrect: 67
+        },
+        {
+          questionId: questionId2,
+          playersCorrect: [],
+          averageAnswerTime: 0,
+          percentCorrect: 0
         }
+
       ]
     });
 
@@ -191,20 +217,6 @@ describe('tests for playerResults', () => {
   test('successfully answer multiple questions correctly for one player', () => {
     const player2 = requestjoinPlayer(sessionId, 'Andrew');
     const playerId2 = (player2.body as player).playerId;
-
-    // Create an additional question
-    const questionBody2 = {
-      question: 'What is the largest planet?',
-      timeLimit: 5,
-      points: 10,
-      answerOptions: [
-        { answer: 'Jupiter', correct: true },
-        { answer: 'Mars', correct: false },
-      ],
-      thumbnailUrl: 'http://google.com/some/other/image/path.jpg'
-    };
-    const question2 = requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
-    const questionId2 = (question2.body as question).questionId;
 
     // Answer first question
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
@@ -306,7 +318,14 @@ describe('tests for playerResults', () => {
           playersCorrect: [],
           averageAnswerTime: 1,
           percentCorrect: 0
+        },
+        {
+          questionId: questionId2,
+          playersCorrect: [],
+          averageAnswerTime: 0,
+          percentCorrect: 0
         }
+
       ]
     });
 

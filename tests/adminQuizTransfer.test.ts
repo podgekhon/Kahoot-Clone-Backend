@@ -1,12 +1,11 @@
-import request from 'sync-request-curl';
-import { port, url } from '../src/config.json';
 import {
   requestAdminAuthRegister,
   requestAdminQuizList,
   requestAdminQuizCreate,
   requestAdminQuizTransfer,
   requestAdminQuizTransferV2,
-  httpStatus
+  httpStatus,
+  requestClear
 } from '../src/requestHelperFunctions';
 import {
   quizCreateResponse,
@@ -16,13 +15,6 @@ import {
   quizCreate,
   quizListResponse,
 } from '../src/interface';
-
-const SERVER_URL = `${url}:${port}`;
-const TIMEOUT_MS = 100 * 1000;
-
-beforeEach(() => {
-  request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
-});
 
 describe('Test for adminQuizTransfer', () => {
   let user1Response: userAuthRegister;
@@ -41,6 +33,7 @@ describe('Test for adminQuizTransfer', () => {
   let quizTransferResponse: quizTransfer;
 
   beforeEach(() => {
+    requestClear();
     user1Response = requestAdminAuthRegister(
       'user1@gmail.com',
       'validPassword1',

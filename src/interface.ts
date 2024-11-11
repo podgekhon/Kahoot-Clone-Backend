@@ -41,10 +41,10 @@ export interface user {
 }
 
 export interface answerOption {
-  answerId: number;
+  answerId?: number;
   answer: string;
-  colour: string;
-  correct: boolean;
+  colour?: string;
+  correct?: boolean;
 }
 
 export interface answerSubmission {
@@ -54,7 +54,7 @@ export interface answerSubmission {
 }
 
 export interface question {
-  questionId: number;
+  questionId?: number;
   question: string;
   timeLimit: number;
   points: number;
@@ -85,6 +85,7 @@ export interface quiz {
   inactiveSessions: quizSession[]
 }
 
+/// /////////////// interface for player.ts //////////////////
 export type quizCopy = Omit<quiz, 'activeSessions' | 'inactiveSessions'>;
 
 export interface quizSession {
@@ -122,6 +123,13 @@ export interface token {
 
 export interface messageBody {
   messageBody: string
+}
+
+export interface questionResult {
+  questionId: number,
+    playersCorrect: string[],
+    averageAnswerTime: number,
+    percentCorrect: number
 }
 /// /////////////// interface for auth.ts/////////////////////
 
