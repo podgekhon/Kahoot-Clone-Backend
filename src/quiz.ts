@@ -1332,7 +1332,7 @@ export const adminGetFinalResults = (
   const usersRankedByScore = playerList.sort((player1, player2) => player2.score - player1.score);
 
   // to get questionResults array
-  const questionResults = quiz.questions.map(
+  const questionResults = quizSession.quizCopy.questions.map(
     (question) => {
       // find the correct answer option & Id
       const correctAnswerOption = question.answerOptions.find(option => option.correct);
@@ -1344,10 +1344,13 @@ export const adminGetFinalResults = (
           // return only correct answer submissions
           return correctAnswerId !== null && submisssion.answerIds.includes(correctAnswerId);
         }
-      ).map((submission) => {
-        const player = data.players.find((player) => player.playerId === submission.playerId);
-        return player ? player.playerName || '' : '';
-      });
+      ).map(
+        (submission) => {
+          const player = data.players.find((player) => player.playerId === submission.playerId);
+          return player ? player.playerName || '' : '';
+        }
+        // then sort by alphabetically
+      ).sort((a, b) => a.localeCompare(b));
 
       // get the total answer time
       const totalAnswerTime = (question.answerSubmissions || []).reduce((acc, submission) => {

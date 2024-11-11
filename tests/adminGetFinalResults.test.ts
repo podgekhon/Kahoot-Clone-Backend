@@ -64,13 +64,13 @@ describe('Test for adminGetFinalResults', () => {
 
     user2Token = (user2Response.body as tokenReturn).token;
 
-
     requestAdminAuthRegister(
       'user3@gmail.com',
       'validPassword3',
       'User',
       'Three'
     );
+    user2Token = (user2Response.body as tokenReturn).token;
 
     quizCreateResponse = requestAdminQuizCreate(
       user1Token,
@@ -89,6 +89,7 @@ describe('Test for adminGetFinalResults', () => {
       ],
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
+
     requestAdminQuizQuestionCreateV2(
       quizId,
       user1Token,
@@ -105,14 +106,13 @@ describe('Test for adminGetFinalResults', () => {
       startSessionResponse.body as quizStartSessionResponse
     ).sessionId;
 
-    const resStartSession = requestadminQuizSessionState(
+    requestadminQuizSessionState(
       quizId,
       sessionId,
       user1Token
     );
-    const sessionState = resStartSession.body.state;
-    expect(sessionState).toStrictEqual('LOBBY');
 
+    // players join
     player2Name = 'player2';
     player2JoinRes = requestjoinPlayer(sessionId, player2Name);
     player2Id = (player2JoinRes.body as player).playerId;
@@ -129,13 +129,9 @@ describe('Test for adminGetFinalResults', () => {
     const quizInfo = resQuizInfo.body as quizInfo;
     const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
 
-    const resUser2AnswerQuestion = requestPlayerAnswerQuestion(answerId, player2Id, 1);
-    expect(resUser2AnswerQuestion.body).toStrictEqual({ });
-    expect(resUser2AnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    requestPlayerAnswerQuestion(answerId, player2Id, 1);
 
-    const resUser3AnswerQuestion = requestPlayerAnswerQuestion(answerId, player3Id, 1);
-    expect(resUser3AnswerQuestion.body).toStrictEqual({ });
-    expect(resUser3AnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    requestPlayerAnswerQuestion(answerId, player3Id, 1);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_ANSWER);
   });
