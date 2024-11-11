@@ -167,6 +167,10 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Name contains invalid characters.'
   },
+  EXIST_PLAYERID: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Player ID does not exist.'
+  },
   INVALID_SESSIONID: {
     status: httpStatus.BAD_REQUEST,
     message: 'Session Id does not refer to a valid session.'
@@ -174,6 +178,34 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   SESSION_NOT_IN_LOBBY: {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in LOBBY state.'
+  },
+  SESSION_IN_LOBBY: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in LOBBY state.'
+  },
+  SESSION_IN_COUNTDOWN: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in QUESTION_COUNTDOWN state.'
+  },
+  SESSION_IN_RESULTS: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in FINAL_RESULTS state.'
+  },
+  SESSION_IN_END: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in END state.'
+  },
+  SESSION_IN_LOBBY_COUNTDOWN_RESULTS_END: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in LOBBY'
+  },
+  SESSION_NOT_ON_QUESTION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is not currently on this question.'
+  },
+  INVALID_QUESTION_POSITION: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Question position is not valid for the session this player is in.'
   },
   SESSION_NOT_IN_FINAL_RESULT: {
     status: httpStatus.BAD_REQUEST,
@@ -186,14 +218,6 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   SESSION_NOT_IN_END: {
     status: httpStatus.BAD_REQUEST,
     message: 'There is a session for this quiz is not in END state.'
-  },
-  INVALID_QUESTION_POSITION: {
-    status: httpStatus.BAD_REQUEST,
-    message: 'Question position is not valid for the quiz'
-  },
-  SESSION_NOT_ON_QUESTION: {
-    status: httpStatus.BAD_REQUEST,
-    message: 'Session is not currently on this question"'
   },
   SESSION_NOT_ACTIVE: {
     status: httpStatus.BAD_REQUEST,

@@ -14,11 +14,13 @@ import {
   PlayerState,
   quiz,
   messageList,
+  question,
   playerResultsResponse,
   questionResult
 } from './interface';
 
 import { quizState } from './quiz';
+/**
 /**
  *
 Allow a guest player to join a session
@@ -422,4 +424,78 @@ export const playerQuestionResult = (
   };
 
   return res;
+};
+
+/**
+ *
+ * Get the information about a question that the guest player is on.
+ *
+ * @param {number} playerId - an unique number representing a player
+ * @param {number} questionPosition - the position of a question
+ *
+ * @returns {Error} - An object containing an error message if registration fails
+ * @returns {question} - Information about a question
+ */
+export const playerQuestion = (playerId: number, questionPosition: number): question => {
+  const data = getData();
+  const player = data.players.find(p => p.playerId === playerId);
+  if (!player) {
+    throw new Error('EXIST_PLAYERID');
+  }
+  // Find the session the player is part of
+  let session: quizSession | undefined;
+  let quiz: quiz | undefined;
+  for (const q of data.quizzes) {
+    session = q.activeSessions.find((s) => s.sessionId === player.sessionId);
+    if (session) {
+      quiz = q;
+      // Exit loop once session is found
+      break;
+    }
+  }
+
+  // Ensure that both quiz and session are found
+  if (!session || !quiz) {
+    throw new Error('SESSION_IN_END');
+  }
+
+  // Check if the session state is valid
+  type QuizState = typeof quizState.LOBBY | typeof quizState.QUESTION_COUNTDOWN
+  | typeof quizState.FINAL_RESULTS;
+  const errorMessages: Record<QuizState, string> = {
+    [quizState.LOBBY]: 'SESSION_IN_LOBBY',
+    [quizState.QUESTION_COUNTDOWN]: 'SESSION_IN_COUNTDOWN',
+    [quizState.FINAL_RESULTS]: 'SESSION_IN_RESULTS'
+  };
+
+  if (Object.keys(errorMessages).includes(session.sessionState)) {
+    throw new Error(errorMessages[session.sessionState as QuizState]);
+  }
+
+  if (session.sessionQuestionPosition !== questionPosition) {
+    throw new Error('SESSION_NOT_ON_QUESTION');
+  }
+
+  // Validate the question position by using the quiz's questions array length
+  if (questionPosition < 1 || questionPosition > quiz.questions.length) {
+    throw new Error('INVALID_QUESTION_POSITION');
+  }
+  // Get the question from the quiz's questions array
+  const question = quiz.questions[questionPosition - 1];
+
+  // Construct the response object
+  const response: question = {
+    questionId: question.questionId,
+    question: question.question,
+    timeLimit: question.timeLimit,
+    points: question.points,
+    thumbnailUrl: question.thumbnailUrl,
+    answerOptions: question.answerOptions.map(option => ({
+      answerId: option.answerId,
+      answer: option.answer,
+      colour: option.colour
+    })),
+  };
+
+  return response;
 };

@@ -67,6 +67,7 @@ import {
   playerMessage,
   playerState,
   playerMessageList,
+  playerQuestion,
   playerResults,
   playerQuestionResult
 } from './player';
@@ -756,6 +757,19 @@ const handlePlayerResults = (req: Request, res: Response) => {
 };
 
 app.get('/v1/player/:playerId/results', handlePlayerResults);
+
+// playerQuestion
+const handlePlayerQuestion = (req: Request, res: Response) => {
+  const { playerId, questionPosition } = req.params;
+  try {
+    const result = playerQuestion(parseInt(playerId), parseInt(questionPosition));
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+app.get('/v1/player/:playerId/question/:questionPosition', handlePlayerQuestion);
 
 // playerQuestionResult
 app.get('/v1/player/:playerid/question/:questionposition/results',

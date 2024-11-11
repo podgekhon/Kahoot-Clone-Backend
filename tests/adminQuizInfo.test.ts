@@ -102,7 +102,7 @@ describe('HTTP tests for getting quiz info', () => {
     // Verify that the questions exist in the `questions` array,
     // without assuming order
     const questionIds = quizInfo.questions.map(
-      (q: quizQuestionCreateResponse) => q.questionId
+      q => q.questionId
     );
 
     expect(questionIds).toEqual(
@@ -111,11 +111,11 @@ describe('HTTP tests for getting quiz info', () => {
 
     // Check details for each question by finding them in the questions array
     const fetchedQuestion1 = quizInfo.questions.find(
-      (q: quizQuestionCreateResponse) => q.questionId === createdQuestion1.questionId
+      q => q.questionId === createdQuestion1.questionId
     );
 
     const fetchedQuestion2 = quizInfo.questions.find(
-      (q: quizQuestionCreateResponse) => q.questionId === createdQuestion2.questionId
+      q => q.questionId === createdQuestion2.questionId
     );
 
     expect(fetchedQuestion1).toMatchObject({

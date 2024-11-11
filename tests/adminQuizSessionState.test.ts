@@ -15,7 +15,10 @@ import {
   quizCreateResponse,
   quizStartSessionResponse
 } from '../src/interface';
-import { quizState } from '../src/quiz';
+
+import {
+  quizState
+} from '../src/quiz';
 
 describe('tests for adminQuizSession', () => {
   let user;
