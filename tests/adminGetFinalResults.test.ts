@@ -7,7 +7,9 @@ import {
   requestAdminQuizSessionUpdate,
   requestadminQuizSessionState,
   requestClear,
-  requestAdminGetFinalResults
+  requestAdminGetFinalResults,
+  requestPlayerAnswerQuestion,
+  requestAdminQuizInfo
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
@@ -37,6 +39,7 @@ describe('Test for adminGetFinalResults', () => {
   const showAnswerAction: adminAction = adminAction.GO_TO_ANSWER;
   const goFinalResults: adminAction = adminAction.GO_TO_FINAL_RESULT;
   let adminGetFinalResults: GetFinalResults;
+  let resAnswerQuestion: any;
 
   beforeEach(() => {
     requestClear();
@@ -116,6 +119,11 @@ describe('Test for adminGetFinalResults', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, skipCountDownAction);
 
     // players submit answer question
+    const resQuizInfo = requestAdminQuizInfo(quizId, user2Token);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+
+    resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, goFinalResults);
 
