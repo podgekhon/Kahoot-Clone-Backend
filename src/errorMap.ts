@@ -57,6 +57,18 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'There must be at least one correct answer.'
   },
+  INVALID_ANSWER_SUBMITTED: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Less than 1 answer ID was submitted.'
+  },
+  DUPLICATE_ANSWERS_SUBMITTED: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Duplicate answer IDs provided'
+  },
+  INVALID_ANSWERID: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Answer IDs are not valid for this particular question'
+  },
   INVALID_POSITION: {
     status: httpStatus.BAD_REQUEST,
     message: 'NewPosition is less than 0 or greater than the number of questions.'
@@ -178,6 +190,26 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   INVALID_QUESTION_POSITION: {
     status: httpStatus.BAD_REQUEST,
     message: 'Question position is not valid for the session this player is in.'
+  },
+  SESSION_NOT_IN_FINAL_RESULT: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is not in FINAL_RESULT state.'
+  },
+  SESSION_NOT_OPEN: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is not in QUESTION_OPEN state.'
+  },
+  SESSION_NOT_IN_END: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'There is a session for this quiz is not in END state.'
+  },
+  SESSION_NOT_ACTIVE: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session not found in active sessions of the quiz'
+  },
+  PLAYERID_NOT_EXIST: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Player ID does not exist'
   },
   INVALID_ACTION: {
     status: httpStatus.BAD_REQUEST,

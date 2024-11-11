@@ -17,13 +17,13 @@ export interface dataStore {
   quizzes: quiz[],
   sessions: token[];
   trash: quiz[];
-  players: player[];
+  players: PlayerState[];
 }
 
 export interface player {
   playerId: number,
   playerName: string,
-  sessionId: number
+  sessionId: number,
 }
 
 export interface user {
@@ -45,13 +45,24 @@ export interface answerOption {
   correct?: boolean;
 }
 
+export interface answerSubmission {
+  answerIds: number[],
+  playerId: number,
+  answerTime: number,
+}
+
 export interface question {
   questionId?: number;
   question: string;
   timeLimit: number;
   points: number;
   answerOptions: answerOption[];
+  answerSubmissions?: answerSubmission[];
   thumbnailUrl?: string;
+}
+
+export interface answer {
+  answerIds: number[];
 }
 
 export interface quiz {
@@ -83,6 +94,7 @@ export interface quizSession {
   isCountdownSkipped?: boolean;
   isInLobby?: boolean;
   messages: message[];
+  questionOpenTime?: number;
 }
 
 export interface message {
@@ -252,13 +264,32 @@ export interface sessionState {
 }
 
 export interface PlayerState {
-  state: quizState,
-  numQuestions: number,
-  atQuestion: number
+  playerId?: number,
+  sessionId?: number,
+  playerName?: string,
+  state?: quizState,
+  numQuestions?: number,
+  atQuestion?: number
+  score?: number
 }
 
 export interface requestOptions {
   json?: object;
   headers?: Record<string, string>;
   timeout: number;
+}
+
+export interface playerResultsResponse {
+  usersRankedByScore: usersRankedByScore[],
+  questionResults: {
+    questionId: number,
+    playersCorrect: string[],
+    averageAnswerTime: number,
+    percentCorrect: number,
+  }[]
+}
+
+export interface usersRankedByScore {
+  playerName: string,
+  score: number
 }
