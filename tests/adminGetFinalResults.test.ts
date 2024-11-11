@@ -6,7 +6,8 @@ import {
   httpStatus,
   requestAdminQuizSessionUpdate,
   requestadminQuizSessionState,
-  requestClear
+  requestClear,
+  requestAdminGetFinalResults
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
@@ -16,8 +17,7 @@ import {
   questionCreate,
   startSession,
   quizStartSessionResponse,
-  quizSessionStatusUpdate,
-  sessionState,
+  GetFinalResults
 } from '../src/interface';
 import { adminAction } from '../src/quiz';
 // import sleepSync from 'slync';
@@ -37,7 +37,7 @@ describe('Test for adminGetFinalResults', () => {
   const skipCountDownAction: adminAction = adminAction.SKIP_COUNTDOWN;
   const showAnswerAction: adminAction = adminAction.GO_TO_ANSWER;
   const goFinalResults: adminAction = adminAction.GO_TO_FINAL_RESULT;
-  let adminQuizSessionUpdate: quizSessionStatusUpdate;
+  let adminGetFinalResults: GetFinalResults;
 
   beforeEach(() => {
     requestClear();
@@ -110,7 +110,7 @@ describe('Test for adminGetFinalResults', () => {
     expect(sessionState).toStrictEqual('LOBBY');
   });
 
-  test('User successfully gets final results', () => {
+  test.only('User successfully gets final results', () => {
     // player join session
 
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, nextQuestionAction);

@@ -58,7 +58,8 @@ import {
   adminStartQuizSession,
   adminViewQuizSessions,
   adminQuizSessionUpdate,
-  adminQuizSessionState
+  adminQuizSessionState,
+  adminGetFinalResults
 } from './quiz';
 
 import {
@@ -653,8 +654,6 @@ app.put('/v1/admin/quiz/:quizId/session/:sessionId', (
   const token = req.headers.token as string;
   const { action: actionBody } = req.body;
 
-  // const action = adminAction[actionBody as keyof typeof adminAction];
-
   try {
     const result = adminQuizSessionUpdate(
       parseInt(quizId),
@@ -723,10 +722,22 @@ app.get('/v1/player/:playerId/chat', (req: Request, res: Response) => {
 });
 app.get('/v1/player/:playerId', handleplayerState);
 
-app.get('/v1/admin/quiz/:quizid/session/:sessionid/results', (
+// adminGetFinalResults
+app.get('/v1/admin/quiz/:quizId/session/:sessionId/results', (
   req: Request,
   res: Response
 ) => {
+  const { quizId } = req.params;
+  const { sessionId } = req.params;
+  const token = req.headers.token as string;
+
+  try {
+    const result = adminGetFinalResults(parseInt(quizId), parseInt(sessionId), token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
 });
 
 // playerAnswerQuestion
@@ -746,9 +757,6 @@ const handlePlayerAnswerQuestion = (req: Request, res: Response) => {
 };
 
 app.put('/v1/player/:playerId/question/:questionPosition/answer', handlePlayerAnswerQuestion);
-
-// adminGetFinalResults
-app.get('')
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================

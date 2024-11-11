@@ -9,7 +9,8 @@ import {
   adminTrashList,
   quizState,
   adminStartQuizSession,
-  adminQuizSessionUpdate
+  adminQuizSessionUpdate,
+  adminGetFinalResults
 } from './quiz';
 
 export interface dataStore {
@@ -230,6 +231,11 @@ export interface playerId {
 
 export interface quizSessionStatusUpdate {
   body: ReturnType<typeof adminQuizSessionUpdate>;
+  statusCode: number;
+}
+
+export interface GetFinalResults {
+  body: ReturnType<typeof adminGetFinalResults> ;
   statusCode: number;
 }
 export interface sessionState {

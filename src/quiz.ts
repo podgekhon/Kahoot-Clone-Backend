@@ -263,7 +263,6 @@ export const adminStartQuizSession = (
     autoStartNum,
     sessionQuestionPosition: 1,
     messages: [],
-    players: []
   };
 
   quiz.activeSessions.push(newQuizSession);
@@ -1267,14 +1266,10 @@ export const adminGetFinalResults = (
   if ('error' in tokenValidation) {
     throw new Error('INVALID_TOKEN');
   }
-  // if real, get userId
-  const user = tokenValidation.authUserId;
 
-  // check if user owns the quiz
-
-  // get quiz & check if it exist
+  // get quiz & check if it exist and checks if the user owns session
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  if (!quiz) {
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
     throw new Error('INVALID_QUIZ');
   }
 
