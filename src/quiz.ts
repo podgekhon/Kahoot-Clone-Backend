@@ -262,7 +262,8 @@ export const adminStartQuizSession = (
     quizCopy,
     autoStartNum,
     sessionQuestionPosition: 1,
-    messages: []
+    messages: [],
+    players: []
   };
 
   quiz.activeSessions.push(newQuizSession);
@@ -1287,9 +1288,22 @@ export const adminGetFinalResults = (
     throw new Error('INVALID_QUIZ_SESSION');
   }
 
-  // first, sort the player
-  const usersRankedByScore = [];
-  const playerList = adminQuizSessionState(quizId, sessionId, token).players;
+  // first, get player list
+  const playerList = data.players.filter((player) =>
+    player.sessionId === sessionId && player.score !== undefined
+  ).map(
+    player => (
+      {
+        playerName: player.playerName,
+        score: player.score
+      }
+    )
+  );
+
+  // sort players based on score
+  const usersRankedByScore = playerList.sort((player1, player2) => player2.score - player1.score);
+
+  // figure out database structure, how to store player info
 
   // first approach:
   // get the list of players
@@ -1298,4 +1312,4 @@ export const adminGetFinalResults = (
   // return the players score
   // for questionResults:[]
   // use playerQuestionResults to display all question results in session
- };
+};

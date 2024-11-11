@@ -262,9 +262,12 @@ export interface sessionState {
 }
 
 export interface PlayerState {
-  state: quizState,
-  numQuestions: number,
-  atQuestion: number,
+  playerId?: number,
+  sessionId?: number,
+  playerName?: string,
+  state?: quizState,
+  numQuestions?: number,
+  atQuestions?: number,
   score?: number,
 }
 
