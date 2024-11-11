@@ -83,6 +83,7 @@ export interface quiz {
   inactiveSessions: quizSession[]
 }
 
+/// /////////////// interface for player.ts //////////////////
 export type quizCopy = Omit<quiz, 'activeSessions' | 'inactiveSessions'>;
 
 export interface quizSession {
@@ -119,6 +120,13 @@ export interface token {
 
 export interface messageBody {
   messageBody: string
+}
+
+export interface questionResult {
+  questionId: number,
+    playersCorrect: string[],
+    averageAnswerTime: number,
+    percentCorrect: number
 }
 /// /////////////// interface for auth.ts/////////////////////
 

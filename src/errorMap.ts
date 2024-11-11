@@ -218,5 +218,9 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   INVALID_QUIZ_SESSION: {
     status: httpStatus.BAD_REQUEST,
     message: 'INVALID_QUIZ_SESSION'
+  },
+  SESSION_NOT_IN_ANSWER_SHOW: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is not in ANSWER_SHOW state'
   }
 };
