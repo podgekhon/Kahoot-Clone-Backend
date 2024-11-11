@@ -1340,20 +1340,14 @@ export const adminGetFinalResults = (
 
       // get an array of playerStates of players who selected the correct ans option
       const playersCorrect = (question.answerSubmissions || []).filter(
-        submission => {
-          // find the player that submitted ans
-          const player = data.players.find((player) => player.playerId === submission.playerId);
-          // check if player had correct answer
-          return player &&
-          correctAnswerId !== null &&
-          submission.answerIds.includes(correctAnswerId);
+        (submisssion) => {
+          // return only correct answer submissions
+          return correctAnswerId !== null && submisssion.answerIds.includes(correctAnswerId);
         }
-      ).map(
-        (submission) => {
-          const player = data.players.find((player) => player.playerId === submission.playerId);
-          return player ? player.playerName || '' : '';
-        }
-      );
+      ).map((submission) => {
+        const player = data.players.find((player) => player.playerId === submission.playerId);
+        return player ? player.playerName || '' : '';
+      });
 
       // get the total answer time
       const totalAnswerTime = (question.answerSubmissions || []).reduce((acc, submission) => {

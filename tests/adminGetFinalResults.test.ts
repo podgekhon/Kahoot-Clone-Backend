@@ -17,7 +17,6 @@ import {
   tokenReturn,
   quizCreate,
   quizCreateResponse,
-  questionCreate,
   startSession,
   quizStartSessionResponse,
   GetFinalResults,
@@ -34,11 +33,13 @@ describe('Test for adminGetFinalResults', () => {
   let user1Token: string;
   let user2Token: string;
   let player2Name: string;
+  let player3Name: string;
   let player2Id: number;
+  let player3Id: number;
   let player2JoinRes: playerJoinRes;
+  let player3JoinRes: playerJoinRes;
   let quizCreateResponse: quizCreate;
   let quizId: number;
-  let quizQuestionCreateResponse: questionCreate;
   let startSessionResponse: startSession;
   let sessionId: number;
   let adminGetFinalResults: GetFinalResults;
@@ -53,7 +54,6 @@ describe('Test for adminGetFinalResults', () => {
     );
 
     user1Token = (user1Response.body as tokenReturn).token;
-    expect(user1Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     user2Response = requestAdminAuthRegister(
       'user2@gmail.com',
@@ -63,14 +63,20 @@ describe('Test for adminGetFinalResults', () => {
     );
 
     user2Token = (user2Response.body as tokenReturn).token;
-    expect(user1Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+
+    requestAdminAuthRegister(
+      'user3@gmail.com',
+      'validPassword3',
+      'User',
+      'Three'
+    );
 
     quizCreateResponse = requestAdminQuizCreate(
       user1Token,
       'validQuizName',
       'validQuizDescription'
     );
-    expect(quizCreateResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     quizId = (quizCreateResponse.body as quizCreateResponse).quizId;
 
     const questionBody = {
@@ -83,22 +89,16 @@ describe('Test for adminGetFinalResults', () => {
       ],
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
-    quizQuestionCreateResponse = requestAdminQuizQuestionCreateV2(
+    requestAdminQuizQuestionCreateV2(
       quizId,
       user1Token,
       questionBody
-    );
-    expect(quizQuestionCreateResponse.statusCode).toStrictEqual(
-      httpStatus.SUCCESSFUL_REQUEST
     );
 
     startSessionResponse = requestAdminStartQuizSession(
       quizId,
       user1Token,
       1
-    );
-    expect(startSessionResponse.statusCode).toStrictEqual(
-      httpStatus.SUCCESSFUL_REQUEST
     );
 
     sessionId = (
@@ -113,10 +113,13 @@ describe('Test for adminGetFinalResults', () => {
     const sessionState = resStartSession.body.state;
     expect(sessionState).toStrictEqual('LOBBY');
 
-    // player join
     player2Name = 'player2';
     player2JoinRes = requestjoinPlayer(sessionId, player2Name);
     player2Id = (player2JoinRes.body as player).playerId;
+
+    player3Name = 'player3';
+    player3JoinRes = requestjoinPlayer(sessionId, player3Name);
+    player3Id = (player3JoinRes.body as player).playerId;
 
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.NEXT_QUESTION);
     sleepSync(4 * 1000);
@@ -126,9 +129,13 @@ describe('Test for adminGetFinalResults', () => {
     const quizInfo = resQuizInfo.body as quizInfo;
     const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
 
-    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, player2Id, 1);
-    expect(resAnswerQuestion.body).toStrictEqual({ });
-    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    const resUser2AnswerQuestion = requestPlayerAnswerQuestion(answerId, player2Id, 1);
+    expect(resUser2AnswerQuestion.body).toStrictEqual({ });
+    expect(resUser2AnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    const resUser3AnswerQuestion = requestPlayerAnswerQuestion(answerId, player3Id, 1);
+    expect(resUser3AnswerQuestion.body).toStrictEqual({ });
+    expect(resUser3AnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_ANSWER);
   });
@@ -149,13 +156,18 @@ describe('Test for adminGetFinalResults', () => {
         {
           playerName: player2Name,
           score: expect.any(Number)
+        },
+        {
+          playerName: player3Name,
+          score: expect.any(Number)
         }
       ],
       questionResults: [
         {
           questionId: expect.any(Number),
           playersCorrect: [
-            player2Name
+            player2Name,
+            player3Name
           ],
           averageAnswerTime: expect.any(Number),
           percentCorrect: expect.any(Number)

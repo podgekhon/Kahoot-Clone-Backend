@@ -291,3 +291,18 @@ export interface playerJoinRes {
   body: ReturnType<typeof joinPlayer>,
   statusCode: number;
 }
+
+export interface playerResultsResponse {
+  usersRankedByScore: usersRankedByScore[],
+  questionResults: {
+    questionId: number,
+    playersCorrect: string[],
+    averageAnswerTime: number,
+    percentCorrect: number,
+  }[]
+}
+
+export interface usersRankedByScore {
+  playerName: string,
+  score: number
+}
