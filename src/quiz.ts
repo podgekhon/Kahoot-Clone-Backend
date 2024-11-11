@@ -260,9 +260,9 @@ export const adminStartQuizSession = (
   const newQuizSession: quizSession = {
     sessionId: randomId(10000),
     sessionState: quizState.LOBBY,
-    isInLobby: true,
     quizCopy,
     autoStartNum,
+    isInLobby: true,
     sessionQuestionPosition: 1,
     messages: []
   };
@@ -1053,6 +1053,10 @@ export const adminQuizSessionUpdate = (
     throw new Error('INVALID_OWNER');
   }
 
+  if (quizSession.sessionState === quizState.LOBBY) {
+    quizSession.isInLobby = true;
+  }
+
   // if action is 'END'
   if (action === adminAction.END) {
     if (quizSession.sessionState === quizState.END) {
@@ -1086,7 +1090,6 @@ export const adminQuizSessionUpdate = (
 
   // if action is 'NEXT_QUESTION'
   if (action === adminAction.NEXT_QUESTION) {
-    // to set a timer when question is open
     // check if action can be applied to current state
     if (
       quizSession.sessionState !== quizState.LOBBY &&
@@ -1101,11 +1104,6 @@ export const adminQuizSessionUpdate = (
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
-      if (quizSession.isInLobby === false) {
-        quizSession.sessionQuestionPosition++;
-      } else {
-        quizSession.isInLobby = false;
-      }
       quizSession.sessionState = quizState.QUESTION_OPEN;
       // get question_open time
       quizSession.questionOpenTime = Date.now();
@@ -1135,17 +1133,6 @@ export const adminQuizSessionUpdate = (
       }
       setData(data);
     }, 3000);
-    // to set a timer when question is open
-    const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-    const updatedQuizSession = quiz.activeSessions.find(
-      (session) => session.sessionId === sessionId
-    );
-    if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
-      timers[sessionId] = setTimeout(() => {
-        quizSession.sessionState = quizState.QUESTION_CLOSE;
-        setData(data);
-      }, 60000);
-    }
   }
 
   // if action is 'SKIP_COUNTDOWN'
@@ -1153,11 +1140,6 @@ export const adminQuizSessionUpdate = (
     // check if action can be applied to current state
     if (quizSession.sessionState !== quizState.QUESTION_COUNTDOWN) {
       throw new Error('INVALID_ACTION');
-    }
-    if (quizSession.isInLobby === false) {
-      quizSession.sessionQuestionPosition++;
-    } else {
-      quizSession.isInLobby = false;
     }
 
     // checks if clear 3s timer
@@ -1224,7 +1206,6 @@ export const adminQuizSessionUpdate = (
   return {};
 };
 
-// Get the status of a particular quiz session
 export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
 sessionState => {
   const data = getData();

@@ -179,9 +179,25 @@ export const errorMap: Record<string, { status: number, message: string }> = {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in LOBBY state.'
   },
+  SESSION_IN_LOBBY: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in LOBBY state.'
+  },
+  SESSION_IN_COUNTDOWN: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in QUESTION_COUNTDOWN state.'
+  },
+  SESSION_IN_RESULTS: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in FINAL_RESULTS state.'
+  },
+  SESSION_IN_END: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Session is in END state.'
+  },
   SESSION_IN_LOBBY_COUNTDOWN_RESULTS_END: {
     status: httpStatus.BAD_REQUEST,
-    message: 'Session is in LOBBY, QUESTION_COUNTDOWN, FINAL_RESULTS or END state.'
+    message: 'Session is in LOBBY'
   },
   SESSION_NOT_ON_QUESTION: {
     status: httpStatus.BAD_REQUEST,

@@ -1243,30 +1243,6 @@ export const requestjoinPlayer = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// playerQuestion
-/**
- * Current question information for a player
- *
- * @param { number } playerId
- * @param { number } questionPosition
- * @returns { Response }
- */
-export const requestPlayerQuestion = (
-  playerId: number, questionPosition: number
-): {
-  body: ReturnType <typeof playerQuestion>,
-  statusCode: number
-} => {
-  const res = request(
-    'GET',
-    SERVER_URL + `/v1/player/${playerId}/question/${questionPosition}`,
-    {
-      timeout: TIMEOUT_MS
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
-
 // adminQuizSessionUpdate
 /**
  * Makes http request to update quiz session status
@@ -1420,6 +1396,30 @@ export const requestPlayerResults = (
     SERVER_URL + `/v1/player/${playerId}/results`,
     {
       timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// playerQuestion
+/**
+ * Current question information for a player
+ *
+ * @param { number } playerId
+ * @param { number } questionPosition
+ * @returns { Response }
+ */
+export const requestPlayerQuestion = (
+  playerId: number, questionPosition: number
+): {
+  body: ReturnType <typeof playerQuestion>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}/question/${questionPosition}`,
+    {
+      timeout: TIMEOUT_MS
     }
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };

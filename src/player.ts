@@ -72,110 +72,6 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
 
 /**
  *
-<<<<<<< HEAD
- * Get the information about a question that the guest player is on.
- *
- * @param {number} playerId - an unique number representing a player
- * @param {number} questionPosition - the position of a question
- *
- * @returns {Error} - An object containing an error message if registration fails
- * @returns {question} - Information about a question
- */
-export const playerQuestion = (playerId: number, questionPosition: number): question => {
-  const data = getData();
-  const player = data.players.find(p => p.playerId === playerId);
-
-  if (!player) {
-    throw new Error('EXIST_PLAYERID');
-  }
-
-  // Find the session the player is part of
-  let session: quizSession | undefined;
-  let quiz: quiz | undefined;
-  for (const q of data.quizzes) {
-    session = q.activeSessions.find((s) => s.sessionId === player.sessionId);
-    if (session) {
-      quiz = q;
-      // Exit loop once session is found
-      break;
-    }
-  }
-
-  if (!session || !quiz) {
-    throw new Error('SESSION_NOT_ON_QUESTION');
-  }
-
-  // Check if the session state is valid
-  if
-  (
-    [quizState.LOBBY,
-      quizState.QUESTION_COUNTDOWN,
-      quizState.FINAL_RESULTS,
-      quizState.END].includes(session.sessionState)
-  ) {
-    throw new Error('SESSION_IN_LOBBY_COUNTDOWN_RESULTS_END');
-  }
-
-  // Validate the question position by using the quiz's questions array length
-  if (questionPosition < 1 || questionPosition > quiz.questions.length) {
-    throw new Error('INVALID_QUESTION_POSITION');
-  }
-
-  // Get the question from the quiz's questions array
-  const question = quiz.questions[questionPosition - 1];
-
-  // Construct the response object
-  const response: question = {
-    questionId: question.questionId,
-    question: question.question,
-    timeLimit: question.timeLimit,
-    points: question.points,
-    thumbnailUrl: question.thumbnailUrl,
-    answerOptions: question.answerOptions.map(option => ({
-      answerId: option.answerId,
-      answer: option.answer,
-      colour: option.colour
-    })),
-  };
-
-  return response;
-};
-
-/**
- *
- * @param { number } playerId - playerId to identify which user is sending msgs
- * @param { string } message - player's  msgs to be sent
- * @returns {} - empty object
- */
-export const playerMessage = (playerId: number, message: messageBody) : emptyReturn => {
-  const data = getData();
-  const newMessage = message.messageBody;
-  const validPlayer = data.players.find(p => p.playerId === playerId);
-  if (!validPlayer) {
-    throw new Error('INVALID_PLAYER');
-  }
-  if (newMessage.length < 1 || newMessage.length > 100) {
-    throw new Error('INVALID_MESSAGE_LENGTH');
-  }
-  const quizSessionId = validPlayer.sessionId;
-  const msg = {
-    playerId: playerId,
-    playerName: validPlayer.playerName,
-    messageBody: newMessage,
-    timeSent: Math.floor(Date.now() / 1000)
-  };
-  // find the quiz Session
-  let FindSession: quizSession;
-  for (const quiz of data.quizzes) {
-    FindSession = quiz.activeSessions.find(session => session.sessionId === quizSessionId);
-    if (FindSession) break;
-  }
-  FindSession.messages.push(msg);
-  setData(data);
-  return {};
-};
-
-/*
  * Allow the current player to submit answer(s) to the currently active question.
  *
  * @param {number[]} answerIds - an array of answerIds
@@ -276,6 +172,40 @@ export const playerAnswerQuestion = (
 
   // Return player ID if successful
   return { };
+};
+
+/**
+ *
+ * @param { number } playerId - playerId to identify which user is sending msgs
+ * @param { string } message - player's  msgs to be sent
+ * @returns {} - empty object
+ */
+export const playerMessage = (playerId: number, message: messageBody) : emptyReturn => {
+  const data = getData();
+  const newMessage = message.messageBody;
+  const validPlayer = data.players.find(p => p.playerId === playerId);
+  if (!validPlayer) {
+    throw new Error('INVALID_PLAYER');
+  }
+  if (newMessage.length < 1 || newMessage.length > 100) {
+    throw new Error('INVALID_MESSAGE_LENGTH');
+  }
+  const quizSessionId = validPlayer.sessionId;
+  const msg = {
+    playerId: playerId,
+    playerName: validPlayer.playerName,
+    messageBody: newMessage,
+    timeSent: Math.floor(Date.now() / 1000)
+  };
+  // find the quiz Session
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find(session => session.sessionId === quizSessionId);
+    if (FindSession) break;
+  }
+  FindSession.messages.push(msg);
+  setData(data);
+  return {};
 };
 
 /**
@@ -420,4 +350,78 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
   });
 
   return { usersRankedByScore, questionResults };
+};
+
+/**
+ *
+ * Get the information about a question that the guest player is on.
+ *
+ * @param {number} playerId - an unique number representing a player
+ * @param {number} questionPosition - the position of a question
+ *
+ * @returns {Error} - An object containing an error message if registration fails
+ * @returns {question} - Information about a question
+ */
+export const playerQuestion = (playerId: number, questionPosition: number): question => {
+  const data = getData();
+  const player = data.players.find(p => p.playerId === playerId);
+  if (!player) {
+    throw new Error('EXIST_PLAYERID');
+  }
+  // Find the session the player is part of
+  let session: quizSession | undefined;
+  let quiz: quiz | undefined;
+  for (const q of data.quizzes) {
+    session = q.activeSessions.find((s) => s.sessionId === player.sessionId);
+    if (session) {
+      quiz = q;
+      // Exit loop once session is found
+      break;
+    }
+  }
+
+  // Ensure that both quiz and session are found
+  if (!session || !quiz) {
+    throw new Error('SESSION_IN_END');
+  }
+
+  // Check if the session state is valid
+  type QuizState = typeof quizState.LOBBY | typeof quizState.QUESTION_COUNTDOWN
+  | typeof quizState.FINAL_RESULTS;
+  const errorMessages: Record<QuizState, string> = {
+    [quizState.LOBBY]: 'SESSION_IN_LOBBY',
+    [quizState.QUESTION_COUNTDOWN]: 'SESSION_IN_COUNTDOWN',
+    [quizState.FINAL_RESULTS]: 'SESSION_IN_RESULTS'
+  };
+
+  if (Object.keys(errorMessages).includes(session.sessionState)) {
+    throw new Error(errorMessages[session.sessionState as QuizState]);
+  }
+
+  if (session.sessionQuestionPosition !== questionPosition) {
+    throw new Error('SESSION_NOT_ON_QUESTION');
+  }
+
+  // Validate the question position by using the quiz's questions array length
+  if (questionPosition < 1 || questionPosition > quiz.questions.length) {
+    throw new Error('INVALID_QUESTION_POSITION');
+  }
+  // Get the question from the quiz's questions array
+  const question = quiz.questions[questionPosition - 1];
+
+  // Construct the response object
+  const response: question = {
+    questionId: question.questionId,
+    question: question.question,
+    timeLimit: question.timeLimit,
+    points: question.points,
+    thumbnailUrl: question.thumbnailUrl,
+    answerOptions: question.answerOptions.map(option => ({
+      answerId: option.answerId,
+      answer: option.answer,
+      colour: option.colour
+    })),
+  };
+
+  return response;
 };
