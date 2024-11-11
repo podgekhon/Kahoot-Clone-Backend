@@ -1384,6 +1384,5 @@ export const adminGetFinalResults = (
     }
   );
 
-  console.log(`success!`);
   return { usersRankedByScore, questionResults };
 };

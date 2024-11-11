@@ -133,7 +133,7 @@ describe('Test for adminGetFinalResults', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_ANSWER);
   });
 
-  test.only('User successfully gets final results', () => {
+  test('User successfully gets final results', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
