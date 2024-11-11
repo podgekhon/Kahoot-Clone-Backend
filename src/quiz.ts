@@ -815,9 +815,11 @@ export const adminQuizQuestionRemove = (
   }
 
   // Any session for this quiz is not in END state
-  // if (quiz.state !== quizState.END) {
-  //   throw new Error('INVALID_OWNER');
-  // }
+  const hasActiveSession = quiz.activeSessions.some(
+    session => session.sessionState !== quizState.END);
+  if (hasActiveSession) {
+    throw new Error('SESSION_NOT_IN_END');
+  }
 
   // Question Id does not refer to a valid question within this quiz
   const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
@@ -828,7 +830,6 @@ export const adminQuizQuestionRemove = (
   quiz.questions.splice(questionIndex, 1);
   quiz.numQuestions--;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
-
   setData(data);
   return {};
 };
