@@ -188,13 +188,6 @@ describe('Test for adminQuizSessionUpdate', () => {
       nextQuestionAction
     );
 
-    requestAdminQuizSessionUpdate(
-      quizId,
-      sessionId,
-      user1Token,
-      skipCountDownAction
-    );
-
     sleepSync(65 * 1000);
 
     getUpdatedSession = requestadminQuizSessionState(
