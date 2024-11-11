@@ -154,7 +154,7 @@ describe('Test for adminGetFinalResults', () => {
       questionResults: [
         {
           questionId: expect.any(Number),
-          plaeyersCorrect: [
+          playersCorrect: [
             player2Name
           ],
           averageAnswerTime: expect.any(Number),
