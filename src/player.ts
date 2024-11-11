@@ -259,3 +259,92 @@ export const playerMessageList = (playerId: number) : messageList => {
 
   return { messages };
 };
+
+
+
+/**
+ *
+Get the final results for a whole session a player is playing in
+ *
+ * @param {number} playerId - an unique identifier for a player
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {playerResultsResponse} - An object containing the final results for a whole session a player is playing in
+ */
+export const playerResults = (playerId: number): playerResultsResponse | errorMessages => {
+  // Check if the player ID exists in the session data
+  const data = getData();
+  const player = data.players.find(p => p.playerId === playerId);
+
+  if (!player) {
+    throw new Error('EXIST_PLAYERID');
+  }
+
+  // Find the session the player is part of
+  let session: quizSession | undefined;
+  let quiz: quiz | undefined;
+  for (const q of data.quizzes) {
+    session = q.activeSessions.find((s) => s.sessionId === player.sessionId);
+    if (session) {
+      quiz = q;
+      // Exit loop once session is found
+      break;
+    }
+  }
+  const sessionId: number = session.sessionId;
+
+  // Check if the session is in the FINAL_RESULTS state
+  if (session.sessionState !== quizState.FINAL_RESULTS) {
+    return { error: "Session is not in FINAL_RESULTS state" };
+  }
+
+  // Construct usersRankedByScore array
+  const sessionPlayers = data.players
+    .filter(player => player.sessionId === sessionId && player.score !== undefined)
+    .map(player => ({
+      playerName: player.playerName,
+      score: player.score
+    }));
+
+  const usersRankedByScore = sessionPlayers.sort((a, b) => b.score - a.score);
+
+  const questionResults = quiz.questions.map(q => {
+    // Find the correct answer ID for this question by looking at answerOptions
+    const correctAnswerOption = q.answerOptions.find(option => option.correct);
+    const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
+
+    const playersCorrect = (q.answerSubmissions || [])
+      .filter(submission => {
+        // Find the player associated with this submission
+        const player = data.players.find(p => p.playerId === submission.playerId && p.sessionId === session.sessionId);
+        // Check if this player's answerIds include the correct answer ID
+        return player && correctAnswerId !== null && submission.answerIds.includes(correctAnswerId);
+      })
+      .map(submission => {
+        // Map each submission to the player's name
+        const player = data.players.find(p => p.playerId === submission.playerId);
+        return player ? player.playerName || '' : '';
+      });
+
+    const totalAnswerTime = (q.answerSubmissions || []).reduce((acc, submission) => {
+        const player = data.players.find(p => p.playerId === submission.playerId && p.sessionId === session.sessionId);
+        const answerTime = player && player.atQuestion === q.questionId ? (player.atQuestion || 0) : 0;
+        return acc + answerTime;
+    }, 0);
+
+    const averageAnswerTime = playersCorrect.length > 0 ? totalAnswerTime / playersCorrect.length : 0;
+    const percentCorrect = (playersCorrect.length / data.players.length) * 100;
+    // round percentage to nearest integer
+    // const percentCorrect = playersCorrect.length > 0 
+    // ? Math.round((playersCorrect.length / data.players.length) * 100) 
+    // : 0;
+
+    return {
+      questionId: q.questionId,
+      playersCorrect,
+      averageAnswerTime,
+      percentCorrect
+    };
+  });
+return { usersRankedByScore, questionResults };
+}

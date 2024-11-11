@@ -50,7 +50,7 @@ import {
   playerAnswerQuestion,
   playerMessage,
   playerState,
-  adminPlayerResults,
+  playerResults,
   playerMessageList
 } from './player';
 
