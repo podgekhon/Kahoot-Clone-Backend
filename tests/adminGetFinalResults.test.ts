@@ -32,7 +32,6 @@ describe('Test for adminGetFinalResults', () => {
   let quizQuestionCreateResponse: questionCreate;
   let startSessionResponse: startSession;
   let sessionId: number;
-  const endAction: adminAction = adminAction.END;
   const nextQuestionAction: adminAction = adminAction.NEXT_QUESTION;
   const skipCountDownAction: adminAction = adminAction.SKIP_COUNTDOWN;
   const showAnswerAction: adminAction = adminAction.GO_TO_ANSWER;

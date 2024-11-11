@@ -1264,12 +1264,14 @@ export const adminGetFinalResults = (
   // validate token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
+    console.log('error! 1');
     throw new Error('INVALID_TOKEN');
   }
 
   // get quiz & check if it exist and checks if the user owns session
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    console.log('error! 2');
     throw new Error('INVALID_QUIZ');
   }
 
@@ -1278,11 +1280,13 @@ export const adminGetFinalResults = (
     (session) => session.sessionId === sessionId
   );
   if (!quizSession) {
+    console.log('error! 3');
     throw new Error('INVALID_SESSIONID');
   }
 
   // check if quiz session state is not FINAL_RESULT
   if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
+    console.log('error! 4');
     throw new Error('INVALID_QUIZ_SESSION');
   }
 
@@ -1354,5 +1358,6 @@ export const adminGetFinalResults = (
     }
   );
 
+  console.log(`success!`);
   return { usersRankedByScore, questionResults };
 };
