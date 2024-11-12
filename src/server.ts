@@ -821,6 +821,10 @@ app.get('/v1/admin/quiz/:quizId/session/:sessionId/results/csv', (
     return res.status(mappedError.status).json({ error: mappedError.message });
   }
 });
+
+// Serve static files from the "public" directory
+app.use('/public', express.static(path.join(__dirname, 'public')));
+
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================

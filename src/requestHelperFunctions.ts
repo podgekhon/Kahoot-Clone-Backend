@@ -1478,7 +1478,7 @@ export const requestAdminGetFinalResultsCsv = (
 ): GetFinalResults => {
   const res = request(
     'GET',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results/csv`,
     {
       headers: { token },
       timeout: TIMEOUT_MS

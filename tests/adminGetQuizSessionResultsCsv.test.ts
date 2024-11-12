@@ -148,6 +148,7 @@ describe('Test for adminGetFinalResults', () => {
     expect(adminGetFinalResultsCsvFormat.body).toStrictEqual({
       url: expect.any(String)
     });
+    console.log(adminGetFinalResultsCsvFormat.body);
   });
 
   test('Return error for invalid SessionId', () => {
