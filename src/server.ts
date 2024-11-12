@@ -59,7 +59,8 @@ import {
   adminViewQuizSessions,
   adminQuizSessionUpdate,
   adminQuizSessionState,
-  adminGetFinalResults
+  adminGetFinalResults,
+  adminGetFinalResultsCsv
 } from './quiz';
 
 import {
@@ -803,6 +804,23 @@ app.get('/v1/player/:playerid/question/:questionposition/results',
     }
   });
 
+// adminGetFinalResultsCsv
+app.get('/v1/admin/quiz/:quizId/session/:sessionId/results/csv', (
+  req: Request,
+  res: Response
+) => {
+  const { quizId } = req.params;
+  const { sessionId } = req.params;
+  const token = req.headers.token as string;
+
+  try {
+    const result = adminGetFinalResultsCsv(parseInt(quizId), parseInt(sessionId), token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
 // ====================================================================

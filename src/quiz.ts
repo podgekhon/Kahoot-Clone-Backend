@@ -29,8 +29,11 @@ import {
   viewQuizSessionsResponse,
   quizCopy,
   sessionState,
-  PlayerState
+  PlayerState,
 } from './interface';
+
+import fs from 'fs';
+import path from 'path';
 
 export enum quizState {
   LOBBY = 'LOBBY',
@@ -1382,4 +1385,99 @@ export const adminGetFinalResults = (
   );
 
   return { usersRankedByScore, questionResults };
+};
+
+export const adminGetFinalResultsCsv = (
+  quizId: number,
+  sessionId: number,
+  token: string
+) => {
+  // you want like
+  // player, question1Score, question1Rank...
+  const data = getData();
+
+  // validate token
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    console.log('error! 1');
+    throw new Error('INVALID_TOKEN');
+  }
+
+  // get quiz & check if it exist and checks if the user owns session
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    console.log('error! 2');
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // get quiz session & check if it exist
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+  if (!quizSession) {
+    console.log('error! 3');
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  // check if quiz session state is not FINAL_RESULT
+  if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
+    console.log('error! 4');
+    throw new Error('INVALID_QUIZ_SESSION');
+  }
+
+  // try to find the array of players
+  const finalResults: { [key: string]: string[] } = {};
+
+  quizSession.quizCopy.questions.forEach((question) => {
+    if (question.playerPerfAtQuestion) {
+      question.playerPerfAtQuestion.forEach((performance) => {
+        // get players name and score
+        const playerName = performance.playerName;
+        const playerScore = performance.score;
+
+        // get players rank
+        const playerRank = question.playerPerfAtQuestion.sort(
+          (playerA, playerB) => playerB.score - playerA.score
+        ).findIndex((player) => player.playerName === playerName) + 1;
+
+        // check if player has array
+        if (!finalResults[playerName]) {
+          finalResults[playerName] = [];
+        }
+
+        // push questionXscore and questionXrank
+        finalResults[playerName].push(`${playerScore}, ${playerRank}`);
+      });
+    }
+
+    // create the header
+    const header = ['Player'];
+    quizSession.quizCopy.questions.forEach((_, i) => {
+      header.push(`question${i + 1}score, question${i + 1}rank`);
+    });
+
+    // alphabetically sort playerList based on their name
+    const sortedList = Object.keys(finalResults).sort();
+
+    // prepare csv content
+    const csvContent = [
+      header.join(','),
+      ...sortedList.map((playerName) => {
+        return [playerName, ...finalResults[playerName]].join(',');
+      })
+    ].join('\n');
+
+    const csvResult = `final_results_${quizId}_${sessionId}.csv`;
+    const filePath = path.join(__dirname, 'public', 'csv', csvResult);
+
+    const dirPath = path.dirname(filePath);
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, csvContent);
+
+    const fileUrl = `/public/csv/${csvResult}`;
+    return { fileUrl };
+  });
 };

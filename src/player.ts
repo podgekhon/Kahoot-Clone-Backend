@@ -16,7 +16,8 @@ import {
   messageList,
   question,
   playerResultsResponse,
-  questionResult
+  questionResult,
+  playerPerformance
 } from './interface';
 
 import { quizState } from './quiz';
@@ -168,6 +169,14 @@ export const playerAnswerQuestion = (
     if (playerState) {
       playerState.score = (playerState.score || 0) + score;
     }
+
+    // push player's score and name into playerPerfAtQuestion array
+    const playerPerformance: playerPerformance = {
+      playerName: playerState.playerName,
+      score: score
+    };
+
+    question.playerPerfAtQuestion.push(playerPerformance);
   }
 
   setData(data);

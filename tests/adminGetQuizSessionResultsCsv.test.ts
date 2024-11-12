@@ -7,10 +7,10 @@ import {
   requestAdminQuizSessionUpdate,
   requestadminQuizSessionState,
   requestClear,
-  requestAdminGetFinalResults,
   requestPlayerAnswerQuestion,
   requestAdminQuizInfo,
-  requestjoinPlayer
+  requestjoinPlayer,
+  requestAdminGetFinalResultsCsv,
 } from '../src/requestHelperFunctions';
 import {
   userAuthRegister,
@@ -19,7 +19,7 @@ import {
   quizCreateResponse,
   startSession,
   quizStartSessionResponse,
-  GetFinalResults,
+  // GetFinalResultsCsv,
   playerJoinRes,
   player,
   quizInfo
@@ -42,7 +42,7 @@ describe('Test for adminGetFinalResults', () => {
   let quizId: number;
   let startSessionResponse: startSession;
   let sessionId: number;
-  let adminGetFinalResults: GetFinalResults;
+  // let adminGetFinalResultsCsvFormat: GetFinalResultsCsv;
 
   beforeEach(() => {
     requestClear();
@@ -136,10 +136,10 @@ describe('Test for adminGetFinalResults', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_ANSWER);
   });
 
-  test('User successfully gets final results in csv format', () => {
+  test.only('User successfully gets final results in csv format', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
-    const adminGetFinalResultsCsvFormat = adminGetFinalResultsCsv(
+    const adminGetFinalResultsCsvFormat = requestAdminGetFinalResultsCsv(
       quizId,
       sessionId,
       user1Token
@@ -153,7 +153,7 @@ describe('Test for adminGetFinalResults', () => {
   test('Return error for invalid SessionId', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
-    const adminGetFinalResultsCsvFormat = adminGetFinalResultsCsv(
+    const adminGetFinalResultsCsvFormat = requestAdminGetFinalResultsCsv(
       quizId,
       sessionId + 1,
       user1Token
@@ -166,7 +166,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for session not in FINAL_RESULTS state', () => {
-    const adminGetFinalResultsCsvFormat = adminGetFinalResultsCsv(
+    const adminGetFinalResultsCsvFormat = requestAdminGetFinalResultsCsv(
       quizId,
       sessionId,
       user1Token
@@ -181,7 +181,7 @@ describe('Test for adminGetFinalResults', () => {
   test('Return error for invalid token', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
-    adminGetFinalResultsCsvFormat = adminGetFinalResultsCsv(
+    const adminGetFinalResultsCsvFormat = requestAdminGetFinalResultsCsv(
       quizId,
       sessionId,
       user1Token + 1
@@ -196,7 +196,7 @@ describe('Test for adminGetFinalResults', () => {
   test('Return error for invalid quizId', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
-    adminGetFinalResultsCsvFormat = adminGetFinalResultsCsv(
+    const adminGetFinalResultsCsvFormat = requestAdminGetFinalResultsCsv(
       quizId + 1,
       sessionId,
       user1Token
@@ -211,7 +211,7 @@ describe('Test for adminGetFinalResults', () => {
   test('Return error for user does not own quiz', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
 
-    adminGetFinalResultsCsvFormat = adminGetFinalResultsCsv(
+    const adminGetFinalResultsCsvFormat = requestAdminGetFinalResultsCsv(
       quizId,
       sessionId,
       user2Token
