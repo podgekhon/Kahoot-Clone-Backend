@@ -241,7 +241,7 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   },
   INVALID_QUIZ_SESSION: {
     status: httpStatus.BAD_REQUEST,
-    message: 'INVALID_QUIZ_SESSION'
+    message: 'Cannot apply action in current session state.'
   },
   SESSION_NOT_IN_ANSWER_SHOW: {
     status: httpStatus.BAD_REQUEST,

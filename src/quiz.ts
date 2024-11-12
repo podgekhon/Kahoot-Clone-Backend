@@ -264,7 +264,8 @@ export const adminStartQuizSession = (
     autoStartNum,
     isInLobby: true,
     sessionQuestionPosition: 1,
-    messages: []
+    messages: [],
+    players: []
   };
 
   quiz.activeSessions.push(newQuizSession);
@@ -1245,12 +1246,12 @@ sessionState => {
   }
 
   const matchedPlayers = data.players.filter(player => player.sessionId === sessionId);
-  const PLayersname = matchedPlayers.map(player => player.playerName);
+  const Playersname = matchedPlayers.map(player => player.playerName);
 
   const response : sessionState = {
     state: FindSession.sessionState,
-    atQuestion: FindSession.sessionQuestionPosition,
-    players: PLayersname,
+    atQuestion: validQuiz.atQuestion,
+    players: Playersname,
     metadata: {
       quizId: validQuiz.quizId,
       name: validQuiz.name,
@@ -1277,4 +1278,108 @@ sessionState => {
   };
 
   return response;
+};
+
+export const adminGetFinalResults = (
+  quizId: number,
+  sessionId: number,
+  token: string
+) => {
+  const data = getData();
+
+  // validate token
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    console.log('error! 1');
+    throw new Error('INVALID_TOKEN');
+  }
+
+  // get quiz & check if it exist and checks if the user owns session
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    console.log('error! 2');
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // get quiz session & check if it exist
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+  if (!quizSession) {
+    console.log('error! 3');
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  // check if quiz session state is not FINAL_RESULT
+  if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
+    console.log('error! 4');
+    throw new Error('INVALID_QUIZ_SESSION');
+  }
+
+  // first, get player list
+  const playerList = data.players.filter((player) =>
+    player.sessionId === sessionId && player.score !== undefined
+  ).map(
+    player => (
+      {
+        playerName: player.playerName,
+        score: player.score
+      }
+    )
+  );
+
+  // sort players based on score
+  const usersRankedByScore = playerList.sort((player1, player2) => player2.score - player1.score);
+
+  // to get questionResults array
+  const questionResults = quizSession.quizCopy.questions.map(
+    (question) => {
+      // find the correct answer option & Id
+      const correctAnswerOption = question.answerOptions.find(option => option.correct);
+      const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
+
+      // get an array of playerStates of players who selected the correct ans option
+      const playersCorrect = (question.answerSubmissions || []).filter(
+        (submisssion) => {
+          // return only correct answer submissions
+          return correctAnswerId !== null && submisssion.answerIds.includes(correctAnswerId);
+        }
+      ).map(
+        (submission) => {
+          const player = data.players.find((player) => player.playerId === submission.playerId);
+          return player ? player.playerName || '' : '';
+        }
+        // then sort by alphabetically
+      ).sort((a, b) => a.localeCompare(b));
+
+      // get the total answer time
+      const totalAnswerTime = (question.answerSubmissions || []).reduce((acc, submission) => {
+        // find user associated with submission
+        const player = data.players.find(
+          (player) => player.playerId === submission.playerId &&
+          player.sessionId === quizSession.sessionId
+        );
+
+        // check if player is currently at this question
+        const answerTime = player && player.atQuestion === question.questionId
+          ? (player.atQuestion || 0)
+          : 0;
+        return acc + answerTime;
+      }, 0);
+
+      const averageAnswerTime = playersCorrect.length > 0
+        ? totalAnswerTime / playersCorrect.length
+        : 0;
+      const percentCorrect = (playersCorrect.length / data.players.length) * 100;
+
+      return {
+        questionId: question.questionId,
+        playersCorrect,
+        averageAnswerTime,
+        percentCorrect
+      };
+    }
+  );
+
+  return { usersRankedByScore, questionResults };
 };
