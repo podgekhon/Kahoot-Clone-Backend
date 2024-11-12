@@ -1,5 +1,6 @@
 /// ///////////// interface for dataStore /////////////////
 import { adminAuthRegister, adminAuthLogin } from './auth';
+import { joinPlayer } from './player';
 
 import {
   adminQuizCreate,
@@ -9,7 +10,8 @@ import {
   adminTrashList,
   quizState,
   adminStartQuizSession,
-  adminQuizSessionUpdate
+  adminQuizSessionUpdate,
+  adminGetFinalResults
 } from './quiz';
 
 export interface dataStore {
@@ -95,6 +97,7 @@ export interface quizSession {
   isCountdownSkipped?: boolean;
   isInLobby?: boolean;
   messages: message[];
+  players: PlayerState[];
   questionOpenTime?: number;
 }
 
@@ -242,6 +245,11 @@ export interface quizSessionStatusUpdate {
   body: ReturnType<typeof adminQuizSessionUpdate>;
   statusCode: number;
 }
+
+export interface GetFinalResults {
+  body: ReturnType<typeof adminGetFinalResults> ;
+  statusCode: number;
+}
 export interface sessionState {
   state: quizState;
   atQuestion: number;
@@ -285,6 +293,11 @@ export interface requestOptions {
   json?: object;
   headers?: Record<string, string>;
   timeout: number;
+}
+
+export interface playerJoinRes {
+  body: ReturnType<typeof joinPlayer>,
+  statusCode: number;
 }
 
 export interface playerResultsResponse {

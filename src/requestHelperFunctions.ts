@@ -57,6 +57,7 @@ import {
 } from './player';
 
 import {
+  GetFinalResults,
   messageBody,
   requestOptions
 } from './interface';
@@ -1375,6 +1376,28 @@ export const requestPlayerAnswerQuestion = (
         answerIds: answerIds
       },
       timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Gets final results of all players for a completed quiz session.
+ *
+ * @param { number } quizId
+ * @param { number } sessionId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminGetFinalResults = (
+  quizId: number, sessionId: number, token: string
+): GetFinalResults => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+    {
+      headers: { token },
+      timeout: TIMEOUT_MS
     }
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
