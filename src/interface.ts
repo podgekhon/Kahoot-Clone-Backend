@@ -11,7 +11,8 @@ import {
   quizState,
   adminStartQuizSession,
   adminQuizSessionUpdate,
-  adminGetFinalResults
+  adminGetFinalResults,
+  adminGetFinalResultsCsv
 } from './quiz';
 
 export interface dataStore {
@@ -61,6 +62,12 @@ export interface question {
   answerOptions: answerOption[];
   answerSubmissions?: answerSubmission[];
   thumbnailUrl?: string;
+  playerPerfAtQuestion?: playerPerformance[];
+}
+
+export interface playerPerformance {
+  playerName: string,
+  score: number,
 }
 
 export interface answer {
@@ -313,4 +320,9 @@ export interface playerResultsResponse {
 export interface usersRankedByScore {
   playerName: string,
   score: number
+}
+
+export interface GetFinalResultsCsv {
+  body: ReturnType<typeof adminGetFinalResultsCsv>;
+  statusCode: number;
 }

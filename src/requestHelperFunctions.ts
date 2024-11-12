@@ -1464,3 +1464,25 @@ export const requestPlayerQuestion = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+/**
+ * Gets final results of all players for a completed quiz session in CSV format.
+ *
+ * @param { number } quizId
+ * @param { number } sessionId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminGetFinalResultsCsv = (
+  quizId: number, sessionId: number, token: string
+): GetFinalResults => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results/csv`,
+    {
+      headers: { token },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};

@@ -29,8 +29,11 @@ import {
   viewQuizSessionsResponse,
   quizCopy,
   sessionState,
-  PlayerState
+  PlayerState,
 } from './interface';
+
+import fs from 'fs';
+import path from 'path';
 
 export enum quizState {
   LOBBY = 'LOBBY',
@@ -1382,4 +1385,90 @@ export const adminGetFinalResults = (
   );
 
   return { usersRankedByScore, questionResults };
+};
+
+export const adminGetFinalResultsCsv = (
+  quizId: number,
+  sessionId: number,
+  token: string
+) => {
+  const data = getData();
+
+  // validate token
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+
+  // get quiz & check if it exists and if the user owns the session
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // get quiz session & check if it exists
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+  if (!quizSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  // check if quiz session state is FINAL_RESULTS
+  if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
+    throw new Error('INVALID_QUIZ_SESSION');
+  }
+
+  // Prepare the data for CSV
+  const finalResults: { [key: string]: string[] } = {};
+  quizSession.quizCopy.questions.forEach((question) => {
+    if (question.playerPerfAtQuestion) {
+      question.playerPerfAtQuestion.forEach((performance) => {
+        const playerName = performance.playerName;
+        const playerScore = performance.score;
+
+        // Calculate player rank
+        const playerRank =
+          question.playerPerfAtQuestion
+            .sort((playerA, playerB) => playerB.score - playerA.score)
+            .findIndex((player) => player.playerName === playerName) + 1;
+
+        if (!finalResults[playerName]) {
+          finalResults[playerName] = [];
+        }
+
+        // Add score and rank
+        finalResults[playerName].push(`${playerScore}, ${playerRank}`);
+      });
+    }
+  });
+
+  // Create CSV content
+  const header = ['Player'];
+  quizSession.quizCopy.questions.forEach((_, i) => {
+    header.push(`question${i + 1}score, question${i + 1}rank`);
+  });
+
+  const sortedList = Object.keys(finalResults).sort();
+  const csvContent = [
+    header.join(','),
+    ...sortedList.map((playerName) => {
+      return [playerName, ...finalResults[playerName]].join(',');
+    })
+  ].join('\n');
+
+  // Write the CSV file
+  const csvResult = `final_results_${quizId}_${sessionId}.csv`;
+  const filePath = path.join(__dirname, 'public', 'csv', csvResult);
+  const dirPath = path.dirname(filePath);
+
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+
+  fs.writeFileSync(filePath, csvContent);
+
+  // Return the file URL
+  const fileUrl = `/public/csv/${csvResult}`;
+  return { url: fileUrl };
 };
