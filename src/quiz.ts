@@ -1023,6 +1023,7 @@ export const adminQuizSessionUpdate = (
   const user = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  // const quiz = session
   // checks if quiz exist
   if (!quiz) {
     throw new Error('INVALID_QUIZ');
