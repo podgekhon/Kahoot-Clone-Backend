@@ -59,7 +59,8 @@ import {
   adminViewQuizSessions,
   adminQuizSessionUpdate,
   adminQuizSessionState,
-  adminGetFinalResults
+  adminGetFinalResults,
+  adminGetFinalResultsCsv
 } from './quiz';
 
 import {
@@ -802,6 +803,27 @@ app.get('/v1/player/:playerid/question/:questionposition/results',
       return res.status(status).json({ error: message });
     }
   });
+
+// adminGetFinalResultsCsv
+app.get('/v1/admin/quiz/:quizId/session/:sessionId/results/csv', (
+  req: Request,
+  res: Response
+) => {
+  const { quizId } = req.params;
+  const { sessionId } = req.params;
+  const token = req.headers.token as string;
+
+  try {
+    const result = adminGetFinalResultsCsv(parseInt(quizId), parseInt(sessionId), token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
+
+// Serve static files from the "public" directory
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
