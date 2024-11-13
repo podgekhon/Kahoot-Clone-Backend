@@ -91,7 +91,7 @@ describe('tests for playerQuestion', () => {
   describe('valid cases', () => {
     test('successfully get question when session state is QUESTION_OPEN', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-      sleepSync(4 * 1000);
+      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
       const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
       const quizSessionStatus = (quizSession.body as sessionState).state;
@@ -126,7 +126,7 @@ describe('tests for playerQuestion', () => {
     test('successfully get question at different positions', () => {
       // open question 1
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-      sleepSync(4 * 1000);
+      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
       // check if state is question_open
       const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
@@ -163,7 +163,7 @@ describe('tests for playerQuestion', () => {
       // go to question 2
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-      sleepSync(4 * 1000);
+      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
       // check if state is question_open
       const quizSession2 = requestadminQuizSessionState(quizId, sessionId, usertoken);
@@ -201,7 +201,7 @@ describe('tests for playerQuestion', () => {
     test('successfully get question in when session state is QUESTION_CLOSE', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
-      sleepSync(61 * 1000);
+      sleepSync(5000);
       const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
       const quizSessionStatus = (quizSession.body as sessionState).state;
       expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_CLOSE);
@@ -234,7 +234,7 @@ describe('tests for playerQuestion', () => {
 
     test('successfully get question in when session state is ANSWER_SHOW', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-      sleepSync(4000);
+      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
       let quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
       let quizSessionStatus = (quizSession.body as sessionState).state;
       expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
@@ -275,7 +275,7 @@ describe('tests for playerQuestion', () => {
   describe('error testing', () => {
     test('Invalid playerId', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-      sleepSync(4000);
+      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
       const invalidPlayerId = 9999;
       const positionResponse = requestPlayerQuestion(invalidPlayerId, 1);
 
@@ -285,7 +285,7 @@ describe('tests for playerQuestion', () => {
 
     test('Question position is not valid for the session this player is in', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-      sleepSync(4000);
+      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
       const positionResponse = requestPlayerQuestion(playerId, 9999);
 
       expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
@@ -325,7 +325,7 @@ describe('tests for playerQuestion', () => {
 
     test('Session is not currently on this question', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-      sleepSync(4000);
+      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
       const positionResponse = requestPlayerQuestion(playerId, 2);
       expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
       expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
