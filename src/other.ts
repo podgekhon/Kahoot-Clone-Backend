@@ -1,5 +1,4 @@
 import { getData, setData } from './dataStore';
-import {timers } from './quiz'
 /**
   * Reset the state of the application back to the start.
   *
@@ -18,11 +17,6 @@ export const clear = () => {
   data.sessions = [];
   data.trash = [];
   data.players = [];
-  Object.keys(timers).forEach((sessionId) => {
-    clearTimeout(timers[parseInt(sessionId)]);
-  });
-  
-
   setData(data);
   return {};
 };

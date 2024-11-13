@@ -41,7 +41,6 @@ describe('Test for adminQuizSessionUpdate', () => {
 
   beforeEach(() => {
     requestClear();
-
     user1Response = requestAdminAuthRegister(
       'user1@gmail.com',
       'validPassword1',
@@ -189,10 +188,7 @@ describe('Test for adminQuizSessionUpdate', () => {
       nextQuestionAction
     );
 
-    sleepSync(3 * 1000);
-
-
-    sleepSync(1 * 1000);
+    sleepSync(65 * 1000);
 
     getUpdatedSession = requestadminQuizSessionState(
       quizId,
