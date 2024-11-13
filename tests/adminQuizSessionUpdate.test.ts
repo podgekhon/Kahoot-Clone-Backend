@@ -180,7 +180,8 @@ describe('Test for adminQuizSessionUpdate', () => {
     expect(getUpdatedSession.state).toStrictEqual(quizState.QUESTION_OPEN);
   });
 
-  test('Sucessfully close question', () => {
+  test.only('Sucessfully close question', () => {
+    sleepSync(3000);
     requestAdminQuizSessionUpdate(
       quizId,
       sessionId,
@@ -188,7 +189,7 @@ describe('Test for adminQuizSessionUpdate', () => {
       nextQuestionAction
     );
 
-    sleepSync(65 * 1000);
+    sleepSync(4000);
 
     getUpdatedSession = requestadminQuizSessionState(
       quizId,

@@ -1139,14 +1139,23 @@ export const adminQuizSessionUpdate = (
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
+      console.log('3S TRIGGERED');
       const newData = getData();
-      quizSession.sessionState = quizState.QUESTION_OPEN;
+      const updatedQuizSession = quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+      console.log(`quiz state before 3s (should be countdown): ${updatedQuizSession.sessionState}`);
+      updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
+      console.log(`quiz state after 3s (should be question open): ${
+        updatedQuizSession.sessionState
+      }`);
+
       // get question_open time
-      quizSession.questionOpenTime = Date.now();
-      if (quizSession.isInLobby === false) {
-        quizSession.sessionQuestionPosition++;
+      updatedQuizSession.questionOpenTime = Date.now();
+      if (updatedQuizSession.isInLobby === false) {
+        updatedQuizSession.sessionQuestionPosition++;
       } else {
-        quizSession.isInLobby = false;
+        updatedQuizSession.isInLobby = false;
       }
 
       // Find and update all players in the session
@@ -1156,24 +1165,25 @@ export const adminQuizSessionUpdate = (
         }
       });
 
-      const newQuiz = newData.quizzes.find((quiz) => quiz.quizId === quizId);
-      const updatedQuizSession = newQuiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
-      );
-      console.log('3S TRIGGERED');
-
       // after 3s, add 60s timer for question open
       if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
-          const newData = getData();
-          const newQuiz = newData.quizzes.find((quiz) => quiz.quizId === quizId);
-          const updatedQuizSession = newQuiz.activeSessions.find(
+          console.log('FAKE 60S (1S) TRIGGERED');
+          const new2Data = getData();
+          const new2Quiz = new2Data.quizzes.find((quiz) => quiz.quizId === quizId);
+          const updated2QuizSession = new2Quiz.activeSessions.find(
             (session) => session.sessionId === sessionId
           );
 
-          updatedQuizSession.sessionState = quizState.QUESTION_CLOSE;
-          setData(newData);
-          console.log('FAKE 60S (1S) TRIGGERED');
+          console.log(`quiz state before 60s (should be question open): ${
+            updatedQuizSession.sessionState
+          }`);
+          updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
+          console.log(`quiz state after 60s (should be question close): ${
+            updated2QuizSession.sessionState
+          }`);
+          setData(new2Data);
+          console.log(`the state after: ${updated2QuizSession.sessionState}`);
         }, 1000);
       }
       setData(newData);
