@@ -1145,7 +1145,7 @@ export const adminQuizSessionUpdate = (
       quizSession = newQuiz.activeSessions.find(
         (session) => session.sessionId === sessionId
       );
-      
+
       quizSession.sessionState = quizState.QUESTION_OPEN;
       // get question_open time
       quizSession.questionOpenTime = Date.now();
