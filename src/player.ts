@@ -69,16 +69,17 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
 
   data.players.push(newPlayer);
 
-
   const num = data.players.length;
   let sessionIndex: number;
   for (const quiz of data.quizzes) {
     sessionIndex = quiz.activeSessions.findIndex((session) => session.sessionId === sessionId);
     if (sessionIndex) break;
   }
-  const quizIndex = data.quizzes.findIndex(quiz => quiz.activeSessions[sessionIndex].sessionId === sessionId);
+  const quizIndex = data.quizzes.findIndex(quiz =>
+    quiz.activeSessions[sessionIndex].sessionId === sessionId);
   if (num === FindSession.autoStartNum) {
-    data.quizzes[quizIndex].activeSessions[sessionIndex].sessionState = quizState.QUESTION_COUNTDOWN;
+    data.quizzes[quizIndex].activeSessions[sessionIndex].sessionState =
+    quizState.QUESTION_COUNTDOWN;
   }
 
   setData(data);
