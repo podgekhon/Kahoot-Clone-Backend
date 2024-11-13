@@ -310,15 +310,30 @@ export const requestAdminUserDetailsUpdateV2 = (
  * @param { string } token
  * @returns { Response }
  */
-export const requestAdminQuizList = (
-  token: string
-): {
-  body: ReturnType <typeof adminQuizList>,
-  statusCode: number
-} => {
+// export const requestAdminQuizList = (
+//   token: string
+// ): {
+//   body: ReturnType <typeof adminQuizList>,
+//   statusCode: number
+// } => {
+//   const res = request(
+//     'GET',
+//     SERVER_URL + '/v1/admin/quiz/list',
+//     {
+//       qs: { token },
+//       timeout: TIMEOUT_MS,
+//     }
+//   );
+//   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+// };
+
+const makeAdminListRequest = (
+  token: string,
+  version: string
+): { body: ReturnType <typeof adminQuizTransfer>, statusCode: number } => {
   const res = request(
     'GET',
-    SERVER_URL + '/v1/admin/quiz/list',
+    SERVER_URL + `/${version}/admin/quiz/list`,
     {
       qs: { token },
       timeout: TIMEOUT_MS,
@@ -326,6 +341,16 @@ export const requestAdminQuizList = (
   );
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
+
+// v1 route
+export const requestAdminQuizList = (
+  token: string
+) => makeAdminListRequest(token, 'v1');
+
+// v2 route
+export const requestAdminQuizListV2 = (
+  token: string
+) => makeAdminListRequest(token, 'v2');
 
 // adminQuizCreate
 /**
