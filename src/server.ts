@@ -378,16 +378,36 @@ app.get('/v1/admin/quiz/trash', handleAdminTrashList);
 app.get('/v2/admin/quiz/trash', handleAdminTrashList);
 
 // adminQuizList
-app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
-  const { token } = req.query;
+// app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+//   const { token } = req.query;
 
-  const quizList = adminQuizList(token as string);
-  if ('error' in quizList) {
-    return res.status(httpStatus.UNAUTHORIZED).json(quizList);
+//   const quizList = adminQuizList(token as string);
+//   if ('error' in quizList) {
+//     return res.status(httpStatus.UNAUTHORIZED).json(quizList);
+//   }
+
+//   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+// });
+
+const handleAdminQuizList = (req: Request, res: Response) => {
+  let token;
+  if (req.query) {
+    token = req.query.token;
+  } else if (req.headers.token) {
+    token = req.headers.token;
   }
 
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
-});
+  try {
+    const quizList = adminQuizList(token as string);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+};
+
+app.get('/v1/admin/quiz/list', handleAdminQuizList);
+app.get('/v2/admin/quiz/list', handleAdminQuizList);
 
 // adminQuizInfo
 const handleAdminQuizInfo = (req: Request, res: Response, version: string) => {
