@@ -93,7 +93,7 @@ describe('tests for playerResults', () => {
   test('successfully answer question for 1 player', () => {
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(4000);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -147,7 +147,7 @@ describe('tests for playerResults', () => {
 
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(4000);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -162,7 +162,7 @@ describe('tests for playerResults', () => {
     expect(resAnswerQuestion1.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     // answer question for player 2
-    sleepSync(3 * 1000);
+    sleepSync(3000);
     const resAnswerQuestion2 = requestPlayerAnswerQuestion(answerId, playerId2, 1);
     expect(resAnswerQuestion2.body).toStrictEqual({ });
     expect(resAnswerQuestion2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
@@ -220,8 +220,7 @@ describe('tests for playerResults', () => {
 
     // Answer first question
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
-    // sleepSync(4 * 1000 + 61000);
+    sleepSync(4000);
 
     const resQuizInfo1 = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo1 = resQuizInfo1.body as quizInfo;
@@ -233,7 +232,7 @@ describe('tests for playerResults', () => {
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(4000);
 
     const resQuizInfo2 = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo2 = resQuizInfo2.body as quizInfo;
@@ -244,7 +243,7 @@ describe('tests for playerResults', () => {
     expect(resAnswerQuestion2.body).toStrictEqual({});
     expect(resAnswerQuestion2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
-    sleepSync(3 * 1000);
+    sleepSync(3000);
 
     const resAnswerQuestion3 = requestPlayerAnswerQuestion(answerId2, playerId2, 2);
     expect(resAnswerQuestion3.body).toStrictEqual({});
@@ -288,7 +287,7 @@ describe('tests for playerResults', () => {
   test('answer question incorrectly for one player', () => {
     // Update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(4000);
 
     // Get the incorrect answer ID for the question
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -342,7 +341,7 @@ describe('tests for playerResults', () => {
   test('should return BAD_REQUEST if session is not in FINAL_RESULTS state', () => {
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(4000);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
