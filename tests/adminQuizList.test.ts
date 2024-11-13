@@ -12,7 +12,6 @@ import {
   requestAdminAuthLogout,
   requestAdminAuthRegister,
   requestAdminQuizCreate,
-  requestAdminQuizListV2,
   requestAdminQuizList
 } from '../src/requestHelperFunctions';
 
@@ -27,7 +26,6 @@ beforeEach(() => {
 describe('adminQuizList', () => {
   let user: userAuthRegister;
   let user2: userAuthRegister;
-  let quizList: quizListResponse;
   let userToken: string;
   let quizCreateResponse1: quizCreate;
   let quizCreateResponse2: quizCreate;
