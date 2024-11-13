@@ -12,6 +12,7 @@ import {
   requestAdminAuthLogout,
   requestAdminAuthRegister,
   requestAdminQuizCreate,
+  requestAdminQuizListV2,
   requestAdminQuizList
 } from '../src/requestHelperFunctions';
 
@@ -43,7 +44,7 @@ describe('adminQuizList', () => {
   });
 
   test('returns an empty list when user has no quizzes', () => {
-    quizList = requestAdminQuizList(userToken);
+    const quizList = requestAdminQuizList(userToken);
     expect(quizList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(quizList.body).toStrictEqual({ quizzes: [] });
   });
@@ -62,7 +63,7 @@ describe('adminQuizList', () => {
     );
     expect(quizCreateResponse2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
-    quizList = requestAdminQuizList(userToken);
+    const quizList = requestAdminQuizList(userToken);
     expect(quizList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(quizList.body).toStrictEqual({
       quizzes: [
@@ -94,13 +95,13 @@ describe('adminQuizList', () => {
     expect(user2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     // now user 2 is logged in, user 1 logged out
-    quizList = requestAdminQuizList(userToken);
+    const quizList = requestAdminQuizList(userToken);
     expect(quizList.statusCode).toStrictEqual(401);
     expect(quizList.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('empty token', () => {
-    quizList = requestAdminQuizList(JSON.stringify(''));
+    const quizList = requestAdminQuizList(JSON.stringify(''));
     expect(quizList.statusCode).toStrictEqual(401);
     expect(quizList.body).toStrictEqual({ error: expect.any(String) });
   });
