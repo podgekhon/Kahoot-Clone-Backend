@@ -53,7 +53,7 @@ export enum adminAction {
   END
 }
 
-const timers: { [key: number]: ReturnType<typeof setTimeout> } = {};
+export const timers: { [key: number]: ReturnType<typeof setTimeout> } = {};
 /**
  * Update the thumbnail for a specific quiz.
  *
@@ -215,7 +215,7 @@ export const adminQuizCreate = (
     quizId: randomId(10000),
     ownerId: authUserId,
     atQuestion: 1,
-    sessionState: quizState.END,
+    // sessionState: quizState.END,
     name: name,
     description: description,
     numQuestions: 0,
@@ -279,7 +279,7 @@ export const adminStartQuizSession = (
   const quizCopy: quizCopy = {
     quizId: quiz.quizId,
     ownerId: quiz.ownerId,
-    sessionState: quiz.sessionState,
+    // sessionState: quiz.sessionState,
     name: quiz.name,
     description: quiz.description,
     numQuestions: quiz.numQuestions,
@@ -1139,6 +1139,13 @@ export const adminQuizSessionUpdate = (
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
+      const data = getData();
+      const newQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+      // get quiz session from active array
+      quizSession = newQuiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+
       quizSession.sessionState = quizState.QUESTION_OPEN;
       // get question_open time
       quizSession.questionOpenTime = Date.now();
@@ -1159,13 +1166,19 @@ export const adminQuizSessionUpdate = (
       const updatedQuizSession = quiz.activeSessions.find(
         (session) => session.sessionId === sessionId
       );
-
-      // after 3s, add 60s timer for question open
+      setData(data);
+      // after 3s, add timer for question open
       if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
+          const data = getData();
+          const newQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+          // get quiz session from active array
+          quizSession = newQuiz.activeSessions.find(
+            (session) => session.sessionId === sessionId
+          );
           quizSession.sessionState = quizState.QUESTION_CLOSE;
           setData(data);
-        }, 60000);
+        }, quiz.timeLimit * 1000);
       }
       setData(data);
     }, 3000);
@@ -1194,7 +1207,7 @@ export const adminQuizSessionUpdate = (
     timers[sessionId] = setTimeout(() => {
       quizSession.sessionState = quizState.QUESTION_CLOSE;
       setData(data);
-    }, 60000);
+    }, quiz.timeLimit * 1000);
   }
 
   // if action is 'ANSWER_SHOW'
@@ -1324,14 +1337,12 @@ export const adminGetFinalResults = (
   // validate token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    console.log('error! 1');
     throw new Error('INVALID_TOKEN');
   }
 
   // get quiz & check if it exist and checks if the user owns session
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
-    console.log('error! 2');
     throw new Error('INVALID_QUIZ');
   }
 
@@ -1340,13 +1351,11 @@ export const adminGetFinalResults = (
     (session) => session.sessionId === sessionId
   );
   if (!quizSession) {
-    console.log('error! 3');
     throw new Error('INVALID_SESSIONID');
   }
 
   // check if quiz session state is not FINAL_RESULT
   if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
-    console.log('error! 4');
     throw new Error('INVALID_QUIZ_SESSION');
   }
 
