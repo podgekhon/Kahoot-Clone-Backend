@@ -175,7 +175,7 @@ describe.each(routeVersions)('Tests for $version route', (
   // TO BE Implemented
   if (version === 'v2') {
     test('returns error when quiz is not in END state', () => {
-      const resSession = requestAdminStartQuizSession(quiz.quizId, user.token, 1);
+      const resSession = requestAdminStartQuizSession(quiz.quizId, user.token, 10);
       const sessionId = (resSession.body as quizStartSessionResponse).sessionId;
       requestAdminQuizSessionUpdate(quiz.quizId, sessionId, user.token, adminAction.NEXT_QUESTION);
 

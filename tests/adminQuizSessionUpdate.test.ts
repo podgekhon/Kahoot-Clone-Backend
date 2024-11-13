@@ -61,7 +61,7 @@ describe('Test for adminQuizSessionUpdate', () => {
 
     const questionBody = {
       question: 'What is the capital of Australia?',
-      timeLimit: 4,
+      timeLimit: 1,
       points: 5,
       answerOptions: [
         { answer: 'Canberra', correct: true },

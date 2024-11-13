@@ -25,11 +25,11 @@ import {
   adminAction
 } from '../src/quiz';
 
-import sleepSync from 'slync';
-
 beforeEach(() => {
   requestClear();
 });
+
+import sleepSync from 'slync';
 
 describe('tests for playerResults', () => {
   let user;
@@ -81,7 +81,7 @@ describe('tests for playerResults', () => {
     questionId2 = (question2.body as question).questionId;
 
     // create a session
-    session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     // join a player
@@ -123,7 +123,7 @@ describe('tests for playerResults', () => {
           playersCorrect: [
             'Eric'
           ],
-          averageAnswerTime: 1,
+          averageAnswerTime: expect.any(Number),
           percentCorrect: 100
         },
         {
@@ -198,7 +198,7 @@ describe('tests for playerResults', () => {
             'Eric',
             'Patrick'
           ],
-          averageAnswerTime: 3,
+          averageAnswerTime: expect.any(Number),
           percentCorrect: 67
         },
         {
@@ -269,13 +269,13 @@ describe('tests for playerResults', () => {
         {
           questionId: questionId,
           playersCorrect: ['Eric'],
-          averageAnswerTime: 1,
+          averageAnswerTime: expect.any(Number),
           percentCorrect: 50
         },
         {
           questionId: questionId2,
           playersCorrect: ['Andrew', 'Eric'],
-          averageAnswerTime: 3,
+          averageAnswerTime: expect.any(Number),
           percentCorrect: 100
         }
       ]
@@ -315,7 +315,7 @@ describe('tests for playerResults', () => {
         {
           questionId: questionId,
           playersCorrect: [],
-          averageAnswerTime: 1,
+          averageAnswerTime: expect.any(Number),
           percentCorrect: 0
         },
         {

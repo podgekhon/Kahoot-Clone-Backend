@@ -215,7 +215,7 @@ export const adminQuizCreate = (
     quizId: randomId(10000),
     ownerId: authUserId,
     atQuestion: 1,
-    sessionState: quizState.END,
+    // sessionState: quizState.END,
     name: name,
     description: description,
     numQuestions: 0,
@@ -279,7 +279,7 @@ export const adminStartQuizSession = (
   const quizCopy: quizCopy = {
     quizId: quiz.quizId,
     ownerId: quiz.ownerId,
-    sessionState: quiz.sessionState,
+    // sessionState: quiz.sessionState,
     name: quiz.name,
     description: quiz.description,
     numQuestions: quiz.numQuestions,
@@ -1342,14 +1342,12 @@ export const adminGetFinalResults = (
   // validate token
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    console.log('error! 1');
     throw new Error('INVALID_TOKEN');
   }
 
   // get quiz & check if it exist and checks if the user owns session
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
-    console.log('error! 2');
     throw new Error('INVALID_QUIZ');
   }
 
@@ -1358,13 +1356,11 @@ export const adminGetFinalResults = (
     (session) => session.sessionId === sessionId
   );
   if (!quizSession) {
-    console.log('error! 3');
     throw new Error('INVALID_SESSIONID');
   }
 
   // check if quiz session state is not FINAL_RESULT
   if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
-    console.log('error! 4');
     throw new Error('INVALID_QUIZ_SESSION');
   }
 

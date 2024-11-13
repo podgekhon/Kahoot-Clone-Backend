@@ -55,7 +55,7 @@ describe('tests for playerQuestion', () => {
     // create question
     questionBody = {
       question: 'What is the capital of Australia?',
-      timeLimit: 4,
+      timeLimit: 1,
       points: 5,
       answerOptions: [
         { answer: 'Canberra', correct: true },
@@ -68,7 +68,7 @@ describe('tests for playerQuestion', () => {
 
     questionBody2 = {
       question: 'What is the capital of China?',
-      timeLimit: 4,
+      timeLimit: 1,
       points: 5,
       answerOptions: [
         { answer: 'Beijing', correct: true },
@@ -80,7 +80,7 @@ describe('tests for playerQuestion', () => {
     questionId2 = (question2.body as quizQuestionCreateResponse).questionId;
 
     // start quiz session - copys it so changes is not affected on active quiz
-    session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     // add a player

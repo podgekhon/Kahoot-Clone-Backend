@@ -2,7 +2,6 @@ import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
 
 import {
-  quizListResponse,
   userAuthRegister,
   tokenReturn,
   quizCreate,

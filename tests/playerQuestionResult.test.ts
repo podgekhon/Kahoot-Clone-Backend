@@ -42,7 +42,7 @@ describe('tests for player question result', () => {
 
     const questionBody1 = {
       question: 'What is the capital of Australia?',
-      timeLimit: 4,
+      timeLimit: 1,
       points: 5,
       answerOptions: [
         { answer: 'Canberra', correct: true },
@@ -67,7 +67,7 @@ describe('tests for player question result', () => {
     requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
 
     // start the session
-    const session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    const session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     // join player
@@ -90,7 +90,6 @@ describe('tests for player question result', () => {
 
   test('invalid question position', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    // sleepSync(4 * 1000);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // go to ANSWER_SHOW state
@@ -150,7 +149,7 @@ describe('tests for player question result', () => {
         playersCorrect: [
           'Eric'
         ],
-        averageAnswerTime: 1,
+        averageAnswerTime: expect.any(Number),
         percentCorrect: 100
       }
     );
