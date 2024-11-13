@@ -46,14 +46,14 @@ export enum quizState {
 }
 
 export enum adminAction {
-  NEXT_QUESTION,
-  SKIP_COUNTDOWN,
-  GO_TO_ANSWER,
-  GO_TO_FINAL_RESULT,
-  END
+  NEXT_QUESTION = 'NEXT_QUESTION',
+  SKIP_COUNTDOWN = 'SKIP_COUNTDOWN',
+  GO_TO_ANSWER = 'GO_TO_ANSWER',
+  GO_TO_FINAL_RESULT = 'GO_TO_FINAL_RESULT',
+  END = 'END'
 }
 
-const timers: { [key: number]: ReturnType<typeof setTimeout> } = {};
+export const timers: { [key: number]: ReturnType<typeof setTimeout> } = {};
 /**
  * Update the thumbnail for a specific quiz.
  *
@@ -1046,6 +1046,7 @@ export const adminQuizSessionUpdate = (
 ): emptyReturn => {
   const data = getData();
   const tokenValidation = validateToken(token, data);
+
   // checks if validity of user token
   if ('error' in tokenValidation) {
     throw new Error('INVALID_TOKEN');
@@ -1053,7 +1054,7 @@ export const adminQuizSessionUpdate = (
   const user = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  // const quiz = session
+
   // checks if quiz exist
   if (!quiz) {
     throw new Error('INVALID_QUIZ');
@@ -1139,16 +1140,11 @@ export const adminQuizSessionUpdate = (
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
-      console.log('3S TRIGGERED');
       const newData = getData();
       const updatedQuizSession = quiz.activeSessions.find(
         (session) => session.sessionId === sessionId
       );
-      console.log(`quiz state before 3s (should be countdown): ${updatedQuizSession.sessionState}`);
       updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
-      console.log(`quiz state after 3s (should be question open): ${
-        updatedQuizSession.sessionState
-      }`);
 
       // get question_open time
       updatedQuizSession.questionOpenTime = Date.now();
@@ -1168,22 +1164,14 @@ export const adminQuizSessionUpdate = (
       // after 3s, add 60s timer for question open
       if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
-          console.log('FAKE 60S (1S) TRIGGERED');
           const new2Data = getData();
           const new2Quiz = new2Data.quizzes.find((quiz) => quiz.quizId === quizId);
           const updated2QuizSession = new2Quiz.activeSessions.find(
             (session) => session.sessionId === sessionId
           );
 
-          console.log(`quiz state before 60s (should be question open): ${
-            updatedQuizSession.sessionState
-          }`);
           updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
-          console.log(`quiz state after 60s (should be question close): ${
-            updated2QuizSession.sessionState
-          }`);
           setData(new2Data);
-          console.log(`the state after: ${updated2QuizSession.sessionState}`);
         }, 1000);
       }
       setData(newData);
@@ -1211,8 +1199,14 @@ export const adminQuizSessionUpdate = (
 
     // set the 60s timer
     timers[sessionId] = setTimeout(() => {
-      quizSession.sessionState = quizState.QUESTION_CLOSE;
-      setData(data);
+      const new2Data = getData();
+      const new2Quiz = new2Data.quizzes.find((quiz) => quiz.quizId === quizId);
+      const updated2QuizSession = new2Quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+
+      updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
+      setData(new2Data);
     }, 1000);
   }
 
