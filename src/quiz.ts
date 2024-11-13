@@ -114,7 +114,6 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
 
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    console.log('ERROR IN TOKEN?');
     throw new Error('INVALID_TOKEN');
   }
 

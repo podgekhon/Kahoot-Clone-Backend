@@ -391,7 +391,7 @@ app.get('/v2/admin/quiz/trash', handleAdminTrashList);
 
 const handleAdminQuizList = (req: Request, res: Response) => {
   let token;
-  if (req.query) {
+  if (req.query.token) {
     token = req.query.token;
   } else if (req.headers.token) {
     token = req.headers.token;
