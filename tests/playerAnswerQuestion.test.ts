@@ -70,7 +70,7 @@ describe('tests for playerAnswerQuestion', () => {
 
   test('successfully answer question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
@@ -87,7 +87,7 @@ describe('tests for playerAnswerQuestion', () => {
 
   test('valid answer re-submission', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
@@ -104,7 +104,7 @@ describe('tests for playerAnswerQuestion', () => {
 
   test('non-existent player ID', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
@@ -120,7 +120,7 @@ describe('tests for playerAnswerQuestion', () => {
 
   test('invalid question position', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
@@ -146,7 +146,7 @@ describe('tests for playerAnswerQuestion', () => {
 
   test('inactive question in session', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
@@ -163,7 +163,7 @@ describe('tests for playerAnswerQuestion', () => {
 
   test('invalid answer IDs for question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
     const answerId = [999];
 
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
@@ -177,7 +177,7 @@ describe('tests for playerAnswerQuestion', () => {
 
   test('duplicate answer IDs provided', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
@@ -195,7 +195,7 @@ describe('tests for playerAnswerQuestion', () => {
 
   test('no answer IDs submitted', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
@@ -210,14 +210,15 @@ describe('tests for playerAnswerQuestion', () => {
   test('session not on question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
-    sleepSync(61000);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    sleepSync(3000);
 
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
     expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+
+    sleepSync(5000);
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;

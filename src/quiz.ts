@@ -1135,16 +1135,23 @@ export const adminQuizSessionUpdate = (
       throw new Error('INVALID_ACTION');
     }
 
+    // clear any existing timers
+    clearTimeout(timers[sessionId]);
+    delete timers[sessionId];
+
     // update quiz session
     quizSession.sessionState = quizState.QUESTION_COUNTDOWN;
+    console.log(`BEFORE TIMER, SHOULD BE COUNTDOWN: ${quizSession.sessionState}`);
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
       const newData = getData();
-      const updatedQuizSession = quiz.activeSessions.find(
+      const newQuiz = newData.quizzes.find((quiz) => quiz.quizId === quizId);
+      const updatedQuizSession = newQuiz.activeSessions.find(
         (session) => session.sessionId === sessionId
       );
       updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
+      console.log(`AFTER UPDATE THIS SHOULD BE OPEN: ${updatedQuizSession.sessionState}`);
 
       // get question_open time
       updatedQuizSession.questionOpenTime = Date.now();
@@ -1161,7 +1168,7 @@ export const adminQuizSessionUpdate = (
         }
       });
 
-      // after 3s, add 60s timer for question open
+      // after 3s, add 5s timer for question open
       if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
           const new2Data = getData();
@@ -1171,8 +1178,9 @@ export const adminQuizSessionUpdate = (
           );
 
           updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
+          console.log(`AFTER UPDATE THIS SHOULD BE CLOSE: ${updated2QuizSession.sessionState}`);
           setData(new2Data);
-        }, 1000);
+        }, 5000);
       }
       setData(newData);
     }, 3000);
@@ -1197,7 +1205,7 @@ export const adminQuizSessionUpdate = (
       quizSession.isInLobby = false;
     }
 
-    // set the 60s timer
+    // set the 5s timer
     timers[sessionId] = setTimeout(() => {
       const new2Data = getData();
       const new2Quiz = new2Data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -1207,7 +1215,7 @@ export const adminQuizSessionUpdate = (
 
       updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
       setData(new2Data);
-    }, 1000);
+    }, 5000);
   }
 
   // if action is 'ANSWER_SHOW'
