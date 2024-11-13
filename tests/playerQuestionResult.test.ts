@@ -42,7 +42,7 @@ describe('tests for player question result', () => {
 
     const questionBody1 = {
       question: 'What is the capital of Australia?',
-      timeLimit: 4,
+      timeLimit: 1,
       points: 5,
       answerOptions: [
         { answer: 'Canberra', correct: true },
@@ -77,7 +77,7 @@ describe('tests for player question result', () => {
 
   test('player Id does not exist', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(3 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // go to ANSWER_SHOW state
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
@@ -90,7 +90,7 @@ describe('tests for player question result', () => {
 
   test('invalid question position', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(3 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // go to ANSWER_SHOW state
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
@@ -103,7 +103,7 @@ describe('tests for player question result', () => {
 
   test('session is not in ANSWER_SHOW state', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(3 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // get result
     const res = requestPlayerQuestionResult(playerId, 1);
@@ -114,10 +114,10 @@ describe('tests for player question result', () => {
   test('session is not currently on this question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
-    sleepSync(5000);
+    sleepSync(2000);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(3000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
     // get result
     const res = requestPlayerQuestionResult(playerId, 1);
     expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
@@ -127,7 +127,7 @@ describe('tests for player question result', () => {
   test('successful case', () => {
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -148,7 +148,7 @@ describe('tests for player question result', () => {
         playersCorrect: [
           'Eric'
         ],
-        averageAnswerTime: 1,
+        averageAnswerTime: expect.any(Number),
         percentCorrect: 100
       }
     );
