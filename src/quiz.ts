@@ -1141,7 +1141,6 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSession.sessionState = quizState.QUESTION_COUNTDOWN;
-    console.log(`BEFORE TIMER, SHOULD BE COUNTDOWN: ${quizSession.sessionState}`);
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
@@ -1151,7 +1150,6 @@ export const adminQuizSessionUpdate = (
         (session) => session.sessionId === sessionId
       );
       updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
-      console.log(`AFTER UPDATE THIS SHOULD BE OPEN: ${updatedQuizSession.sessionState}`);
 
       // get question_open time
       updatedQuizSession.questionOpenTime = Date.now();
@@ -1178,7 +1176,6 @@ export const adminQuizSessionUpdate = (
           );
 
           updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
-          console.log(`AFTER UPDATE THIS SHOULD BE CLOSE: ${updated2QuizSession.sessionState}`);
           setData(new2Data);
         }, 5000);
       }
