@@ -25,7 +25,6 @@ import {
   quizInfo
 } from '../src/interface';
 import { adminAction } from '../src/quiz';
-import sleepSync from 'slync';
 
 describe('Test for adminGetFinalResults', () => {
   let user1Response: userAuthRegister;
@@ -122,7 +121,7 @@ describe('Test for adminGetFinalResults', () => {
     player3Id = (player3JoinRes.body as player).playerId;
 
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.NEXT_QUESTION);
-    sleepSync(3 * 1000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.SKIP_COUNTDOWN);
 
     // player answers question
     const resQuizInfo = requestAdminQuizInfo(quizId, user1Token);
