@@ -111,20 +111,22 @@ export const adminQuizUpdateThumbnail = (
 */
 export const adminQuizList = (token: string): errorMessages| quizList => {
   const data = getData();
-  const tokenValidation = validateToken(token, data);
 
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    console.log('ERROR IN TOKEN?');
+    throw new Error('INVALID_TOKEN');
   }
-  const authUserId = tokenValidation.authUserId;
 
   // Find the user based on authUserId
-  const user = data.users.find(user => user.userId === authUserId);
+  const authUserId = tokenValidation.authUserId;
 
-  // Check if the user exists
-  if (!user) {
-    return { error: 'AuthUserId is not a valid user.' };
-  }
+  // const user = data.users.find(user => user.userId === authUserId);
+
+  // // // Check if the user exists
+  // if (!user) {
+  //   throw new Error('INVALID_TOKEN');
+  // }
 
   // Find all quizzes owned by the user
   const userQuizzes = data.quizzes
@@ -137,6 +139,35 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
   // Return the list of quizzes (empty array if no quizzes found)
   return { quizzes: userQuizzes };
 };
+
+// export const adminQuizList = (token: string): errorMessages| quizList => {
+//   const data = getData();
+//   const tokenValidation = validateToken(token, data);
+
+//   if ('error' in tokenValidation) {
+//     return { error: tokenValidation.error };
+//   }
+//   const authUserId = tokenValidation.authUserId;
+
+//   // Find the user based on authUserId
+//   const user = data.users.find(user => user.userId === authUserId);
+
+//   // Check if the user exists
+//   if (!user) {
+//     return { error: 'AuthUserId is not a valid user.' };
+//   }
+
+//   // Find all quizzes owned by the user
+//   const userQuizzes = data.quizzes
+//     .filter(quiz => quiz.ownerId === authUserId)
+//     .map(quiz => ({
+//       quizId: quiz.quizId,
+//       name: quiz.name
+//     }));
+
+//   // Return the list of quizzes (empty array if no quizzes found)
+//   return { quizzes: userQuizzes };
+// };
 
 /**
   * Given basic details about a new quiz, create one for the logged in user.
