@@ -1095,21 +1095,31 @@ export const adminQuizSessionUpdate = (
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
+      const newData = getData();
       quizSession.sessionState = quizState.QUESTION_OPEN;
       quizSession.sessionQuestionPosition++;
 
-      const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-      const updatedQuizSession = quiz.activeSessions.find(
+      const newQuiz = newData.quizzes.find((quiz) => quiz.quizId === quizId);
+      const updatedQuizSession = newQuiz.activeSessions.find(
         (session) => session.sessionId === sessionId
       );
+      console.log('3S TRIGGERED');
 
       // after 3s, add 60s timer for question open
       if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
-          quizSession.sessionState = quizState.QUESTION_CLOSE;
-        }, 60000);
+          const newData = getData();
+          const newQuiz = newData.quizzes.find((quiz) => quiz.quizId === quizId);
+          const updatedQuizSession = newQuiz.activeSessions.find(
+            (session) => session.sessionId === sessionId
+          );
+
+          updatedQuizSession.sessionState = quizState.QUESTION_CLOSE;
+          setData(newData);
+          console.log('FAKE 60S (1S) TRIGGERED');
+        }, 1000);
       }
-      setData(data);
+      setData(newData);
     }, 3000);
   }
 
@@ -1134,7 +1144,7 @@ export const adminQuizSessionUpdate = (
     timers[sessionId] = setTimeout(() => {
       quizSession.sessionState = quizState.QUESTION_CLOSE;
       setData(data);
-    }, 60000);
+    }, 1000);
   }
 
   // if action is 'ANSWER_SHOW'
