@@ -324,7 +324,7 @@ export const requestAdminQuizList = (
       timeout: TIMEOUT_MS,
     }
   );
-   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
 export const requestAdminQuizListV2 = (
@@ -341,9 +341,8 @@ export const requestAdminQuizListV2 = (
       timeout: TIMEOUT_MS,
     }
   );
-   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
-
 
 // adminQuizCreate
 /**
