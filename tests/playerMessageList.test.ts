@@ -43,7 +43,7 @@ describe('tests for player message list', () => {
     };
     requestAdminQuizQuestionCreateV2(quizId, token, questionBody);
     // start a quiz session
-    const session = requestAdminStartQuizSession(quizId, token, 1);
+    const session = requestAdminStartQuizSession(quizId, token, 10);
     quizSessionId = (session.body as quizStartSessionResponse).sessionId;
     // player1 join session
     const player = requestjoinPlayer(quizSessionId, 'Xiaoyuan Ma');

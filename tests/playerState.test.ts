@@ -44,7 +44,7 @@ describe('tests for playerState', () => {
     };
     requestAdminQuizQuestionCreateV2(quizId, token, questionBody);
 
-    const session = requestAdminStartQuizSession(quizId, token, 1);
+    const session = requestAdminStartQuizSession(quizId, token, 10);
     quizSessionId = (session.body as quizStartSessionResponse).sessionId;
 
     const player = requestjoinPlayer(quizSessionId, 'Guanlin Kong');

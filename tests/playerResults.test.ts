@@ -81,7 +81,7 @@ describe('tests for playerResults', () => {
     questionId2 = (question2.body as question).questionId;
 
     // create a session
-    session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     // join a player
