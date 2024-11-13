@@ -80,7 +80,7 @@ describe('tests for playerQuestion', () => {
     questionId2 = (question2.body as quizQuestionCreateResponse).questionId;
 
     // start quiz session - copys it so changes is not affected on active quiz
-    session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     // add a player

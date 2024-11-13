@@ -99,7 +99,7 @@ describe('Test for adminGetFinalResults', () => {
     startSessionResponse = requestAdminStartQuizSession(
       quizId,
       user1Token,
-      1
+      10
     );
 
     sessionId = (

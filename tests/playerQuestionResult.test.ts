@@ -67,7 +67,7 @@ describe('tests for player question result', () => {
     requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
 
     // start the session
-    const session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    const session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     // join player

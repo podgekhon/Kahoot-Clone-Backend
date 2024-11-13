@@ -52,7 +52,7 @@ describe('tests for adminQuizSession', () => {
     };
     requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
 
-    session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     requestjoinPlayer(sessionId, 'abcde123');

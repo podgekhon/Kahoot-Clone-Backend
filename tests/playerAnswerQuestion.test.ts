@@ -60,7 +60,7 @@ describe('tests for playerAnswerQuestion', () => {
     requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
 
     // start the session
-    session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     // join player
