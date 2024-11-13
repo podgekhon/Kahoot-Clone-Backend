@@ -122,7 +122,7 @@ describe('Test for adminGetFinalResults', () => {
     player3Id = (player3JoinRes.body as player).playerId;
 
     requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(3 * 1000);
 
     // player answers question
     const resQuizInfo = requestAdminQuizInfo(quizId, user1Token);

@@ -77,7 +77,7 @@ describe('tests for player question result', () => {
 
   test('player Id does not exist', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(3 * 1000);
 
     // go to ANSWER_SHOW state
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
@@ -90,7 +90,7 @@ describe('tests for player question result', () => {
 
   test('invalid question position', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(3 * 1000);
 
     // go to ANSWER_SHOW state
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
@@ -103,7 +103,7 @@ describe('tests for player question result', () => {
 
   test('session is not in ANSWER_SHOW state', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4 * 1000);
+    sleepSync(3 * 1000);
 
     // get result
     const res = requestPlayerQuestionResult(playerId, 1);
@@ -114,10 +114,10 @@ describe('tests for player question result', () => {
   test('session is not currently on this question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
-    sleepSync(61000);
+    sleepSync(5000);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    sleepSync(3000);
     // get result
     const res = requestPlayerQuestionResult(playerId, 1);
     expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);

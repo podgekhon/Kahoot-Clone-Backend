@@ -78,7 +78,7 @@ export interface quiz {
   quizId: number;
   ownerId: number;
   atQuestion?: number;
-  sessionState: quizState;
+  // sessionState: quizState;
   name: string;
   description: string;
   numQuestions: number;
