@@ -8,6 +8,7 @@ import {
   quizCreate,
 } from '../src/interface';
 import {
+  httpStatus,
   requestAdminAuthLogout,
   requestAdminAuthRegister,
   requestAdminQuizCreate,
@@ -25,7 +26,6 @@ beforeEach(() => {
 describe('adminQuizList', () => {
   let user: userAuthRegister;
   let user2: userAuthRegister;
-  let quizList: quizListResponse;
   let userToken: string;
   let quizCreateResponse1: quizCreate;
   let quizCreateResponse2: quizCreate;
@@ -38,12 +38,12 @@ describe('adminQuizList', () => {
       'Chen'
     );
     userToken = (user.body as tokenReturn).token;
-    expect(user.statusCode).toStrictEqual(200);
+    expect(user.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
   });
 
   test('returns an empty list when user has no quizzes', () => {
-    quizList = requestAdminQuizList(userToken);
-    expect(quizList.statusCode).toStrictEqual(200);
+    const quizList = requestAdminQuizList(userToken);
+    expect(quizList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(quizList.body).toStrictEqual({ quizzes: [] });
   });
 
@@ -53,16 +53,16 @@ describe('adminQuizList', () => {
       'Math Quiz',
       'this is a math quiz'
     );
-    expect(quizCreateResponse1.statusCode).toStrictEqual(200);
+    expect(quizCreateResponse1.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     quizCreateResponse2 = requestAdminQuizCreate(
       userToken,
       'English Quiz',
       'this is a math quiz'
     );
-    expect(quizCreateResponse2.statusCode).toStrictEqual(200);
+    expect(quizCreateResponse2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
-    quizList = requestAdminQuizList(userToken);
-    expect(quizList.statusCode).toStrictEqual(200);
+    const quizList = requestAdminQuizList(userToken);
+    expect(quizList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(quizList.body).toStrictEqual({
       quizzes: [
         {
@@ -80,7 +80,7 @@ describe('adminQuizList', () => {
   test('returns an error when token is invalid', () => {
     // log out user1
     const authLogoutResponse = requestAdminAuthLogout(userToken);
-    expect(authLogoutResponse.statusCode).toStrictEqual(200);
+    expect(authLogoutResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     expect(authLogoutResponse.body).toStrictEqual({});
 
     // log in user2
@@ -90,16 +90,16 @@ describe('adminQuizList', () => {
       'Eric',
       'Ma'
     );
-    expect(user2.statusCode).toStrictEqual(200);
+    expect(user2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     // now user 2 is logged in, user 1 logged out
-    quizList = requestAdminQuizList(userToken);
+    const quizList = requestAdminQuizList(userToken);
     expect(quizList.statusCode).toStrictEqual(401);
     expect(quizList.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('empty token', () => {
-    quizList = requestAdminQuizList(JSON.stringify(''));
+    const quizList = requestAdminQuizList(JSON.stringify(''));
     expect(quizList.statusCode).toStrictEqual(401);
     expect(quizList.body).toStrictEqual({ error: expect.any(String) });
   });

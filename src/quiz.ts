@@ -28,8 +28,12 @@ import {
   quizStartSessionResponse,
   viewQuizSessionsResponse,
   quizCopy,
-  sessionState
+  sessionState,
+  PlayerState,
 } from './interface';
+
+import fs from 'fs';
+import path from 'path';
 
 export enum quizState {
   LOBBY = 'LOBBY',
@@ -107,20 +111,21 @@ export const adminQuizUpdateThumbnail = (
 */
 export const adminQuizList = (token: string): errorMessages| quizList => {
   const data = getData();
-  const tokenValidation = validateToken(token, data);
 
+  const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: tokenValidation.error };
+    throw new Error('INVALID_TOKEN');
   }
-  const authUserId = tokenValidation.authUserId;
 
   // Find the user based on authUserId
-  const user = data.users.find(user => user.userId === authUserId);
+  const authUserId = tokenValidation.authUserId;
 
-  // Check if the user exists
-  if (!user) {
-    return { error: 'AuthUserId is not a valid user.' };
-  }
+  // const user = data.users.find(user => user.userId === authUserId);
+
+  // // // Check if the user exists
+  // if (!user) {
+  //   throw new Error('INVALID_TOKEN');
+  // }
 
   // Find all quizzes owned by the user
   const userQuizzes = data.quizzes
@@ -133,6 +138,35 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
   // Return the list of quizzes (empty array if no quizzes found)
   return { quizzes: userQuizzes };
 };
+
+// export const adminQuizList = (token: string): errorMessages| quizList => {
+//   const data = getData();
+//   const tokenValidation = validateToken(token, data);
+
+//   if ('error' in tokenValidation) {
+//     return { error: tokenValidation.error };
+//   }
+//   const authUserId = tokenValidation.authUserId;
+
+//   // Find the user based on authUserId
+//   const user = data.users.find(user => user.userId === authUserId);
+
+//   // Check if the user exists
+//   if (!user) {
+//     return { error: 'AuthUserId is not a valid user.' };
+//   }
+
+//   // Find all quizzes owned by the user
+//   const userQuizzes = data.quizzes
+//     .filter(quiz => quiz.ownerId === authUserId)
+//     .map(quiz => ({
+//       quizId: quiz.quizId,
+//       name: quiz.name
+//     }));
+
+//   // Return the list of quizzes (empty array if no quizzes found)
+//   return { quizzes: userQuizzes };
+// };
 
 /**
   * Given basic details about a new quiz, create one for the logged in user.
@@ -261,8 +295,10 @@ export const adminStartQuizSession = (
     sessionState: quizState.LOBBY,
     quizCopy,
     autoStartNum,
+    isInLobby: true,
     sessionQuestionPosition: 1,
-    messages: []
+    messages: [],
+    players: []
   };
 
   quiz.activeSessions.push(newQuizSession);
@@ -369,7 +405,6 @@ export const adminQuizQuestionCreate = (
       correct: answer.correct
     }))
   };
-
   if (version === 'v2') {
     newQuestion.thumbnailUrl = questionBody.thumbnailUrl;
   }
@@ -815,9 +850,11 @@ export const adminQuizQuestionRemove = (
   }
 
   // Any session for this quiz is not in END state
-  // if (quiz.state !== quizState.END) {
-  //   throw new Error('INVALID_OWNER');
-  // }
+  const hasActiveSession = quiz.activeSessions.some(
+    session => session.sessionState !== quizState.END);
+  if (hasActiveSession) {
+    throw new Error('SESSION_NOT_IN_END');
+  }
 
   // Question Id does not refer to a valid question within this quiz
   const questionIndex = quiz.questions.findIndex(q => q.questionId === questionId);
@@ -828,7 +865,6 @@ export const adminQuizQuestionRemove = (
   quiz.questions.splice(questionIndex, 1);
   quiz.numQuestions--;
   quiz.timeLastEdited = Math.floor(Date.now() / 1000);
-
   setData(data);
   return {};
 };
@@ -1017,6 +1053,7 @@ export const adminQuizSessionUpdate = (
   const user = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  // const quiz = session
   // checks if quiz exist
   if (!quiz) {
     throw new Error('INVALID_QUIZ');
@@ -1077,6 +1114,13 @@ export const adminQuizSessionUpdate = (
       clearTimeout(timers[sessionId]);
       delete timers[sessionId];
     }
+
+    // Find and update all players in the session
+    data.players.forEach((player: PlayerState) => {
+      if (player.sessionId === sessionId) {
+        player.atQuestion = 0;
+      }
+    });
   }
 
   // if action is 'NEXT_QUESTION'
@@ -1097,7 +1141,20 @@ export const adminQuizSessionUpdate = (
     timers[sessionId] = setTimeout(() => {
       const newData = getData();
       quizSession.sessionState = quizState.QUESTION_OPEN;
-      quizSession.sessionQuestionPosition++;
+      // get question_open time
+      quizSession.questionOpenTime = Date.now();
+      if (quizSession.isInLobby === false) {
+        quizSession.sessionQuestionPosition++;
+      } else {
+        quizSession.isInLobby = false;
+      }
+
+      // Find and update all players in the session
+      data.players.forEach((player: PlayerState) => {
+        if (player.sessionId === sessionId) {
+          player.atQuestion = (player.atQuestion ?? 0) + 1;
+        }
+      });
 
       const newQuiz = newData.quizzes.find((quiz) => quiz.quizId === quizId);
       const updatedQuizSession = newQuiz.activeSessions.find(
@@ -1138,6 +1195,8 @@ export const adminQuizSessionUpdate = (
     quizSession.sessionState = quizState.QUESTION_OPEN;
     if (quizSession.isInLobby === false) {
       quizSession.sessionQuestionPosition++;
+    } else {
+      quizSession.isInLobby = false;
     }
 
     // set the 60s timer
@@ -1179,6 +1238,13 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSession.sessionState = quizState.FINAL_RESULTS;
+
+    // Find and update all players in the session
+    data.players.forEach((player: PlayerState) => {
+      if (player.sessionId === sessionId) {
+        player.atQuestion = 0;
+      }
+    });
   }
 
   setData(data);
@@ -1223,12 +1289,12 @@ sessionState => {
   }
 
   const matchedPlayers = data.players.filter(player => player.sessionId === sessionId);
-  const PLayersname = matchedPlayers.map(player => player.playerName);
+  const Playersname = matchedPlayers.map(player => player.playerName);
 
   const response : sessionState = {
     state: FindSession.sessionState,
     atQuestion: validQuiz.atQuestion,
-    players: PLayersname,
+    players: Playersname,
     metadata: {
       quizId: validQuiz.quizId,
       name: validQuiz.name,
@@ -1255,4 +1321,194 @@ sessionState => {
   };
 
   return response;
+};
+
+export const adminGetFinalResults = (
+  quizId: number,
+  sessionId: number,
+  token: string
+) => {
+  const data = getData();
+
+  // validate token
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    console.log('error! 1');
+    throw new Error('INVALID_TOKEN');
+  }
+
+  // get quiz & check if it exist and checks if the user owns session
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    console.log('error! 2');
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // get quiz session & check if it exist
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+  if (!quizSession) {
+    console.log('error! 3');
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  // check if quiz session state is not FINAL_RESULT
+  if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
+    console.log('error! 4');
+    throw new Error('INVALID_QUIZ_SESSION');
+  }
+
+  // first, get player list
+  const playerList = data.players.filter((player) =>
+    player.sessionId === sessionId && player.score !== undefined
+  ).map(
+    player => (
+      {
+        playerName: player.playerName,
+        score: player.score
+      }
+    )
+  );
+
+  // sort players based on score
+  const usersRankedByScore = playerList.sort((player1, player2) => player2.score - player1.score);
+
+  // to get questionResults array
+  const questionResults = quizSession.quizCopy.questions.map(
+    (question) => {
+      // find the correct answer option & Id
+      const correctAnswerOption = question.answerOptions.find(option => option.correct);
+      const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
+
+      // get an array of playerStates of players who selected the correct ans option
+      const playersCorrect = (question.answerSubmissions || []).filter(
+        (submisssion) => {
+          // return only correct answer submissions
+          return correctAnswerId !== null && submisssion.answerIds.includes(correctAnswerId);
+        }
+      ).map(
+        (submission) => {
+          const player = data.players.find((player) => player.playerId === submission.playerId);
+          return player ? player.playerName || '' : '';
+        }
+        // then sort by alphabetically
+      ).sort((a, b) => a.localeCompare(b));
+
+      // get the total answer time
+      const totalAnswerTime = (question.answerSubmissions || []).reduce((acc, submission) => {
+        // find user associated with submission
+        const player = data.players.find(
+          (player) => player.playerId === submission.playerId &&
+          player.sessionId === quizSession.sessionId
+        );
+
+        // check if player is currently at this question
+        const answerTime = player && player.atQuestion === question.questionId
+          ? (player.atQuestion || 0)
+          : 0;
+        return acc + answerTime;
+      }, 0);
+
+      const averageAnswerTime = playersCorrect.length > 0
+        ? totalAnswerTime / playersCorrect.length
+        : 0;
+      const percentCorrect = (playersCorrect.length / data.players.length) * 100;
+
+      return {
+        questionId: question.questionId,
+        playersCorrect,
+        averageAnswerTime,
+        percentCorrect
+      };
+    }
+  );
+
+  return { usersRankedByScore, questionResults };
+};
+
+export const adminGetFinalResultsCsv = (
+  quizId: number,
+  sessionId: number,
+  token: string
+) => {
+  const data = getData();
+
+  // validate token
+  const tokenValidation = validateToken(token, data);
+  if ('error' in tokenValidation) {
+    throw new Error('INVALID_TOKEN');
+  }
+
+  // get quiz & check if it exists and if the user owns the session
+  const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
+  if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
+    throw new Error('INVALID_QUIZ');
+  }
+
+  // get quiz session & check if it exists
+  const quizSession = quiz.activeSessions.find(
+    (session) => session.sessionId === sessionId
+  );
+  if (!quizSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+
+  // check if quiz session state is FINAL_RESULTS
+  if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
+    throw new Error('INVALID_QUIZ_SESSION');
+  }
+
+  // Prepare the data for CSV
+  const finalResults: { [key: string]: string[] } = {};
+  quizSession.quizCopy.questions.forEach((question) => {
+    if (question.playerPerfAtQuestion) {
+      question.playerPerfAtQuestion.forEach((performance) => {
+        const playerName = performance.playerName;
+        const playerScore = performance.score;
+
+        // Calculate player rank
+        const playerRank =
+          question.playerPerfAtQuestion
+            .sort((playerA, playerB) => playerB.score - playerA.score)
+            .findIndex((player) => player.playerName === playerName) + 1;
+
+        if (!finalResults[playerName]) {
+          finalResults[playerName] = [];
+        }
+
+        // Add score and rank
+        finalResults[playerName].push(`${playerScore}, ${playerRank}`);
+      });
+    }
+  });
+
+  // Create CSV content
+  const header = ['Player'];
+  quizSession.quizCopy.questions.forEach((_, i) => {
+    header.push(`question${i + 1}score, question${i + 1}rank`);
+  });
+
+  const sortedList = Object.keys(finalResults).sort();
+  const csvContent = [
+    header.join(','),
+    ...sortedList.map((playerName) => {
+      return [playerName, ...finalResults[playerName]].join(',');
+    })
+  ].join('\n');
+
+  // Write the CSV file
+  const csvResult = `final_results_${quizId}_${sessionId}.csv`;
+  const filePath = path.join(__dirname, 'public', 'csv', csvResult);
+  const dirPath = path.dirname(filePath);
+
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+
+  fs.writeFileSync(filePath, csvContent);
+
+  // Return the file URL
+  const fileUrl = `/public/csv/${csvResult}`;
+  return { url: fileUrl };
 };

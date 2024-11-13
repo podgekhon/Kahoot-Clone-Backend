@@ -58,14 +58,20 @@ import {
   adminStartQuizSession,
   adminViewQuizSessions,
   adminQuizSessionUpdate,
-  adminQuizSessionState
+  adminQuizSessionState,
+  adminGetFinalResults,
+  adminGetFinalResultsCsv
 } from './quiz';
 
 import {
   joinPlayer,
+  playerAnswerQuestion,
   playerMessage,
   playerState,
-  playerMessageList
+  playerMessageList,
+  playerQuestion,
+  playerResults,
+  playerQuestionResult
 } from './player';
 
 import { clear } from './other';
@@ -372,16 +378,36 @@ app.get('/v1/admin/quiz/trash', handleAdminTrashList);
 app.get('/v2/admin/quiz/trash', handleAdminTrashList);
 
 // adminQuizList
-app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
-  const { token } = req.query;
+// app.get('/v1/admin/quiz/list', (req: Request, res: Response) => {
+//   const { token } = req.query;
 
-  const quizList = adminQuizList(token as string);
-  if ('error' in quizList) {
-    return res.status(httpStatus.UNAUTHORIZED).json(quizList);
+//   const quizList = adminQuizList(token as string);
+//   if ('error' in quizList) {
+//     return res.status(httpStatus.UNAUTHORIZED).json(quizList);
+//   }
+
+//   return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+// });
+
+const handleAdminQuizList = (req: Request, res: Response) => {
+  let token;
+  if (req.query.token) {
+    token = req.query.token;
+  } else if (req.headers.token) {
+    token = req.headers.token;
   }
 
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
-});
+  try {
+    const quizList = adminQuizList(token as string);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(quizList);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+};
+
+app.get('/v1/admin/quiz/list', handleAdminQuizList);
+app.get('/v2/admin/quiz/list', handleAdminQuizList);
 
 // adminQuizInfo
 const handleAdminQuizInfo = (req: Request, res: Response, version: string) => {
@@ -652,8 +678,6 @@ app.put('/v1/admin/quiz/:quizId/session/:sessionId', (
   const token = req.headers.token as string;
   const { action: actionBody } = req.body;
 
-  // const action = adminAction[actionBody as keyof typeof adminAction];
-
   try {
     const result = adminQuizSessionUpdate(
       parseInt(quizId),
@@ -695,7 +719,6 @@ const handleadminQuizSessionState = (req: Request, res: Response) => {
     return res.status(status).json({ error: message });
   }
 };
-
 app.get('/v1/admin/quiz/:quizId/session/:sessionId', handleadminQuizSessionState);
 
 // playerState
@@ -722,6 +745,105 @@ app.get('/v1/player/:playerId/chat', (req: Request, res: Response) => {
   }
 });
 app.get('/v1/player/:playerId', handleplayerState);
+
+// adminGetFinalResults
+app.get('/v1/admin/quiz/:quizId/session/:sessionId/results', (
+  req: Request,
+  res: Response
+) => {
+  const { quizId } = req.params;
+  const { sessionId } = req.params;
+  const token = req.headers.token as string;
+
+  try {
+    const result = adminGetFinalResults(parseInt(quizId), parseInt(sessionId), token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
+
+// playerAnswerQuestion
+const handlePlayerAnswerQuestion = (req: Request, res: Response) => {
+  const { answerIds } = req.body;
+  // const { playerId, questionPosition } = req.params;
+  // const answerIds = req.body.answerIds;
+  const playerId = parseInt(req.params.playerId);
+  const questionPosition = parseInt(req.params.questionPosition);
+  try {
+    const result = playerAnswerQuestion(answerIds, playerId, questionPosition);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.put('/v1/player/:playerId/question/:questionPosition/answer', handlePlayerAnswerQuestion);
+
+// playerResults
+const handlePlayerResults = (req: Request, res: Response) => {
+  const playerId = parseInt(req.params.playerId);
+  try {
+    const result = playerResults(playerId);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+
+app.get('/v1/player/:playerId/results', handlePlayerResults);
+
+// playerQuestion
+const handlePlayerQuestion = (req: Request, res: Response) => {
+  const { playerId, questionPosition } = req.params;
+  try {
+    const result = playerQuestion(parseInt(playerId), parseInt(questionPosition));
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
+  }
+};
+app.get('/v1/player/:playerId/question/:questionPosition', handlePlayerQuestion);
+
+// playerQuestionResult
+app.get('/v1/player/:playerid/question/:questionposition/results',
+  (req: Request, res: Response) => {
+    const playerId = parseInt(req.params.playerid);
+    const questionPosition = parseInt(req.params.questionposition);
+
+    try {
+      const result = playerQuestionResult(playerId, questionPosition);
+      return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+    } catch (error) {
+      const { status, message } = errorMap[error.message];
+      return res.status(status).json({ error: message });
+    }
+  });
+
+// adminGetFinalResultsCsv
+app.get('/v1/admin/quiz/:quizId/session/:sessionId/results/csv', (
+  req: Request,
+  res: Response
+) => {
+  const { quizId } = req.params;
+  const { sessionId } = req.params;
+  const token = req.headers.token as string;
+
+  try {
+    const result = adminGetFinalResultsCsv(parseInt(quizId), parseInt(sessionId), token);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const mappedError = errorMap[error.message];
+    return res.status(mappedError.status).json({ error: mappedError.message });
+  }
+});
+
+// Serve static files from the "public" directory
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // ====================================================================
 //  ================= WORK IS DONE ABOVE THIS LINE ===================
