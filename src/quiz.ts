@@ -1393,8 +1393,9 @@ export const adminGetFinalResults = (
         }
       ).map(
         (submission) => {
-          const player = quizSession.players.find((player) =>
-            player.playerId === submission.playerId);
+          const player = quizSession.players.find(
+            (player) =>player.playerId === submission.playerId
+          );
           return player ? player.playerName || '' : '';
         }
         // then sort by alphabetically
