@@ -11,8 +11,8 @@ beforeEach(() => {
   requestClear();
 });
 
-/// ////////-----adminUserDetails-----////////////
-describe('test for adminUserDetails', () => {
+/// ////////-----adminUserDetailsUpdate-----////////////
+describe('test for adminUserDetailsUpdate', () => {
   let user1;
   let user1token: string;
   beforeEach(() => {
@@ -98,7 +98,7 @@ describe('test for adminUserDetails', () => {
   });
 });
 
-describe('test for adminUserDetails V2', () => {
+describe('test for adminUserDetailsUpdate V2', () => {
   let user1;
   let user1token: string;
   beforeEach(() => {
