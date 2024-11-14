@@ -72,21 +72,21 @@ export function validateToken(
   data: dataStore
 ): {
   authUserId: number
-} | { error: string } {
+} {
   let parsedToken;
   try {
     // Try to decode and parse the token as a valid JSON string
     parsedToken = JSON.parse(token);
   } catch (error) {
     // If parsing fails, return an error message
-    return { error: 'Invalid token format.' };
+    throw new Error ('INVALID_TOKEN');
   }
-
+  
   const session = data.sessions.find(s => s.sessionId === parsedToken.sessionId);
   if (session) {
     return { authUserId: session.userId };
   }
-  return { error: 'Invalid token: session does not exist.' };
+  throw new Error ('INVALID_TOKEN');
 }
 
 /**
@@ -145,7 +145,7 @@ export const isValidPassword = (
 ): { valid?: boolean; error?: string } => {
   // Check if password length is at least 8 characters
   if (password.length < 8) {
-    return { error: 'Password is less than 8 characters.' };
+    throw new Error ('INVALID_PASSWORD');
   }
 
   // Check if password contains at least one letter
@@ -153,9 +153,7 @@ export const isValidPassword = (
   // Check if password contains at least one number
   const containsNumber = /\d/.test(password);
   if (!containsLetter || !containsNumber) {
-    return {
-      error: 'Password must contain at least one letter and one number.'
-    };
+    throw new Error ('INVALID_PASSWORD');
   }
 
   return { valid: true };

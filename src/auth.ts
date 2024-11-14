@@ -68,11 +68,7 @@ export const adminAuthRegister = (
 
   const passwordValidation = isValidPassword(password);
   // Check if the returned object from isValidPassword helper function has an
-  // error field
-  if (passwordValidation.error) {
-    // Return the error if validation fails
-    throw new Error('password invalid');
-  }
+
 
   const hashedPassword = sha256(password).toString();
   const authUserId = randomId(100000);
@@ -139,9 +135,7 @@ export const adminUserDetails = (token: string): errorMessages | userDetails => 
   const data = getData();
   // get userId
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find((user) => user.userId === authUserId);
@@ -177,9 +171,7 @@ export const adminUserDetailsUpdate = (
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
   const currentUser = data.users.find(user => user.userId === authUserId);
 
@@ -231,9 +223,7 @@ export const adminUserPasswordUpdate = (
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   const user = data.users.find(user => user.userId === authUserId);
@@ -252,12 +242,6 @@ export const adminUserPasswordUpdate = (
   }
 
   const passwordValidation = isValidPassword(newPassword);
-  // Check if the returned object from isValidPassword helper function has an
-  // error field
-  if (passwordValidation.error) {
-    // Return the error if validation fails
-    throw new Error('INVALID_PASSWORD');
-  }
 
   // Add the current password to oldPasswords array
   user.oldPasswords.push(user.currentPassword);
@@ -278,9 +262,7 @@ export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
   const data = getData();
 
   const validation = validateToken(token, data);
-  if ('error' in validation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
 
   const sessionIndex = data.sessions.findIndex(
     (session) => session.userId === validation.authUserId);
