@@ -1247,7 +1247,7 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSession.sessionState = quizState.FINAL_RESULTS;
-
+    console.log('action final Result');
     // Find and update all players in the session
     data.players.forEach((player: PlayerState) => {
       if (player.sessionId === sessionId) {
