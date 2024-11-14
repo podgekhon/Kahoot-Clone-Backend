@@ -107,7 +107,7 @@ describe('tests for playerResults', () => {
 
     // go to final_results
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
-    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULTS);
 
     const resultsResponse = requestPlayerResults(playerId);
     expect(resultsResponse.body).toMatchObject({
@@ -173,7 +173,7 @@ describe('tests for playerResults', () => {
 
     // go to final_results
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
-    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULTS);
 
     const resultsResponse = requestPlayerResults(playerId);
     expect(resultsResponse.body).toMatchObject({
@@ -251,7 +251,7 @@ describe('tests for playerResults', () => {
 
     // Go to final_results
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
-    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULTS);
 
     const resultsResponse = requestPlayerResults(playerId);
     expect(resultsResponse.body).toMatchObject({
@@ -301,7 +301,7 @@ describe('tests for playerResults', () => {
 
     // Go to final_results
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
-    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULTS);
 
     const resultsResponse = requestPlayerResults(playerId);
     expect(resultsResponse.body).toMatchObject({

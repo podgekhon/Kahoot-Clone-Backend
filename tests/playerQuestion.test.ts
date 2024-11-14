@@ -309,7 +309,7 @@ describe('tests for playerQuestion', () => {
 
     test('Question position is not valid when session state is FINAL_RESULT', () => {
       // sesstion state is FINAL_RESULT
-      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULT);
+      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_FINAL_RESULTS);
       const positionResponse = requestPlayerQuestion(playerId, 1);
       expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
       expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
