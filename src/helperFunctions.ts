@@ -226,7 +226,7 @@ export const isValidQuiz = (
   authUserId: number,
   quizId: number,
   data: data
-): null => {
+) => {
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
 
   // check invalid user id
@@ -237,6 +237,7 @@ export const isValidQuiz = (
     // quiz id does not refer to it's owner
     throw new Error('INVALID_OWNER');
   }
+  return {};
 };
 
 /**
@@ -251,7 +252,7 @@ export const isValidQuiz = (
 export const isValidQuestion = (
   questionBody: question,
   quiz: quiz
-): null => {
+) => {
   const { question, timeLimit, points, answerOptions } = questionBody;
 
   if (question.length < 5 || question.length > 50) {
@@ -276,6 +277,7 @@ export const isValidQuestion = (
   if (points < 1 || points > 10) {
     throw new Error('INVALID_POINTS');
   }
+  return {};
 };
 
 /**
@@ -289,7 +291,7 @@ export const isValidQuestion = (
  */
 export const validateAnswers = (
   answerOptions: answerOption[]
-): null => {
+) => {
   const answerSet = new Set();
   let hasCorrectAnswer = false;
 
@@ -309,6 +311,7 @@ export const validateAnswers = (
   if (!hasCorrectAnswer) {
     throw new Error('NO_CORRECT_ANSWER');
   }
+  return {};
 };
 
 /**
