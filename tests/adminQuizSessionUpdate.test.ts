@@ -21,7 +21,6 @@ import {
 } from '../src/interface';
 import { adminAction, quizState } from '../src/quiz';
 import sleepSync from 'slync';
-
 describe('Test for adminQuizSessionUpdate', () => {
   let user1Response: userAuthRegister;
   let user1Token: string;
@@ -188,7 +187,7 @@ describe('Test for adminQuizSessionUpdate', () => {
       nextQuestionAction
     );
 
-    sleepSync(8000);
+    sleepSync(10000);
 
     getUpdatedSession = requestadminQuizSessionState(
       quizId,
