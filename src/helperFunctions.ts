@@ -72,21 +72,21 @@ export function validateToken(
   data: dataStore
 ): {
   authUserId: number
-} | { error: string } {
+} {
   let parsedToken;
   try {
     // Try to decode and parse the token as a valid JSON string
     parsedToken = JSON.parse(token);
   } catch (error) {
     // If parsing fails, return an error message
-    return { error: 'Invalid token format.' };
+    throw new Error('INVALID_TOKEN');
   }
 
   const session = data.sessions.find(s => s.sessionId === parsedToken.sessionId);
   if (session) {
     return { authUserId: session.userId };
   }
-  return { error: 'Invalid token: session does not exist.' };
+  throw new Error('INVALID_TOKEN');
 }
 
 /**
@@ -145,7 +145,7 @@ export const isValidPassword = (
 ): { valid?: boolean; error?: string } => {
   // Check if password length is at least 8 characters
   if (password.length < 8) {
-    return { error: 'Password is less than 8 characters.' };
+    throw new Error('INVALID_PASSWORD');
   }
 
   // Check if password contains at least one letter
@@ -153,9 +153,7 @@ export const isValidPassword = (
   // Check if password contains at least one number
   const containsNumber = /\d/.test(password);
   if (!containsLetter || !containsNumber) {
-    return {
-      error: 'Password must contain at least one letter and one number.'
-    };
+    throw new Error('INVALID_PASSWORD');
   }
 
   return { valid: true };
@@ -201,25 +199,6 @@ export const isStringValid = (string: string): boolean => {
 };
 
 /**
-  * checks for length of name, returns error if name < 3 or > 30
-  *
-  * @param {string} name - any string name
-  *
-  * @returns {object} - returns specific error object depending on name length
-*/
-export const isNameLengthValid = (name: string): errorMessages | null => {
-  if (name.length < 3) {
-    // if length is less than 3 char
-    return { error: 'Name is less than 3 characters.' };
-  } else if (name.length > 30) {
-    // if length is more than 30 char
-    return { error: 'Name is more than 30 characters.' };
-  }
-
-  return undefined;
-};
-
-/**
   * checks if name is already taken
   *
   * @param {number}  authUserId - user's Id
@@ -247,18 +226,18 @@ export const isValidQuiz = (
   authUserId: number,
   quizId: number,
   data: data
-): errorMessages | null => {
+) => {
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
 
   // check invalid user id
   if (!validQuizId) {
     // invalid quiz id
-    return { error: 'INVALID_QUIZ' };
+    throw new Error('INVALID_QUIZ');
   } else if (validQuizId.ownerId !== authUserId) {
     // quiz id does not refer to it's owner
-    return { error: 'INVALID_OWNER' };
+    throw new Error('INVALID_OWNER');
   }
-  return null;
+  return {};
 };
 
 /**
@@ -273,33 +252,32 @@ export const isValidQuiz = (
 export const isValidQuestion = (
   questionBody: question,
   quiz: quiz
-): errorMessages | null => {
+) => {
   const { question, timeLimit, points, answerOptions } = questionBody;
 
   if (question.length < 5 || question.length > 50) {
-    return { error: 'INVALID_QUESTION_LENGTH' };
+    throw new Error('INVALID_QUESTION_LENGTH');
   }
 
   if (answerOptions.length < 2 || answerOptions.length > 6) {
-    return { error: 'INVALID_ANSWER_COUNT' };
+    throw new Error('INVALID_ANSWER_COUNT');
   }
 
   if (timeLimit <= 0) {
-    return { error: 'INVALID_TIME_LIMIT' };
+    throw new Error('INVALID_TIME_LIMIT');
   }
 
   // Validate if the total quiz time limit is not exceeded
   // We need to add timeLimit to the reduce method because the
   // new question hasn't been added to the questions array yet.
   if (quiz.questions.reduce((sum, q) => sum + q.timeLimit, 0) + timeLimit > 180) {
-    return { error: 'EXCEEDED_TOTAL_TIME_LIMIT' };
+    throw new Error('EXCEEDED_TOTAL_TIME_LIMIT');
   }
 
   if (points < 1 || points > 10) {
-    return { error: 'INVALID_POINTS' };
+    throw new Error('INVALID_POINTS');
   }
-
-  return null;
+  return {};
 };
 
 /**
@@ -313,16 +291,16 @@ export const isValidQuestion = (
  */
 export const validateAnswers = (
   answerOptions: answerOption[]
-): errorMessages | null => {
+) => {
   const answerSet = new Set();
   let hasCorrectAnswer = false;
 
   for (const answerOption of answerOptions) {
     if (answerOption.answer.length < 1 || answerOption.answer.length > 30) {
-      return { error: 'INVALID_ANSWER_LENGTH' };
+      throw new Error('INVALID_ANSWER_LENGTH');
     }
     if (answerSet.has(answerOption.answer)) {
-      return { error: 'DUPLICATE_ANSWERS' };
+      throw new Error('DUPLICATE_ANSWERS');
     }
     answerSet.add(answerOption.answer);
     if (answerOption.correct) {
@@ -331,10 +309,9 @@ export const validateAnswers = (
   }
 
   if (!hasCorrectAnswer) {
-    return { error: 'NO_CORRECT_ANSWER' };
+    throw new Error('NO_CORRECT_ANSWER');
   }
-
-  return null;
+  return {};
 };
 
 /**

@@ -128,7 +128,7 @@ describe('tests for player question result', () => {
   test('successful case', () => {
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -160,7 +160,7 @@ describe('tests for player question result', () => {
     const playerId2 = (player2.body as playerId).playerId;
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -179,23 +179,16 @@ describe('tests for player question result', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
     const res = requestPlayerQuestionResult(playerId, 1);
     expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    // expect(res.body).toStrictEqual(
-    //   {
-    //     questionId: questionId,
-    //     playersCorrect: [
-    //       'Eric'
-    //     ],
-    //     averageAnswerTime: expect.any(Number),
-    //     percentCorrect: 100
-    //   }, {
-    //     questionId: questionId,
-    //     playersCorrect: [
-    //       'Eric'
-    //     ],
-    //     averageAnswerTime: expect.any(Number),
-    //     percentCorrect: 100
-
-    //   }
-    // );
+    expect(res.body).toStrictEqual(
+      {
+        questionId: questionId,
+        playersCorrect: [
+          'Eric',
+          'eric2'
+        ],
+        averageAnswerTime: expect.any(Number),
+        percentCorrect: 100
+      }
+    );
   });
 });

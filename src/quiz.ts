@@ -3,7 +3,6 @@ import {
   generateRandomColour,
   validateToken,
   isStringValid,
-  isNameLengthValid,
   isNameTaken,
   isValidQuiz,
   isValidQuestion,
@@ -71,9 +70,7 @@ export const adminQuizUpdateThumbnail = (
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((q) => q.quizId === quizId);
@@ -113,19 +110,9 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
 
   // Find the user based on authUserId
   const authUserId = tokenValidation.authUserId;
-
-  // const user = data.users.find(user => user.userId === authUserId);
-
-  // // // Check if the user exists
-  // if (!user) {
-  //   throw new Error('INVALID_TOKEN');
-  // }
 
   // Find all quizzes owned by the user
   const userQuizzes = data.quizzes
@@ -138,35 +125,6 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
   // Return the list of quizzes (empty array if no quizzes found)
   return { quizzes: userQuizzes };
 };
-
-// export const adminQuizList = (token: string): errorMessages| quizList => {
-//   const data = getData();
-//   const tokenValidation = validateToken(token, data);
-
-//   if ('error' in tokenValidation) {
-//     return { error: tokenValidation.error };
-//   }
-//   const authUserId = tokenValidation.authUserId;
-
-//   // Find the user based on authUserId
-//   const user = data.users.find(user => user.userId === authUserId);
-
-//   // Check if the user exists
-//   if (!user) {
-//     return { error: 'AuthUserId is not a valid user.' };
-//   }
-
-//   // Find all quizzes owned by the user
-//   const userQuizzes = data.quizzes
-//     .filter(quiz => quiz.ownerId === authUserId)
-//     .map(quiz => ({
-//       quizId: quiz.quizId,
-//       name: quiz.name
-//     }));
-
-//   // Return the list of quizzes (empty array if no quizzes found)
-//   return { quizzes: userQuizzes };
-// };
 
 /**
   * Given basic details about a new quiz, create one for the logged in user.
@@ -185,14 +143,12 @@ export const adminQuizCreate = (
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   // checks for name length
-  if (isNameLengthValid(name) !== undefined) {
-    throw new Error('QUIZ_NAME_TOO_LONG');
+  if (name.length < 3 || name.length > 30) {
+    throw new Error('INVALID_NAME_LENGTH');
   }
 
   // checks if check contains invalid characters
@@ -249,9 +205,6 @@ export const adminStartQuizSession = (
 ): quizStartSessionResponse => {
   const data = getData();
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
 
   // Check if the quiz is in trash
   const isQuizInTrash = data.trash.some(q => q.quizId === quizId);
@@ -322,9 +275,6 @@ export const adminViewQuizSessions = (
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
 
   const quiz = data.quizzes.find(q => q.quizId === quizId);
   if (!quiz || quiz.ownerId !== tokenValidation.authUserId) {
@@ -364,9 +314,7 @@ export const adminQuizQuestionCreate = (
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((q: quiz) => q.quizId === quizId);
@@ -378,16 +326,10 @@ export const adminQuizQuestionCreate = (
     throw new Error('INVALID_OWNER');
   }
 
-  const validationError = isValidQuestion(questionBody, quiz);
-  if (validationError) {
-    throw new Error(validationError.error);
-  }
+  isValidQuestion(questionBody, quiz);
 
   const { answerOptions } = questionBody;
-  const answerValidationError = validateAnswers(answerOptions);
-  if (answerValidationError) {
-    throw new Error(answerValidationError.error);
-  }
+  validateAnswers(answerOptions);
 
   if (version === 'v2' && !validQuestionThumbnailUrl(questionBody.thumbnailUrl)) {
     throw new Error('INVALID_QUESTION_THUMBNAIL_URL');
@@ -440,9 +382,7 @@ export const adminQuizQuestionUpdate = (
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((q: quiz) => q.quizId === quizId);
@@ -459,16 +399,10 @@ export const adminQuizQuestionUpdate = (
     throw new Error('INVALID_QUESTION_ID');
   }
 
-  const validationError = isValidQuestion(updatedQuestionBody, quiz);
-  if (validationError) {
-    throw new Error(validationError.error);
-  }
+  isValidQuestion(updatedQuestionBody, quiz);
 
   const { answerOptions } = updatedQuestionBody;
-  const answerValidationError = validateAnswers(answerOptions);
-  if (answerValidationError) {
-    throw new Error(answerValidationError.error);
-  }
+  validateAnswers(answerOptions);
 
   // Update question details
   questionToUpdate.question = updatedQuestionBody.question;
@@ -519,9 +453,7 @@ export const adminMoveQuizQuestion = (
 
   // Validate token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((q: quiz) => q.quizId === quizId);
@@ -573,15 +505,10 @@ export const adminQuizRemove = (
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
-  const error = isValidQuiz(authUserId, quizId, data);
-  if (error) {
-    throw new Error(error.error);
-  }
+  isValidQuiz(authUserId, quizId, data);
 
   // remove the correct quiz
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
@@ -606,9 +533,7 @@ export const adminQuizInfo = (token: string, quizId: number, version: string): q
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   // Check if quizId refers to a valid quiz
@@ -660,9 +585,6 @@ export const adminQuizNameUpdate = (
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
 
   const authUserId = tokenValidation.authUserId;
 
@@ -679,8 +601,8 @@ export const adminQuizNameUpdate = (
     throw new Error('INVALID_QUIZ_NAME');
   }
   // checks for name length
-  if (isNameLengthValid(name) !== undefined) {
-    throw new Error('QUIZ_NAME_TOO_LONG');
+  if (name.length < 3 || name.length > 30) {
+    throw new Error('INVALID_NAME_LENGTH');
   }
   // check if user has duplicate quiz names
   if (isNameTaken(authUserId, name, data)) {
@@ -711,16 +633,11 @@ export const adminQuizDescriptionUpdate = (
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   // error checkings for invalid userId, quizId
-  const error = isValidQuiz(authUserId, quizId, data);
-  if (error) {
-    throw new Error('INVALID_QUIZ');
-  }
+  isValidQuiz(authUserId, quizId, data);
 
   // new description should be less than 100 characters
   if (description.length > 100) {
@@ -748,9 +665,6 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
 
   const authUserId = tokenValidation.authUserId;
 
@@ -778,9 +692,7 @@ export const adminQuizRestore = (quizId: number, token: string): errorMessages |
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   // find quiz in trash
@@ -834,9 +746,7 @@ export const adminQuizQuestionRemove = (
   const data = getData();
   // Token is empty or invalid (does not refer to valid logged in user session)
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   //  Valid token is provided, but user is not an owner of this quiz or quiz doesn't exist
@@ -888,10 +798,7 @@ export const adminQuizQuestionDuplicate = (
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  // invalid token
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   const validQuiz = data.quizzes.find(q => q.quizId === quizId);
@@ -942,9 +849,6 @@ export const adminQuizTransfer = (
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
 
   const transferredQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
   if (!transferredQuiz) {
@@ -994,9 +898,7 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
   // Validate inputs
   const data = getData();
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
   const invalidQuizzes: number[] = [];
   const unauthorizedQuizzes: number[] = [];
@@ -1047,10 +949,6 @@ export const adminQuizSessionUpdate = (
   const data = getData();
   const tokenValidation = validateToken(token, data);
 
-  // checks if validity of user token
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
   const user = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -1286,9 +1184,7 @@ sessionState => {
   }
 
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
+
   const authUserId = tokenValidation.authUserId;
 
   const validQuiz = data.quizzes.find(q => q.quizId === quizId);
@@ -1340,9 +1236,6 @@ export const adminGetFinalResults = (
 
   // validate token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
 
   // get quiz & check if it exist and checks if the user owns session
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
@@ -1394,7 +1287,7 @@ export const adminGetFinalResults = (
       ).map(
         (submission) => {
           const player = quizSession.players.find(
-            (player) =>player.playerId === submission.playerId
+            (player) => player.playerId === submission.playerId
           );
           return player ? player.playerName || '' : '';
         }
@@ -1442,9 +1335,6 @@ export const adminGetFinalResultsCsv = (
 
   // validate token
   const tokenValidation = validateToken(token, data);
-  if ('error' in tokenValidation) {
-    throw new Error('INVALID_TOKEN');
-  }
 
   // get quiz & check if it exists and if the user owns the session
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);

@@ -254,5 +254,9 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   PASSWORD_INCORRECT: {
     status: httpStatus.BAD_REQUEST,
     message: 'Password is not correct for the given email.'
+  },
+  INVALID_NAME_LENGTH: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Name length invalid'
   }
 };
