@@ -368,7 +368,7 @@ export const adminQuizQuestionCreate = (
   * @param {number} quizId - an unique id of a quiz
   * @param {number} questionId - an unique id of a question in quiz
   * @param {string} token - a unique session id for user
-  * @param {question} updatedQuestionBody - informatoion of a question
+  * @param {question} updatedQuestionBody - information of a question
   *
   * @returns {emptyReturn} - An empty upon successful registration
 */
