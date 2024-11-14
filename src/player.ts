@@ -155,7 +155,6 @@ export const playerAnswerQuestion = (
     // Add a new submission if none exists
     question.answerSubmissions.push(playerAnswer);
   }
-  //  question.answerSubmissions.push(playerAnswer);
 
   const correctAnswerIds = question.answerOptions
     .filter(opt => opt.correct)
@@ -304,15 +303,16 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
   const usersRankedByScore = sessionPlayers.sort((a, b) => b.score - a.score);
 
   const questionResults = quizSession.quizCopy.questions.map(q => {
-    // Find the correct answer ID for this question by looking at answerOptions
-    const correctAnswerOption = q.answerOptions.find(option => option.correct);
-    const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
-
+    // Find the correct answer ID for this question
+    const correctAnswerIds = q.answerOptions.filter(opt => opt.correct)
+      .map(opt => opt.answerId);
     // Find players who answered correctly
     const playersCorrect = (q.answerSubmissions || [])
       .filter(submission => {
-        // Check if this submission includes the correct answer ID
-        return correctAnswerId !== null && submission.answerIds.includes(correctAnswerId);
+      // Check if the submission contains all correct answer IDs
+        return correctAnswerIds.length > 0 &&
+             correctAnswerIds.every(id => submission.answerIds.includes(id)) &&
+             submission.answerIds.length === correctAnswerIds.length;
       })
       .map(submission => {
         // Map each submission to the player's name
@@ -371,12 +371,15 @@ export const playerQuestionResult = (
   if (session.sessionQuestionPosition !== questionPosition) {
     throw new Error('SESSION_NOT_ON_QUESTION');
   }
-  const correctAnswerOption = question.answerOptions.find(option => option.correct);
-  const correctAnswerId = correctAnswerOption ? correctAnswerOption.answerId : null;
+  const correctAnswerIds = question.answerOptions.filter(opt => opt.correct)
+    .map(opt => opt.answerId);
   // find players answered correctly
   const playersCorrect = (question.answerSubmissions || [])
     .filter(submission => {
-      return correctAnswerId !== null && submission.answerIds.includes(correctAnswerId);
+    // Check if the submission contains all correct answer IDs
+      return correctAnswerIds.length > 0 &&
+           correctAnswerIds.every(id => submission.answerIds.includes(id)) &&
+           submission.answerIds.length === correctAnswerIds.length;
     })
     .map(submission => {
       const player = session.players.find(p => p.playerId === submission.playerId);
