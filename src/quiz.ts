@@ -36,7 +36,7 @@ import path from 'path';
 
 export enum quizState {
   LOBBY = 'LOBBY',
-  QUESTION_COUNTDOWN = 'COUNTDOWN',
+  QUESTION_COUNTDOWN = 'QUESTION_COUNTDOWN',
   QUESTION_OPEN = 'QUESTION_OPEN',
   QUESTION_CLOSE = 'QUESTION_CLOSE',
   ANSWER_SHOW = 'ANSWER_SHOW',
@@ -48,7 +48,7 @@ export enum adminAction {
   NEXT_QUESTION = 'NEXT_QUESTION',
   SKIP_COUNTDOWN = 'SKIP_COUNTDOWN',
   GO_TO_ANSWER = 'GO_TO_ANSWER',
-  GO_TO_FINAL_RESULTS = 'GO_TO_FINAL_RESULTS', // CHANGE THIS LATER
+  GO_TO_FINAL_RESULTS = 'GO_TO_FINAL_RESULTS',
   END = 'END'
 }
 
@@ -998,14 +998,13 @@ export const adminQuizSessionUpdate = (
     }
     // update quiz session state
     quizSession.sessionState = quizState.END;
-
     // add into inactiveSes array
     quiz.inactiveSessions.push(quizSession);
 
     // get index of quizSession in activeSes array
     const quizSessionIndex = quiz.activeSessions.indexOf(quizSession);
     // remove it from activeSes array
-    quiz.activeSessions.splice(quizSessionIndex);
+    quiz.activeSessions.splice(quizSessionIndex, 1);
 
     // clear a scheduled timer if any exist
     if (timers[sessionId]) {
@@ -1153,6 +1152,7 @@ export const adminQuizSessionUpdate = (
     });
   }
 
+  console.log(`QUIZ SESSION STATE BEFORE EOF: ${quizSession.sessionState}`);
   setData(data);
   return {};
 };
