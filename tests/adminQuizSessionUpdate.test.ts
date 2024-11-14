@@ -33,7 +33,7 @@ describe('Test for adminQuizSessionUpdate', () => {
   const nextQuestionAction: adminAction = adminAction.NEXT_QUESTION;
   const skipCountDownAction: adminAction = adminAction.SKIP_COUNTDOWN;
   const showAnswerAction: adminAction = adminAction.GO_TO_ANSWER;
-  const goFinalResults: adminAction = adminAction.GO_TO_FINAL_RESULT;
+  const goFinalResults: adminAction = adminAction.GO_TO_FINAL_RESULTS;
   let getUpdatedSession: sessionState;
 
   let adminQuizSessionUpdate: quizSessionStatusUpdate;
@@ -48,14 +48,14 @@ describe('Test for adminQuizSessionUpdate', () => {
     );
 
     user1Token = (user1Response.body as tokenReturn).token;
-    expect(user1Response.statusCode).toStrictEqual(200);
+    expect(user1Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     quizCreateResponse = requestAdminQuizCreate(
       user1Token,
       'validQuizName',
       'validQuizDescription'
     );
-    expect(quizCreateResponse.statusCode).toStrictEqual(200);
+    expect(quizCreateResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     quizId = (quizCreateResponse.body as quizCreateResponse).quizId;
 
     const questionBody = {

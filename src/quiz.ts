@@ -40,7 +40,7 @@ export enum quizState {
   QUESTION_OPEN = 'QUESTION_OPEN',
   QUESTION_CLOSE = 'QUESTION_CLOSE',
   ANSWER_SHOW = 'ANSWER_SHOW',
-  FINAL_RESULTS = 'FINAL_RESULT',
+  FINAL_RESULTS = 'FINAL_RESULTS',
   END = 'END'
 }
 
@@ -48,7 +48,7 @@ export enum adminAction {
   NEXT_QUESTION = 'NEXT_QUESTION',
   SKIP_COUNTDOWN = 'SKIP_COUNTDOWN',
   GO_TO_ANSWER = 'GO_TO_ANSWER',
-  GO_TO_FINAL_RESULT = 'GO_TO_FINAL_RESULT',
+  GO_TO_FINAL_RESULTS = 'GO_TO_FINAL_RESULTS', // CHANGE THIS LATER
   END = 'END'
 }
 
@@ -1134,7 +1134,7 @@ export const adminQuizSessionUpdate = (
   }
 
   // if action is 'GO_TO_FINAL_RESULTS'
-  if (action === adminAction.GO_TO_FINAL_RESULT) {
+  if (action === adminAction.GO_TO_FINAL_RESULTS) {
     // check if action can be applied to current state
     if (
       quizSession.sessionState !== quizState.QUESTION_CLOSE &&
@@ -1145,7 +1145,6 @@ export const adminQuizSessionUpdate = (
 
     // update quiz session
     quizSession.sessionState = quizState.FINAL_RESULTS;
-    console.log('action final Result');
     // Find and update all players in the session
     quizSession.players.forEach((player: PlayerState) => {
       if (player.sessionId === sessionId) {

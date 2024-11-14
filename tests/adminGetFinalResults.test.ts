@@ -136,7 +136,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('User successfully gets final results', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULTS);
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
       sessionId,
@@ -172,7 +172,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for invalid SessionId', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULTS);
 
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
@@ -200,7 +200,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for invalid token', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULTS);
 
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
@@ -215,7 +215,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for invalid quizId', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULTS);
 
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId + 1,
@@ -230,7 +230,7 @@ describe('Test for adminGetFinalResults', () => {
   });
 
   test('Return error for user does not own quiz', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULT);
+    requestAdminQuizSessionUpdate(quizId, sessionId, user1Token, adminAction.GO_TO_FINAL_RESULTS);
 
     adminGetFinalResults = requestAdminGetFinalResults(
       quizId,
