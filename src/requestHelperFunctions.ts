@@ -724,7 +724,7 @@ export const requestAdminAuthLogoutV2 = (
     {
       headers: {
         token: token,
-      },     
+      },
       timeout: TIMEOUT_MS,
     }
   );

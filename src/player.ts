@@ -19,7 +19,6 @@ import {
   playerResultsResponse,
   questionResult,
   playerPerformance,
-  dataStore
 } from './interface';
 
 import { quizState } from './quiz';
@@ -36,19 +35,19 @@ Allow a guest player to join a session
  */
 export const joinPlayer = (sessionId: number, playerName: string): playerId => {
   const data = getData();
-  
-    let FindSession: quizSession;
-    for (const quiz of data.quizzes) {
-      FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
-      if (FindSession) break;
-    }
-  
-    if (!FindSession) {
-      throw new Error('INVALID_SESSIONID');
-    }
-    if (FindSession.sessionState !== quizState.LOBBY) {
-      throw new Error('SESSION_NOT_IN_LOBBY');
-    }
+
+  let FindSession: quizSession;
+  for (const quiz of data.quizzes) {
+    FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
+    if (FindSession) break;
+  }
+
+  if (!FindSession) {
+    throw new Error('INVALID_SESSIONID');
+  }
+  if (FindSession.sessionState !== quizState.LOBBY) {
+    throw new Error('SESSION_NOT_IN_LOBBY');
+  }
 
   const existingPlayer = FindSession.players.find((player) => player.playerName === playerName);
   if (existingPlayer) {
@@ -189,7 +188,7 @@ export const playerAnswerQuestion = (
       playerName: playerState.playerName,
       score: score
     };
-   question.playerPerfAtQuestion.push(playerPerformance);
+    question.playerPerfAtQuestion.push(playerPerformance);
   }
 
   setData(data);
@@ -216,7 +215,6 @@ export const playerMessage = (playerId: number, message: messageBody) : emptyRet
   if (newMessage.length < 1 || newMessage.length > 100) {
     throw new Error('INVALID_MESSAGE_LENGTH');
   }
-  const quizSessionId = validPlayer.sessionId;
   const msg = {
     playerId: playerId,
     playerName: validPlayer.playerName,
@@ -241,7 +239,6 @@ export const playerState = (playerId: number) : PlayerState => {
   if (!quizSession) {
     throw new Error('INVALID_PLAYER');
   }
-  const player = quizSession.players.find(p => p.playerId === playerId);
 
   const quiz = quizSession.quizCopy;
   const response: PlayerState = {
@@ -286,11 +283,10 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
   const data = getData();
 
   const quizSession = findQuizSessionByPlayerId(data, playerId);
-  
+
   if (!quizSession) {
     throw new Error('PLAYERID_NOT_EXIST');
   }
-  const player = quizSession.players.find(p => p.playerId === playerId);
 
   // Check if the session is in the FINAL_RESULTS state
   if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
@@ -336,7 +332,7 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
 
     // Calculate percent correct
     const percentCorrect = Math.round((playersCorrect.length / quizSession.players.length) * 100);
-    
+
     return {
       questionId: q.questionId,
       playersCorrect,
@@ -363,9 +359,6 @@ export const playerQuestionResult = (
   if (!session) {
     throw new Error('INVALID_PLAYER');
   }
-  const player = session.players.find(p => p.playerId === playerId);
-
-
 
   const question = session.quizCopy.questions[questionPosition - 1];
   // const question = quiz.questions[questionPosition - 1];
@@ -436,7 +429,6 @@ export const playerQuestion = (playerId: number, questionPosition: number): ques
     throw new Error('EXIST_PLAYERID');
   }
   // Find the session the player is part of
-
 
   // Check if the session state is valid
   type QuizState = typeof quizState.LOBBY | typeof quizState.QUESTION_COUNTDOWN

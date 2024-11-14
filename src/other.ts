@@ -17,7 +17,6 @@ export const clear = () => {
   data.quizzes = [];
   data.sessions = [];
   data.trash = [];
-  data.players = [];
 
   // clears timers
   for (const key of Object.keys(timers)) {

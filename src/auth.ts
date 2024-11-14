@@ -109,14 +109,14 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
   if (!user) {
-    return { error: 'Email address does not exist.' };
+    throw new Error('EMAIL_NOT_EXISTS');
   }
 
   // Check if the password is correct
   if (user.currentPassword !== sha256(password).toString()) {
     // Increment numFailedPasswordsSinceLastLogin
     user.numFailedPasswordsSinceLastLogin += 1;
-    return { error: 'Password is not correct for the given email.' };
+    throw new Error('PASSWORD_INCORRECT');
   }
 
   // Reset numFailedPasswordsSinceLastLogin and increment numSuccessfulLogins
@@ -140,7 +140,7 @@ export const adminUserDetails = (token: string): errorMessages | userDetails => 
   // get userId
   const tokenValidation = validateToken(token, data);
   if ('error' in tokenValidation) {
-    return { error: 'Token is empty or invalid (does not refer to valid logged in user session)' };
+    throw new Error('INVALID_TOKEN');
   }
   const authUserId = tokenValidation.authUserId;
 

@@ -246,5 +246,13 @@ export const errorMap: Record<string, { status: number, message: string }> = {
   SESSION_NOT_IN_ANSWER_SHOW: {
     status: httpStatus.BAD_REQUEST,
     message: 'Session is not in ANSWER_SHOW state'
+  },
+  EMAIL_NOT_EXISTS: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Email does not exists.'
+  },
+  PASSWORD_INCORRECT: {
+    status: httpStatus.BAD_REQUEST,
+    message: 'Password is not correct for the given email.'
   }
 };

@@ -20,7 +20,6 @@ import {
   adminAction,
   quizState
 } from '../src/quiz';
-import { token } from 'morgan';
 
 describe('tests for joinplayer', () => {
   let user;
@@ -87,7 +86,7 @@ describe('tests for joinplayer', () => {
     console.log(resStartSession.body);
   });
   test('quiz state not in lobby', () => {
-    requestAdminQuizSessionUpdate(quizId, sessionId, userToken, adminAction.NEXT_QUESTION); 
+    requestAdminQuizSessionUpdate(quizId, sessionId, userToken, adminAction.NEXT_QUESTION);
     const resStartSession = requestjoinPlayer(sessionId, '.....');
     expect(resStartSession.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resStartSession.body).toStrictEqual({ error: expect.any(String) });

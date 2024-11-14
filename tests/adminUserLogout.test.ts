@@ -6,8 +6,6 @@ import {
 } from '../src/requestHelperFunctions';
 import { tokenReturn } from '../src/interface';
 
-
-
 // adminUserLogout v1
 describe('POST /v1/admin/auth/logout', () => {
   let user1;

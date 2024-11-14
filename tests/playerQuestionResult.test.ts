@@ -155,7 +155,6 @@ describe('tests for player question result', () => {
     );
   });
 
-  
   test('successful case', () => {
     const player2 = requestjoinPlayer(sessionId, 'eric2');
     const playerId2 = (player2.body as playerId).playerId;
@@ -171,11 +170,10 @@ describe('tests for player question result', () => {
     const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
     expect(resAnswerQuestion.body).toStrictEqual({ });
     expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    
+
     const resAnswerQuestion2 = requestPlayerAnswerQuestion(answerId, playerId2, 1);
     expect(resAnswerQuestion2.body).toStrictEqual({ });
     expect(resAnswerQuestion2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-
 
     // get question result
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
