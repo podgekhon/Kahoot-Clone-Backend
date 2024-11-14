@@ -44,7 +44,7 @@ describe('tests for playerState', () => {
     };
     requestAdminQuizQuestionCreateV2(quizId, token, questionBody);
 
-    const session = requestAdminStartQuizSession(quizId, token, 1);
+    const session = requestAdminStartQuizSession(quizId, token, 10);
     quizSessionId = (session.body as quizStartSessionResponse).sessionId;
 
     const player = requestjoinPlayer(quizSessionId, 'Guanlin Kong');
@@ -57,7 +57,7 @@ describe('tests for playerState', () => {
     const correctresponse = {
       state: quizState.LOBBY,
       numQuestions: 1,
-      atQuestion: 1
+      atQuestion: 1,
     };
     expect(resplayerState.body).toStrictEqual(correctresponse);
     expect(resplayerState.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);

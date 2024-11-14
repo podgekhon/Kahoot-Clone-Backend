@@ -47,12 +47,17 @@ import {
 
 import {
   joinPlayer,
+  playerAnswerQuestion,
   playerMessage,
   playerState,
-  playerMessageList
+  playerQuestion,
+  playerResults,
+  playerMessageList,
+  playerQuestionResult
 } from './player';
 
 import {
+  GetFinalResults,
   messageBody,
   requestOptions
 } from './interface';
@@ -316,6 +321,23 @@ export const requestAdminQuizList = (
     SERVER_URL + '/v1/admin/quiz/list',
     {
       qs: { token },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestAdminQuizListV2 = (
+  token: string
+): {
+  body: ReturnType <typeof adminQuizList>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + '/v2/admin/quiz/list',
+    {
+      headers: { token },
       timeout: TIMEOUT_MS,
     }
   );
@@ -1268,6 +1290,139 @@ export const requestPlayerMessageList = (
     'GET',
     SERVER_URL + `/v1/player/${playerId}/chat`,
     {
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Allow the current player to submit answer(s) to the currently active question.
+ *
+ * @param { number[] } answerIds
+ * @param { number } playerId
+ * @param { number } questionPosition
+ * @returns { Response }
+ */
+export const requestPlayerAnswerQuestion = (
+  answerIds: number[], playerId: number, questionPosition: number
+): {
+  body: ReturnType <typeof playerAnswerQuestion>,
+  statusCode: number
+} => {
+  const res = request(
+    'PUT',
+    SERVER_URL + `/v1/player/${playerId}/question/${questionPosition}/answer`,
+    {
+      json: {
+        answerIds: answerIds
+      },
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Gets final results of all players for a completed quiz session.
+ *
+ * @param { number } quizId
+ * @param { number } sessionId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminGetFinalResults = (
+  quizId: number, sessionId: number, token: string
+): GetFinalResults => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results`,
+    {
+      headers: { token },
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Get the final results for a whole session a player is playing in
+ *
+ * @param { number } playerId
+ * @returns { Response }
+ */
+export const requestPlayerResults = (
+  playerId: number
+): {
+  body: ReturnType <typeof playerResults>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}/results`,
+    {
+      timeout: TIMEOUT_MS,
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+export const requestPlayerQuestionResult = (
+  playerId: number, questionPosition: number
+): {
+  body: ReturnType <typeof playerQuestionResult>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}/question/${questionPosition}/results`,
+    {
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+// playerQuestion
+/**
+ * Current question information for a player
+ *
+ * @param { number } playerId
+ * @param { number } questionPosition
+ * @returns { Response }
+ */
+export const requestPlayerQuestion = (
+  playerId: number, questionPosition: number
+): {
+  body: ReturnType <typeof playerQuestion>,
+  statusCode: number
+} => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/player/${playerId}/question/${questionPosition}`,
+    {
+      timeout: TIMEOUT_MS
+    }
+  );
+  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
+};
+
+/**
+ * Gets final results of all players for a completed quiz session in CSV format.
+ *
+ * @param { number } quizId
+ * @param { number } sessionId
+ * @param { string } token
+ * @returns { Response }
+ */
+export const requestAdminGetFinalResultsCsv = (
+  quizId: number, sessionId: number, token: string
+): GetFinalResults => {
+  const res = request(
+    'GET',
+    SERVER_URL + `/v1/admin/quiz/${quizId}/session/${sessionId}/results/csv`,
+    {
+      headers: { token },
       timeout: TIMEOUT_MS
     }
   );

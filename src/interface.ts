@@ -1,5 +1,6 @@
 /// ///////////// interface for dataStore /////////////////
 import { adminAuthRegister, adminAuthLogin } from './auth';
+import { joinPlayer } from './player';
 
 import {
   adminQuizCreate,
@@ -9,7 +10,9 @@ import {
   adminTrashList,
   quizState,
   adminStartQuizSession,
-  adminQuizSessionUpdate
+  adminQuizSessionUpdate,
+  adminGetFinalResults,
+  adminGetFinalResultsCsv
 } from './quiz';
 
 export interface dataStore {
@@ -17,13 +20,13 @@ export interface dataStore {
   quizzes: quiz[],
   sessions: token[];
   trash: quiz[];
-  players: player[];
+  players: PlayerState[];
 }
 
 export interface player {
   playerId: number,
   playerName: string,
-  sessionId: number
+  sessionId: number,
 }
 
 export interface user {
@@ -39,26 +42,43 @@ export interface user {
 }
 
 export interface answerOption {
-  answerId: number;
+  answerId?: number;
   answer: string;
-  colour: string;
-  correct: boolean;
+  colour?: string;
+  correct?: boolean;
+}
+
+export interface answerSubmission {
+  answerIds: number[],
+  playerId: number,
+  answerTime: number,
 }
 
 export interface question {
-  questionId: number;
+  questionId?: number;
   question: string;
   timeLimit: number;
   points: number;
   answerOptions: answerOption[];
+  answerSubmissions?: answerSubmission[];
   thumbnailUrl?: string;
+  playerPerfAtQuestion?: playerPerformance[];
+}
+
+export interface playerPerformance {
+  playerName: string,
+  score: number,
+}
+
+export interface answer {
+  answerIds: number[];
 }
 
 export interface quiz {
   quizId: number;
   ownerId: number;
   atQuestion?: number;
-  sessionState: quizState;
+  // sessionState: quizState;
   name: string;
   description: string;
   numQuestions: number;
@@ -72,6 +92,7 @@ export interface quiz {
   inactiveSessions: quizSession[]
 }
 
+/// /////////////// interface for player.ts //////////////////
 export type quizCopy = Omit<quiz, 'activeSessions' | 'inactiveSessions'>;
 
 export interface quizSession {
@@ -83,6 +104,8 @@ export interface quizSession {
   isCountdownSkipped?: boolean;
   isInLobby?: boolean;
   messages: message[];
+  players: PlayerState[];
+  questionOpenTime?: number;
 }
 
 export interface message {
@@ -107,6 +130,13 @@ export interface token {
 
 export interface messageBody {
   messageBody: string
+}
+
+export interface questionResult {
+  questionId: number,
+    playersCorrect: string[],
+    averageAnswerTime: number,
+    percentCorrect: number
 }
 /// /////////////// interface for auth.ts/////////////////////
 
@@ -222,6 +252,11 @@ export interface quizSessionStatusUpdate {
   body: ReturnType<typeof adminQuizSessionUpdate>;
   statusCode: number;
 }
+
+export interface GetFinalResults {
+  body: ReturnType<typeof adminGetFinalResults> ;
+  statusCode: number;
+}
 export interface sessionState {
   state: quizState;
   atQuestion: number;
@@ -252,9 +287,13 @@ export interface sessionState {
 }
 
 export interface PlayerState {
-  state: quizState,
-  numQuestions: number,
-  atQuestion: number
+  playerId?: number,
+  sessionId?: number,
+  playerName?: string,
+  state?: quizState,
+  numQuestions?: number,
+  atQuestion?: number
+  score?: number
 }
 
 export interface requestOptions {
@@ -262,4 +301,29 @@ export interface requestOptions {
   headers?: Record<string, string>;
   qs?: Record<string, string | number | boolean>;
   timeout: number;
+}
+
+export interface playerJoinRes {
+  body: ReturnType<typeof joinPlayer>,
+  statusCode: number;
+}
+
+export interface playerResultsResponse {
+  usersRankedByScore: usersRankedByScore[],
+  questionResults: {
+    questionId: number,
+    playersCorrect: string[],
+    averageAnswerTime: number,
+    percentCorrect: number,
+  }[]
+}
+
+export interface usersRankedByScore {
+  playerName: string,
+  score: number
+}
+
+export interface GetFinalResultsCsv {
+  body: ReturnType<typeof adminGetFinalResultsCsv>;
+  statusCode: number;
 }

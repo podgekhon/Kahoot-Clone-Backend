@@ -5,7 +5,8 @@ import {
   requestAdminStartQuizSession,
   requestClear,
   requestjoinPlayer,
-  httpStatus
+  httpStatus,
+  requestadminQuizSessionState
 } from '../src/requestHelperFunctions';
 
 import {
@@ -13,6 +14,10 @@ import {
   quizCreateResponse,
   quizStartSessionResponse
 } from '../src/interface';
+
+import {
+  quizState
+} from '../src/quiz';
 
 describe('tests for joinplayer', () => {
   let user;
@@ -76,5 +81,10 @@ describe('tests for joinplayer', () => {
     const resStartSession = requestjoinPlayer(sessionId, 'abcde123');
     expect(resStartSession.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resStartSession.body).toStrictEqual({ error: expect.any(String) });
+  });
+  test('auto start', () => {
+    requestjoinPlayer(sessionId, 'abcde123');
+    const res = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    expect(res.body).toHaveProperty('state', quizState.QUESTION_COUNTDOWN);
   });
 });

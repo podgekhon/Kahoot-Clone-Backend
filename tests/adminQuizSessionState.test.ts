@@ -15,7 +15,10 @@ import {
   quizCreateResponse,
   quizStartSessionResponse
 } from '../src/interface';
-import { quizState } from '../src/quiz';
+
+import {
+  quizState
+} from '../src/quiz';
 
 describe('tests for adminQuizSession', () => {
   let user;
@@ -49,7 +52,7 @@ describe('tests for adminQuizSession', () => {
     };
     requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
 
-    session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    session = requestAdminStartQuizSession(quizId, usertoken, 10);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
 
     requestjoinPlayer(sessionId, 'abcde123');
