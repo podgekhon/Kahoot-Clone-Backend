@@ -253,33 +253,33 @@ export const isValidQuiz = (
 export const isValidQuestion = (
   questionBody: question,
   quiz: quiz
-): errorMessages | null => {
+): null => {
   const { question, timeLimit, points, answerOptions } = questionBody;
 
   if (question.length < 5 || question.length > 50) {
-    return { error: 'INVALID_QUESTION_LENGTH' };
+    throw new Error ('INVALID_QUESTION_LENGTH');
   }
 
   if (answerOptions.length < 2 || answerOptions.length > 6) {
-    return { error: 'INVALID_ANSWER_COUNT' };
+    throw new Error ('INVALID_ANSWER_COUNT');
   }
 
   if (timeLimit <= 0) {
-    return { error: 'INVALID_TIME_LIMIT' };
+    throw new Error ('INVALID_TIME_LIMIT');
   }
 
   // Validate if the total quiz time limit is not exceeded
   // We need to add timeLimit to the reduce method because the
   // new question hasn't been added to the questions array yet.
   if (quiz.questions.reduce((sum, q) => sum + q.timeLimit, 0) + timeLimit > 180) {
-    return { error: 'EXCEEDED_TOTAL_TIME_LIMIT' };
+    throw new Error ('EXCEEDED_TOTAL_TIME_LIMIT');
   }
 
   if (points < 1 || points > 10) {
-    return { error: 'INVALID_POINTS' };
+    throw new Error ('INVALID_POINTS');
   }
 
-  return null;
+  return;
 };
 
 /**

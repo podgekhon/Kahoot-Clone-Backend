@@ -326,10 +326,7 @@ export const adminQuizQuestionCreate = (
     throw new Error('INVALID_OWNER');
   }
 
-  const validationError = isValidQuestion(questionBody, quiz);
-  if (validationError) {
-    throw new Error(validationError.error);
-  }
+  isValidQuestion(questionBody, quiz);
 
   const { answerOptions } = questionBody;
   const answerValidationError = validateAnswers(answerOptions);
@@ -405,10 +402,7 @@ export const adminQuizQuestionUpdate = (
     throw new Error('INVALID_QUESTION_ID');
   }
 
-  const validationError = isValidQuestion(updatedQuestionBody, quiz);
-  if (validationError) {
-    throw new Error(validationError.error);
-  }
+  isValidQuestion(updatedQuestionBody, quiz);
 
   const { answerOptions } = updatedQuestionBody;
   const answerValidationError = validateAnswers(answerOptions);
