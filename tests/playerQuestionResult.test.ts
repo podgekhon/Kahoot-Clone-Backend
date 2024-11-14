@@ -154,4 +154,50 @@ describe('tests for player question result', () => {
       }
     );
   });
+
+  
+  test('successful case', () => {
+    const player2 = requestjoinPlayer(sessionId, 'eric2');
+    const playerId2 = (player2.body as playerId).playerId;
+    // update state to question_open
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
+    sleepSync(4000);
+
+    // get answer for question from quizinfo
+    const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
+    const quizInfo = resQuizInfo.body as quizInfo;
+    const answerId = [quizInfo.questions[0].answerOptions[0].answerId];
+    // answer question
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 1);
+    expect(resAnswerQuestion.body).toStrictEqual({ });
+    expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    
+    const resAnswerQuestion2 = requestPlayerAnswerQuestion(answerId, playerId2, 1);
+    expect(resAnswerQuestion2.body).toStrictEqual({ });
+    expect(resAnswerQuestion2.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+
+    // get question result
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
+    const res = requestPlayerQuestionResult(playerId, 1);
+    expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+    // expect(res.body).toStrictEqual(
+    //   {
+    //     questionId: questionId,
+    //     playersCorrect: [
+    //       'Eric'
+    //     ],
+    //     averageAnswerTime: expect.any(Number),
+    //     percentCorrect: 100
+    //   }, {
+    //     questionId: questionId,
+    //     playersCorrect: [
+    //       'Eric'
+    //     ],
+    //     averageAnswerTime: expect.any(Number),
+    //     percentCorrect: 100
+
+    //   }
+    // );
+  });
 });
