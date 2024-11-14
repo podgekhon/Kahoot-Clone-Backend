@@ -198,24 +198,6 @@ export const isStringValid = (string: string): boolean => {
   return true;
 };
 
-/**
-  * checks for length of name, returns error if name < 3 or > 30
-  *
-  * @param {string} name - any string name
-  *
-  * @returns {object} - returns specific error object depending on name length
-*/
-export const isNameLengthValid = (name: string): errorMessages | null => {
-  if (name.length < 3) {
-    // if length is less than 3 char
-    return { error: 'Name is less than 3 characters.' };
-  } else if (name.length > 30) {
-    // if length is more than 30 char
-    return { error: 'Name is more than 30 characters.' };
-  }
-
-  return undefined;
-};
 
 /**
   * checks if name is already taken

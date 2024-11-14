@@ -3,7 +3,6 @@ import {
   generateRandomColour,
   validateToken,
   isStringValid,
-  isNameLengthValid,
   isNameTaken,
   isValidQuiz,
   isValidQuestion,
@@ -115,13 +114,6 @@ export const adminQuizList = (token: string): errorMessages| quizList => {
   // Find the user based on authUserId
   const authUserId = tokenValidation.authUserId;
 
-  // const user = data.users.find(user => user.userId === authUserId);
-
-  // // // Check if the user exists
-  // if (!user) {
-  //   throw new Error('INVALID_TOKEN');
-  // }
-
   // Find all quizzes owned by the user
   const userQuizzes = data.quizzes
     .filter(quiz => quiz.ownerId === authUserId)
@@ -155,8 +147,8 @@ export const adminQuizCreate = (
   const authUserId = tokenValidation.authUserId;
 
   // checks for name length
-  if (isNameLengthValid(name) !== undefined) {
-    throw new Error('QUIZ_NAME_TOO_LONG');
+  if (name.length < 3 || name.length > 30) {
+    throw new Error ('INVALID_NAME_LENGTH');
   }
 
   // checks if check contains invalid characters
@@ -624,8 +616,8 @@ export const adminQuizNameUpdate = (
     throw new Error('INVALID_QUIZ_NAME');
   }
   // checks for name length
-  if (isNameLengthValid(name) !== undefined) {
-    throw new Error('QUIZ_NAME_TOO_LONG');
+  if (name.length < 3 || name.length > 30) {
+    throw new Error ('INVALID_NAME_LENGTH');
   }
   // check if user has duplicate quiz names
   if (isNameTaken(authUserId, name, data)) {
