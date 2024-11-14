@@ -293,16 +293,16 @@ export const isValidQuestion = (
  */
 export const validateAnswers = (
   answerOptions: answerOption[]
-): errorMessages | null => {
+): null => {
   const answerSet = new Set();
   let hasCorrectAnswer = false;
 
   for (const answerOption of answerOptions) {
     if (answerOption.answer.length < 1 || answerOption.answer.length > 30) {
-      return { error: 'INVALID_ANSWER_LENGTH' };
+      throw new Error ('INVALID_ANSWER_LENGTH');
     }
     if (answerSet.has(answerOption.answer)) {
-      return { error: 'DUPLICATE_ANSWERS' };
+      throw new Error ('DUPLICATE_ANSWERS');
     }
     answerSet.add(answerOption.answer);
     if (answerOption.correct) {
@@ -311,10 +311,10 @@ export const validateAnswers = (
   }
 
   if (!hasCorrectAnswer) {
-    return { error: 'NO_CORRECT_ANSWER' };
+    throw new Error ('NO_CORRECT_ANSWER');
   }
 
-  return null;
+  return;
 };
 
 /**

@@ -329,10 +329,8 @@ export const adminQuizQuestionCreate = (
   isValidQuestion(questionBody, quiz);
 
   const { answerOptions } = questionBody;
-  const answerValidationError = validateAnswers(answerOptions);
-  if (answerValidationError) {
-    throw new Error(answerValidationError.error);
-  }
+  validateAnswers(answerOptions);
+
 
   if (version === 'v2' && !validQuestionThumbnailUrl(questionBody.thumbnailUrl)) {
     throw new Error('INVALID_QUESTION_THUMBNAIL_URL');
@@ -405,10 +403,8 @@ export const adminQuizQuestionUpdate = (
   isValidQuestion(updatedQuestionBody, quiz);
 
   const { answerOptions } = updatedQuestionBody;
-  const answerValidationError = validateAnswers(answerOptions);
-  if (answerValidationError) {
-    throw new Error(answerValidationError.error);
-  }
+  validateAnswers(answerOptions);
+
 
   // Update question details
   questionToUpdate.question = updatedQuestionBody.question;
