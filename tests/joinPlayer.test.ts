@@ -6,7 +6,8 @@ import {
   requestClear,
   requestjoinPlayer,
   httpStatus,
-  requestadminQuizSessionState
+  requestadminQuizSessionState,
+  requestAdminQuizSessionUpdate
 } from '../src/requestHelperFunctions';
 
 import {
@@ -16,12 +17,14 @@ import {
 } from '../src/interface';
 
 import {
+  adminAction,
   quizState
 } from '../src/quiz';
+import { token } from 'morgan';
 
 describe('tests for joinplayer', () => {
   let user;
-  let usertoken: string;
+  let userToken: string;
   let quiz;
   let quizId: number;
   let session;
@@ -31,9 +34,9 @@ describe('tests for joinplayer', () => {
     requestClear();
 
     user = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
-    usertoken = (user.body as tokenReturn).token;
+    userToken = (user.body as tokenReturn).token;
 
-    quiz = requestAdminQuizCreate(usertoken, 'validQuizName', 'validQuizDescription');
+    quiz = requestAdminQuizCreate(userToken, 'validQuizName', 'validQuizDescription');
     quizId = (quiz.body as quizCreateResponse).quizId;
 
     const questionBody = {
@@ -46,9 +49,9 @@ describe('tests for joinplayer', () => {
       ],
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
-    requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
+    requestAdminQuizQuestionCreateV2(quizId, userToken, questionBody);
 
-    session = requestAdminStartQuizSession(quizId, usertoken, 1);
+    session = requestAdminStartQuizSession(quizId, userToken, 2);
     sessionId = (session.body as quizStartSessionResponse).sessionId;
   });
 
@@ -81,10 +84,19 @@ describe('tests for joinplayer', () => {
     const resStartSession = requestjoinPlayer(sessionId, 'abcde123');
     expect(resStartSession.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resStartSession.body).toStrictEqual({ error: expect.any(String) });
+    console.log(resStartSession.body);
   });
+  test('quiz state not in lobby', () => {
+    requestAdminQuizSessionUpdate(quizId, sessionId, userToken, adminAction.NEXT_QUESTION); 
+    const resStartSession = requestjoinPlayer(sessionId, '.....');
+    expect(resStartSession.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resStartSession.body).toStrictEqual({ error: expect.any(String) });
+  });
+
   test('auto start', () => {
     requestjoinPlayer(sessionId, 'abcde123');
-    const res = requestadminQuizSessionState(quizId, sessionId, usertoken);
+    requestjoinPlayer(sessionId, 'abcde1234');
+    const res = requestadminQuizSessionState(quizId, sessionId, userToken);
     expect(res.body).toHaveProperty('state', quizState.QUESTION_COUNTDOWN);
   });
 });

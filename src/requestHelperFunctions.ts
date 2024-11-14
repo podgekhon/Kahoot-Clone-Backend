@@ -712,7 +712,7 @@ export const requestAdminAuthLogout = (
  * @param { string } token
  * @returns { Response }
  */
-export const requestAdminAuthLogoutv2 = (
+export const requestAdminAuthLogoutV2 = (
   token: string
 ): {
   body: ReturnType <typeof adminAuthLogout>,
@@ -724,10 +724,7 @@ export const requestAdminAuthLogoutv2 = (
     {
       headers: {
         token: token,
-      },
-      json: {
-        token: token,
-      },
+      },     
       timeout: TIMEOUT_MS,
     }
   );
