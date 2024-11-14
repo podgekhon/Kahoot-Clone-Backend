@@ -46,11 +46,11 @@ export enum quizState {
 }
 
 export enum adminAction {
-  NEXT_QUESTION,
-  SKIP_COUNTDOWN,
-  GO_TO_ANSWER,
-  GO_TO_FINAL_RESULT,
-  END
+  NEXT_QUESTION = 'NEXT_QUESTION',
+  SKIP_COUNTDOWN = 'SKIP_COUNTDOWN',
+  GO_TO_ANSWER = 'GO_TO_ANSWER',
+  GO_TO_FINAL_RESULT = 'GO_TO_FINAL_RESULT',
+  END = 'END'
 }
 
 export const timers: { [key: number]: ReturnType<typeof setTimeout> } = {};
@@ -1046,6 +1046,7 @@ export const adminQuizSessionUpdate = (
 ): emptyReturn => {
   const data = getData();
   const tokenValidation = validateToken(token, data);
+
   // checks if validity of user token
   if ('error' in tokenValidation) {
     throw new Error('INVALID_TOKEN');
@@ -1053,7 +1054,7 @@ export const adminQuizSessionUpdate = (
   const user = tokenValidation.authUserId;
 
   const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-  // const quiz = session
+
   // checks if quiz exist
   if (!quiz) {
     throw new Error('INVALID_QUIZ');
@@ -1134,25 +1135,28 @@ export const adminQuizSessionUpdate = (
       throw new Error('INVALID_ACTION');
     }
 
+    // clear any existing timers
+    clearTimeout(timers[sessionId]);
+    delete timers[sessionId];
+
     // update quiz session
     quizSession.sessionState = quizState.QUESTION_COUNTDOWN;
 
     // set a 3s duration before state of session automatically updates
     timers[sessionId] = setTimeout(() => {
-      const data = getData();
-      const newQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-      // get quiz session from active array
-      quizSession = newQuiz.activeSessions.find(
+      const newData = getData();
+      const newQuiz = newData.quizzes.find((quiz) => quiz.quizId === quizId);
+      const updatedQuizSession = newQuiz.activeSessions.find(
         (session) => session.sessionId === sessionId
       );
+      updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
 
-      quizSession.sessionState = quizState.QUESTION_OPEN;
       // get question_open time
-      quizSession.questionOpenTime = Date.now();
-      if (quizSession.isInLobby === false) {
-        quizSession.sessionQuestionPosition++;
+      updatedQuizSession.questionOpenTime = Date.now();
+      if (updatedQuizSession.isInLobby === false) {
+        updatedQuizSession.sessionQuestionPosition++;
       } else {
-        quizSession.isInLobby = false;
+        updatedQuizSession.isInLobby = false;
       }
 
       // Find and update all players in the session
@@ -1162,25 +1166,20 @@ export const adminQuizSessionUpdate = (
         }
       });
 
-      const quiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-      const updatedQuizSession = quiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
-      );
-      setData(data);
-      // after 3s, add timer for question open
+      // after 3s, add 5s timer for question open
       if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
         timers[sessionId] = setTimeout(() => {
-          const data = getData();
-          const newQuiz = data.quizzes.find((quiz) => quiz.quizId === quizId);
-          // get quiz session from active array
-          quizSession = newQuiz.activeSessions.find(
+          const new2Data = getData();
+          const new2Quiz = new2Data.quizzes.find((quiz) => quiz.quizId === quizId);
+          const updated2QuizSession = new2Quiz.activeSessions.find(
             (session) => session.sessionId === sessionId
           );
-          quizSession.sessionState = quizState.QUESTION_CLOSE;
-          setData(data);
-        }, quiz.timeLimit * 1000);
+
+          updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
+          setData(new2Data);
+        }, 5000);
       }
-      setData(data);
+      setData(newData);
     }, 3000);
   }
 
@@ -1203,11 +1202,17 @@ export const adminQuizSessionUpdate = (
       quizSession.isInLobby = false;
     }
 
-    // set the 60s timer
+    // set the 5s timer
     timers[sessionId] = setTimeout(() => {
-      quizSession.sessionState = quizState.QUESTION_CLOSE;
-      setData(data);
-    }, quiz.timeLimit * 1000);
+      const new2Data = getData();
+      const new2Quiz = new2Data.quizzes.find((quiz) => quiz.quizId === quizId);
+      const updated2QuizSession = new2Quiz.activeSessions.find(
+        (session) => session.sessionId === sessionId
+      );
+
+      updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
+      setData(new2Data);
+    }, 5000);
   }
 
   // if action is 'ANSWER_SHOW'

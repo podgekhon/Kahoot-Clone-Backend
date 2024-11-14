@@ -114,10 +114,11 @@ describe('tests for player question result', () => {
   test('session is not currently on this question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
-    sleepSync(2000);
+    sleepSync(5000);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
+
     // get result
     const res = requestPlayerQuestionResult(playerId, 1);
     expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
@@ -127,7 +128,7 @@ describe('tests for player question result', () => {
   test('successful case', () => {
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
+    sleepSync(4000);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);

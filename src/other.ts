@@ -18,9 +18,11 @@ export const clear = () => {
   data.sessions = [];
   data.trash = [];
   data.players = [];
-  Object.keys(timers).forEach((sessionId) => {
-    clearTimeout(timers[parseInt(sessionId)]);
-  });
+
+  // clears timers
+  for (const key of Object.keys(timers)) {
+    clearTimeout(timers[Number(key)]);
+  }
   setData(data);
   return {};
 };

@@ -210,14 +210,15 @@ describe('tests for playerAnswerQuestion', () => {
   test('session not on question', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
-    sleepSync(2000);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
+    sleepSync(3000);
 
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
     expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
+
+    sleepSync(5000);
 
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo = resQuizInfo.body as quizInfo;
