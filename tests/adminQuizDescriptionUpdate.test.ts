@@ -1,9 +1,11 @@
 import {
   requestAdminAuthRegister,
   requestAdminQuizCreate,
+  requestAdminQuizCreateV2,
   requestAdminQuizDescriptionUpdate,
   requestAdminQuizDescriptionUpdateV2,
   requestAdminQuizInfo,
+  requestAdminQuizInfoV2,
   requestClear,
   httpStatus
 } from '../src/requestHelperFunctions';
@@ -13,147 +15,142 @@ import {
   quizCreateResponse
 } from '../src/interface';
 
-beforeEach(() => {
-  requestClear();
-});
+describe('HTTP tests for quiz description update (both v1 and v2 routes)', () => {
+  const testCases = [
+    {
+      version: 'v1',
+      requestQuizCreate: requestAdminQuizCreate,
+      requestQuizDescriptionUpdate: requestAdminQuizDescriptionUpdate,
+      requestQuizInfo: requestAdminQuizInfo,
+    },
+    {
+      version: 'v2',
+      requestQuizCreate: requestAdminQuizCreateV2,
+      requestQuizDescriptionUpdate: requestAdminQuizDescriptionUpdateV2,
+      requestQuizInfo: requestAdminQuizInfoV2,
+    },
+  ];
 
-describe('HTTP tests for quiz description update', () => {
-  let user: { token: string };
-  let quiz: { quizId: number };
+  testCases.forEach(
+    ({
+      version,
+      requestQuizCreate,
+      requestQuizDescriptionUpdate,
+      requestQuizInfo
+    }) => {
+      describe(`Tests for ${version}`, () => {
+        let user: { token: string };
+        let quiz: { quizId: number };
 
-  beforeEach(() => {
-    const resRegister = requestAdminAuthRegister(
-      'test@gmail.com',
-      'validPassword5',
-      'Patrick',
-      'Chen'
-    );
-    user = resRegister.body as tokenReturn;
+        beforeEach(() => {
+          requestClear();
 
-    const resCreateQuiz = requestAdminQuizCreate(
-      user.token,
-      'validQuizName',
-      'validQuizDescription'
-    );
-    quiz = resCreateQuiz.body as quizCreateResponse;
-  });
+          // Register a user and create a quiz
+          const resRegister = requestAdminAuthRegister(
+            'test@gmail.com',
+            'validPassword5',
+            'Patrick',
+            'Chen'
+          );
+          user = resRegister.body as tokenReturn;
 
-  test('successfully updates the quiz description', () => {
-    // Update the quiz description
-    const resUpdateQuizDescription = requestAdminQuizDescriptionUpdate(
-      quiz.quizId,
-      user.token,
-      'Updated description'
-    );
+          const resCreateQuiz = requestQuizCreate(
+            user.token,
+            'validQuizName',
+            'validQuizDescription'
+          );
+          quiz = resCreateQuiz.body as quizCreateResponse;
+        });
 
-    expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(resUpdateQuizDescription.body).toStrictEqual({});
+        test('successfully updates the quiz description', () => {
+          const resUpdateQuizDescription = requestQuizDescriptionUpdate(
+            quiz.quizId,
+            user.token,
+            'Updated description'
+          );
 
-    // Get quiz info to confirm that description is updated
-    const resQuizInfo = requestAdminQuizInfo(
-      quiz.quizId,
-      user.token
-    );
-    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(resQuizInfo.body).toMatchObject({
-      description: 'Updated description'
-    });
-  });
+          expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+          expect(resUpdateQuizDescription.body).toStrictEqual({});
 
-  test('successfully updates quiz description with an empty string', () => {
-    // Update the quiz description with an empty string
-    const resUpdateQuizDescription = requestAdminQuizDescriptionUpdate(
-      quiz.quizId,
-      user.token,
-      ''
-    );
-    expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(resUpdateQuizDescription.body).toStrictEqual({});
+          const resQuizInfo = requestQuizInfo(
+            quiz.quizId,
+            user.token
+          );
+          expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+          expect(resQuizInfo.body).toMatchObject({
+            description: 'Updated description'
+          });
+        });
 
-    // Get quiz info to confirm that description is updated
-    const resQuizInfo = requestAdminQuizInfo(
-      quiz.quizId,
-      user.token
-    );
-    expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(resQuizInfo.body).toMatchObject({
-      description: ''
-    });
-  });
+        test('successfully updates quiz description with an empty string', () => {
+          const resUpdateQuizDescription = requestQuizDescriptionUpdate(
+            quiz.quizId,
+            user.token,
+            ''
+          );
+          expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+          expect(resUpdateQuizDescription.body).toStrictEqual({});
 
-  test('returns error when token is not valid', () => {
-    const resUpdateQuizDescription = requestAdminQuizDescriptionUpdate(
-      quiz.quizId,
-      // Empty token, hence invalid
-      '',
-      'New description'
-    );
-    expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
-  });
+          const resQuizInfo = requestQuizInfo(
+            quiz.quizId,
+            user.token
+          );
+          expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+          expect(resQuizInfo.body).toMatchObject({
+            description: ''
+          });
+        });
 
-  test('returns error when quizId is not valid', () => {
-    // Attempt to update with an invalid quizId
-    const resUpdateQuizDescription = requestAdminQuizDescriptionUpdate(
-      -1,
-      user.token,
-      'New description'
-    );
+        test('returns error when token is not valid', () => {
+          const resUpdateQuizDescription = requestQuizDescriptionUpdate(
+            quiz.quizId,
+            '',
+            'New description'
+          );
+          expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
+        });
 
-    expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
-    expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
-  });
+        test('returns error when quizId is not valid', () => {
+          const resUpdateQuizDescription = requestQuizDescriptionUpdate(
+            -1,
+            user.token,
+            'New description'
+          );
 
-  test('returns error when user does not own the quiz', () => {
-    // Register a second user
-    const resRegisterUser2 = requestAdminAuthRegister(
-      'user2@gmail.com',
-      'validPassword2',
-      'User',
-      'Two'
-    );
-    const user2 = resRegisterUser2.body as tokenReturn;
+          expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+          expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
+        });
 
-    // User 2 tries to update User 1's quiz description
-    const resUpdateQuizDescription = requestAdminQuizDescriptionUpdate(
-      quiz.quizId,
-      user2.token,
-      'New description'
-    );
-    expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
-    expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
-  });
+        test('returns error when user does not own the quiz', () => {
+          const resRegisterUser2 = requestAdminAuthRegister(
+            'user2@gmail.com',
+            'validPassword2',
+            'User',
+            'Two'
+          );
+          const user2 = resRegisterUser2.body as tokenReturn;
 
-  test('returns error when description is longer than 100 characters', () => {
-    const longDescription = 'ABC'.repeat(100);
-    const resUpdateQuizDescription = requestAdminQuizDescriptionUpdate(
-      quiz.quizId,
-      user.token,
-      longDescription
-    );
+          const resUpdateQuizDescription = requestQuizDescriptionUpdate(
+            quiz.quizId,
+            user2.token,
+            'New description'
+          );
+          expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
+          expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
+        });
 
-    expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
-  });
+        test('returns error when description is longer than 100 characters', () => {
+          const longDescription = 'ABC'.repeat(100);
+          const resUpdateQuizDescription = requestQuizDescriptionUpdate(
+            quiz.quizId,
+            user.token,
+            longDescription
+          );
 
-  describe('tests for adminQuizDescriptionUpdate v2 route', () => {
-    test('successfully updates the quiz description using v2 route', () => {
-      const resUpdateQuizDescription = requestAdminQuizDescriptionUpdateV2(
-        quiz.quizId,
-        user.token,
-        'Updated description'
-      );
-      expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-      expect(resUpdateQuizDescription.body).toStrictEqual({});
-
-      // Get quiz info to confirm that description is updated
-      const resQuizInfo = requestAdminQuizInfo(
-        quiz.quizId,
-        user.token
-      );
-      expect(resQuizInfo.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-      expect(resQuizInfo.body).toMatchObject({
-        description: 'Updated description'
+          expect(resUpdateQuizDescription.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+          expect(resUpdateQuizDescription.body).toStrictEqual({ error: expect.any(String) });
+        });
       });
-    });
-  });
+    }
+  );
 });
