@@ -93,7 +93,7 @@ describe('tests for playerResults', () => {
   test('successfully answer question for 1 player', () => {
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -147,7 +147,7 @@ describe('tests for playerResults', () => {
 
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -220,7 +220,7 @@ describe('tests for playerResults', () => {
 
     // Answer first question
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const resQuizInfo1 = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo1 = resQuizInfo1.body as quizInfo;
@@ -232,7 +232,7 @@ describe('tests for playerResults', () => {
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const resQuizInfo2 = requestAdminQuizInfo(quizId, usertoken);
     const quizInfo2 = resQuizInfo2.body as quizInfo;
@@ -287,7 +287,7 @@ describe('tests for playerResults', () => {
   test('answer question incorrectly for one player', () => {
     // Update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // Get the incorrect answer ID for the question
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
@@ -341,7 +341,7 @@ describe('tests for playerResults', () => {
   test('should return BAD_REQUEST if session is not in FINAL_RESULTS state', () => {
     // update state to question_open
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(4000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // get answer for question from quizinfo
     const resQuizInfo = requestAdminQuizInfo(quizId, usertoken);
