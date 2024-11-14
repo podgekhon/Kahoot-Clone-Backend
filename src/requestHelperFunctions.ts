@@ -220,7 +220,7 @@ export const requestAdminUserDetails = (
  * @param { string } token
  * @returns
  */
-export const requestAdminUserDetailsupdatev2 = (
+export const requestAdminUserDetailsv2 = (
   token: string
 ): {
   body: ReturnType <typeof adminUserDetails>,
