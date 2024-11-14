@@ -209,10 +209,10 @@ export const playerMessage = (playerId: number, message: messageBody) : emptyRet
   const newMessage = message.messageBody;
   // check if player exists
   const quizSession = findQuizSessionByPlayerId(data, playerId);
-  const validPlayer = quizSession.players.find(p => p.playerId === playerId);
-  if (!validPlayer) {
+  if (!quizSession) {
     throw new Error('INVALID_PLAYER');
   }
+  const validPlayer = quizSession.players.find(p => p.playerId === playerId);
   if (newMessage.length < 1 || newMessage.length > 100) {
     throw new Error('INVALID_MESSAGE_LENGTH');
   }
@@ -238,10 +238,10 @@ export const playerState = (playerId: number) : PlayerState => {
   const data = getData();
   // find quiz session, check player exists or not
   const quizSession = findQuizSessionByPlayerId(data, playerId);
-  const player = quizSession.players.find(p => p.playerId === playerId);
-  if (!player) {
+  if (!quizSession) {
     throw new Error('INVALID_PLAYER');
   }
+  const player = quizSession.players.find(p => p.playerId === playerId);
 
   const quiz = quizSession.quizCopy;
   const response: PlayerState = {
@@ -262,11 +262,9 @@ export const playerMessageList = (playerId: number) : messageList => {
   const data = getData();
   // check if player exists
   const quizSession = findQuizSessionByPlayerId(data, playerId);
-  const validPlayer = quizSession.players.find(p => p.playerId === playerId);
-  if (!validPlayer) {
+  if (!quizSession) {
     throw new Error('INVALID_PLAYER');
   }
-  const session = validPlayer.sessionId;
 
   const messages = quizSession.messages;
 
@@ -288,11 +286,11 @@ export const playerResults = (playerId: number): playerResultsResponse | errorMe
   const data = getData();
 
   const quizSession = findQuizSessionByPlayerId(data, playerId);
-  const player = quizSession.players.find(p => p.playerId === playerId);
-
-  if (!player) {
+  
+  if (!quizSession) {
     throw new Error('PLAYERID_NOT_EXIST');
   }
+  const player = quizSession.players.find(p => p.playerId === playerId);
 
   // Check if the session is in the FINAL_RESULTS state
   if (quizSession.sessionState !== quizState.FINAL_RESULTS) {
@@ -362,11 +360,11 @@ export const playerQuestionResult = (
 ): questionResult => {
   const data = getData();
   const session = findQuizSessionByPlayerId(data, playerId);
-  const player = session.players.find(p => p.playerId === playerId);
-
-  if (!player) {
+  if (!session) {
     throw new Error('INVALID_PLAYER');
   }
+  const player = session.players.find(p => p.playerId === playerId);
+
 
 
   const question = session.quizCopy.questions[questionPosition - 1];

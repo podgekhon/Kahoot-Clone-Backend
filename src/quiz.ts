@@ -1098,7 +1098,6 @@ export const adminQuizSessionUpdate = (
     if (quizSession.sessionState === quizState.END) {
       throw new Error('INVALID_ACTION');
     }
-
     // update quiz session state
     quizSession.sessionState = quizState.END;
 
@@ -1177,7 +1176,7 @@ export const adminQuizSessionUpdate = (
 
           updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
           setData(new2Data);
-        }, 5000);
+        }, quiz.timeLimit * 1000);
       }
       setData(newData);
     }, 3000);
@@ -1212,7 +1211,7 @@ export const adminQuizSessionUpdate = (
 
       updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
       setData(new2Data);
-    }, 5000);
+    }, quiz.timeLimit * 1000);
   }
 
   // if action is 'ANSWER_SHOW'

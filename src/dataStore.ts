@@ -7,8 +7,6 @@ let data: dataStore = {
   quizzes: [],
   sessions: [],
   trash: [],
-  players: [],
-  // sessioninfo: []
 };
 
 // YOU MAY MODIFY THIS OBJECT ABOVE
