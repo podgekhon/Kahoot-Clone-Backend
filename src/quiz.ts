@@ -521,9 +521,7 @@ export const adminQuizRemove = (
   const authUserId = tokenValidation.authUserId;
 
   const error = isValidQuiz(authUserId, quizId, data);
-  if (error) {
-    throw new Error(error.error);
-  }
+
 
   // remove the correct quiz
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
@@ -653,9 +651,6 @@ export const adminQuizDescriptionUpdate = (
 
   // error checkings for invalid userId, quizId
   const error = isValidQuiz(authUserId, quizId, data);
-  if (error) {
-    throw new Error('INVALID_QUIZ');
-  }
 
   // new description should be less than 100 characters
   if (description.length > 100) {

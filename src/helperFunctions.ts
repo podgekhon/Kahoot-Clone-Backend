@@ -227,18 +227,18 @@ export const isValidQuiz = (
   authUserId: number,
   quizId: number,
   data: data
-): errorMessages | null => {
+): null => {
   const validQuizId = data.quizzes.find(quiz => quiz.quizId === quizId);
 
   // check invalid user id
   if (!validQuizId) {
     // invalid quiz id
-    return { error: 'INVALID_QUIZ' };
+    throw new Error ('INVALID_QUIZ');
   } else if (validQuizId.ownerId !== authUserId) {
     // quiz id does not refer to it's owner
-    return { error: 'INVALID_OWNER' };
+    throw new Error ('INVALID_OWNER');
   }
-  return null;
+  return ;
 };
 
 /**
