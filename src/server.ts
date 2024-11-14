@@ -113,13 +113,14 @@ app.post('/v1/admin/auth/register', (req: Request, res: Response) => {
 // adminAuthLogin
 app.post('/v1/admin/auth/login', (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const result = adminAuthLogin(email, password);
 
-  if ('error' in result) {
-    return res.status(httpStatus.BAD_REQUEST).json(result);
+  try {
+    const result = adminAuthLogin(email, password);
+    return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
+  } catch (error) {
+    const { status, message } = errorMap[error.message];
+    return res.status(status).json({ error: message });
   }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
 });
 
 // adminUserPasswordUpdate
@@ -284,19 +285,7 @@ app.put('/v2/admin/quiz/:quizid/question/:questionid', (req: Request, res: Respo
   handleQuizQuestionUpdate(req, res, 'v2');
 });
 
-// adminUserDetails v1
-app.get('/v1/admin/user/details', (req, res) => {
-  const { token } = req.query;
-
-  const result = adminUserDetails(token as string);
-  if ('error' in result) {
-    return res.status(httpStatus.UNAUTHORIZED).json({ error: result.error });
-  }
-
-  return res.status(httpStatus.SUCCESSFUL_REQUEST).json(result);
-});
-
-// adminUserDetails v2
+// adminUserDetails
 const handleAdminUserDetails = (req: Request, res: Response) => {
   let token;
   if (req.query.token) {

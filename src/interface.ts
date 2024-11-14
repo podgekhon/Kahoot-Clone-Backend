@@ -20,7 +20,7 @@ export interface dataStore {
   quizzes: quiz[],
   sessions: token[];
   trash: quiz[];
-  players: PlayerState[];
+  // players: PlayerState[];
 }
 
 export interface player {

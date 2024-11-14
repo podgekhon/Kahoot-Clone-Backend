@@ -212,7 +212,7 @@ describe('tests for playerAnswerQuestion', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-    sleepSync(3000);
+    requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;

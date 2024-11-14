@@ -386,3 +386,16 @@ export function generateRandomName(): string {
 
   return randomLetters + randomNumbers;
 }
+
+export function findQuizSessionByPlayerId(data: dataStore, playerId: number): quizSession | null {
+  // Search through all quizzes
+  for (const quiz of data.quizzes) {
+    // Find in activeSessions
+    const activeSession = quiz.activeSessions.find(session =>
+      session.players.some(player => player.playerId === playerId)
+    );
+    if (activeSession) return activeSession;
+  }
+  // Return null if no session is found
+  return null;
+}
