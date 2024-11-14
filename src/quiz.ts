@@ -1152,7 +1152,6 @@ export const adminQuizSessionUpdate = (
     });
   }
 
-  console.log(`QUIZ SESSION STATE BEFORE EOF: ${quizSession.sessionState}`);
   setData(data);
   return {};
 };
