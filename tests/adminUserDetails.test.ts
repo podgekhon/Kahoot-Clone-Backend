@@ -3,7 +3,7 @@ import {
   requestAdminAuthRegister,
   requestAdminAuthLogin,
   requestAdminUserDetails,
-  requestAdminUserDetailsupdatev2
+  requestAdminUserDetailsv2
 } from '../src/requestHelperFunctions';
 import { tokenReturn } from '../src/interface';
 
@@ -79,7 +79,7 @@ describe('test for adminUserDetails v2', () => {
   });
 
   test('successfully returns details of a valid user', () => {
-    const resDetails = requestAdminUserDetailsupdatev2(user1token);
+    const resDetails = requestAdminUserDetailsv2(user1token);
     expect(resDetails.body).toStrictEqual({
       user: {
         userId: expect.any(Number),
@@ -92,7 +92,7 @@ describe('test for adminUserDetails v2', () => {
   });
 
   test('returns error when token is not valid', () => {
-    const resDetails = requestAdminUserDetailsupdatev2('1');
+    const resDetails = requestAdminUserDetailsv2('1');
     expect(resDetails.body).toStrictEqual({ error: expect.any(String) });
   });
 
@@ -100,7 +100,7 @@ describe('test for adminUserDetails v2', () => {
     // Simulate multiple successful logins
     requestAdminAuthLogin('test@gmail.com', 'validPassword5');
     requestAdminAuthLogin('test@gmail.com', 'validPassword5');
-    const resDetails = requestAdminUserDetailsupdatev2(user1token);
+    const resDetails = requestAdminUserDetailsv2(user1token);
 
     // Check if the number of successful logins is correct (1 registration + 2 logins)
     expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
@@ -110,7 +110,7 @@ describe('test for adminUserDetails v2', () => {
     // Simulate failed login attempts
     requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
     requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
-    const resDetails = requestAdminUserDetailsupdatev2(user1token);
+    const resDetails = requestAdminUserDetailsv2(user1token);
 
     // Check if the number of failed login attempts is correct (2 failed attempts)
     expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
@@ -121,7 +121,7 @@ describe('test for adminUserDetails v2', () => {
     requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
     requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
     requestAdminAuthLogin('test@gmail.com', 'validPassword5');
-    const resDetails = requestAdminUserDetailsupdatev2(user1token);
+    const resDetails = requestAdminUserDetailsv2(user1token);
 
     // Check if the failed attempts reset to 0 after a successful login
     expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });

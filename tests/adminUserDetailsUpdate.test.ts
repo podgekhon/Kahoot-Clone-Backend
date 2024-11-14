@@ -2,7 +2,8 @@ import {
   requestClear,
   requestAdminAuthRegister,
   requestAdminUserDetailsUpdate,
-  requestAdminUserDetails
+  requestAdminUserDetails,
+  requestAdminUserDetailsUpdateV2
 } from '../src/requestHelperFunctions';
 import { tokenReturn } from '../src/interface';
 
@@ -106,7 +107,7 @@ describe('test for adminUserDetails V2', () => {
   });
 
   test('invalid token', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = requestAdminUserDetailsUpdateV2(
       'abcd',
       'newadmin@unsw.edu.au',
       'Guanlin',
@@ -117,7 +118,7 @@ describe('test for adminUserDetails V2', () => {
   });
 
   test('empty token', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = requestAdminUserDetailsUpdateV2(
       ' ',
       'newadmin@unsw.edu.au',
       'Guanlin',
@@ -128,7 +129,7 @@ describe('test for adminUserDetails V2', () => {
   });
 
   test('Update user details successfully', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = requestAdminUserDetailsUpdateV2(
       user1token,
       'newadmin@unsw.edu.au',
       'Guanlin',
