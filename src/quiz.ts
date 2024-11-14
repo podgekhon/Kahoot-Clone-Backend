@@ -1117,7 +1117,7 @@ export const adminQuizSessionUpdate = (
     }
 
     // Find and update all players in the session
-    data.players.forEach((player: PlayerState) => {
+    quizSession.players.forEach((player: PlayerState) => {
       if (player.sessionId === sessionId) {
         player.atQuestion = 0;
       }
@@ -1160,7 +1160,7 @@ export const adminQuizSessionUpdate = (
       }
 
       // Find and update all players in the session
-      data.players.forEach((player: PlayerState) => {
+      quizSession.players.forEach((player: PlayerState) => {
         if (player.sessionId === sessionId) {
           player.atQuestion = (player.atQuestion ?? 0) + 1;
         }
@@ -1249,7 +1249,7 @@ export const adminQuizSessionUpdate = (
     quizSession.sessionState = quizState.FINAL_RESULTS;
     console.log('action final Result');
     // Find and update all players in the session
-    data.players.forEach((player: PlayerState) => {
+    quizSession.players.forEach((player: PlayerState) => {
       if (player.sessionId === sessionId) {
         player.atQuestion = 0;
       }
@@ -1297,7 +1297,7 @@ sessionState => {
     throw new Error('INVALID_OWNER');
   }
 
-  const matchedPlayers = data.players.filter(player => player.sessionId === sessionId);
+  const matchedPlayers = FindSession.players.filter(player => player.sessionId === sessionId);
   const Playersname = matchedPlayers.map(player => player.playerName);
 
   const response : sessionState = {
@@ -1365,7 +1365,7 @@ export const adminGetFinalResults = (
   }
 
   // first, get player list
-  const playerList = data.players.filter((player) =>
+  const playerList = quizSession.players.filter((player) =>
     player.sessionId === sessionId && player.score !== undefined
   ).map(
     player => (
@@ -1394,7 +1394,7 @@ export const adminGetFinalResults = (
         }
       ).map(
         (submission) => {
-          const player = data.players.find((player) => player.playerId === submission.playerId);
+          const player = quizSession.players.find((player) => player.playerId === submission.playerId);
           return player ? player.playerName || '' : '';
         }
         // then sort by alphabetically
@@ -1403,7 +1403,7 @@ export const adminGetFinalResults = (
       // get the total answer time
       const totalAnswerTime = (question.answerSubmissions || []).reduce((acc, submission) => {
         // find user associated with submission
-        const player = data.players.find(
+        const player = quizSession.players.find(
           (player) => player.playerId === submission.playerId &&
           player.sessionId === quizSession.sessionId
         );
@@ -1418,7 +1418,7 @@ export const adminGetFinalResults = (
       const averageAnswerTime = playersCorrect.length > 0
         ? totalAnswerTime / playersCorrect.length
         : 0;
-      const percentCorrect = (playersCorrect.length / data.players.length) * 100;
+      const percentCorrect = (playersCorrect.length / quizSession.players.length) * 100;
 
       return {
         questionId: question.questionId,
