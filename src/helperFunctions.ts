@@ -50,6 +50,16 @@ export function generateRandomColour(): string {
 }
 
 /**
+ * Generates a random Id.
+ *
+ * @returns {number} - a random integer Id
+ */
+export function generateRandomId(): number {
+  const randomId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+  return randomId;
+}
+
+/**
   * Validates the session token and returns the associated authUserId if valid.
   *
   * @param {string} token - the token to validate
@@ -63,16 +73,16 @@ export function validateToken(
 ): {
   authUserId: number
 } | { error: string } {
-  let decodedToken;
+  let parsedToken;
   try {
     // Try to decode and parse the token as a valid JSON string
-    decodedToken = JSON.parse(decodeURIComponent(token));
+    parsedToken = JSON.parse(token);
   } catch (error) {
     // If parsing fails, return an error message
     return { error: 'Invalid token format.' };
   }
 
-  const session = data.sessions.find(s => s.sessionId === decodedToken.sessionId);
+  const session = data.sessions.find(s => s.sessionId === parsedToken.sessionId);
   if (session) {
     return { authUserId: session.userId };
   }
@@ -88,13 +98,13 @@ export function validateToken(
   * @returns {string} - A URL-encoded token containing the session ID
   */
 export function generateToken(userId: number, data: dataStore): string {
-  const sessionId = randomId(1000000);
+  const sessionId = generateRandomId();
   const session: token = {
     sessionId,
     userId
   };
   data.sessions.push(session);
-  return encodeURIComponent(JSON.stringify({ sessionId: sessionId }));
+  return JSON.stringify({ sessionId: sessionId });
 }
 
 /// ///////////////////////////////////////////////////////////////

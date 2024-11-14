@@ -304,46 +304,49 @@ export const requestAdminUserDetailsUpdateV2 = (
 };
 
 // adminQuizList
+// Generic function for listing quizzes
 /**
- * Makes http request to get list of quizzes
+ * Makes an HTTP request to get a list of quizzes for the specified version
  *
- * @param { string } token
- * @returns { Response }
+ * @param {string} token -
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminQuizList = (
-  token: string
+const requestAdminQuizListGeneric = (
+  token: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminQuizList>,
+  body: ReturnType<typeof adminQuizList>,
   statusCode: number
 } => {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v1/admin/quiz/list',
-    {
-      qs: { token },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/list`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+  };
+
+  // Add query parameter for v1 or header for v2
+  if (version === 'v1') {
+    options.qs = { token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('GET', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-export const requestAdminQuizListV2 = (
-  token: string
-): {
-  body: ReturnType <typeof adminQuizList>,
-  statusCode: number
-} => {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v2/admin/quiz/list',
-    {
-      headers: { token },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+/**
+ * Makes an HTTP request to get a list of quizzes using v1 route
+ */
+export const requestAdminQuizList = (token: string) =>
+  requestAdminQuizListGeneric(token, 'v1');
 
+/**
+ * Makes an HTTP request to get a list of quizzes using v2 route
+ */
+export const requestAdminQuizListV2 = (token: string) =>
+  requestAdminQuizListGeneric(token, 'v2');
 // adminQuizCreate
 /**
  * Makes an HTTP request to create a quiz
@@ -731,199 +734,201 @@ export const requestAdminAuthLogoutv2 = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminTrashList v1
+// adminTrashList
 /**
- * Makes http request to list quizzes in the trash
+ * Makes an HTTP request to list quizzes in the trash for the specified version
  *
- * @param { string } token
- * @returns { Response }
+ * @param {string} token
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminTrashList = (
-  token: string
+const requestAdminTrashListGeneric = (
+  token: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminTrashList>,
+  body: ReturnType<typeof adminTrashList>,
   statusCode: number
 } => {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v1/admin/quiz/trash',
-    {
-      qs: { token },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/trash`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+  };
+
+  // Set query string for v1 or headers for v2
+  if (version === 'v1') {
+    options.qs = { token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('GET', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminTrashList v2
 /**
- * Makes http request to list quizzes in the trash
- *
- * @param { string } token
- * @returns { Response }
+ * Makes an HTTP request to list quizzes in the trash using v1 route
  */
-export const requestAdminTrashListv2 = (
-  token: string
-): {
-  body: ReturnType <typeof adminTrashList>,
-  statusCode: number
-} => {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v2/admin/quiz/trash',
-    {
-      headers: {
-        token: token
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+export const requestAdminTrashList = (token: string) =>
+  requestAdminTrashListGeneric(token, 'v1');
+
+/**
+ * Makes an HTTP request to list quizzes in the trash using v2 route
+ */
+export const requestAdminTrashListV2 = (token: string) =>
+  requestAdminTrashListGeneric(token, 'v2');
 
 // adminQuizRestore
 /**
- * Makes http request to restore a quiz
+ * Makes an HTTP request to restore a quiz for the specified version
  *
- * @param { number } quizId
- * @param { string } token
- * @returns
+ * @param {number} quizId
+ * @param {string} token
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminQuizRestore = (
-  quizId: number, token: string
+const requestAdminQuizRestoreGeneric = (
+  quizId: number,
+  token: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminQuizRestore>,
+  body: ReturnType<typeof adminQuizRestore>,
   statusCode: number
 } => {
-  const res = request(
-    'POST',
-    SERVER_URL + `/v1/admin/quiz/${quizId}/restore`,
-    {
-      json: {
-        token: token,
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
-/**
- * Makes http request to restore a quiz
- *
- * @param { number } quizId
- * @param { string } token
- * @returns
- */
-export const requestAdminQuizRestoreV2 = (
-  quizId: number, token: string
-): {
-  body: ReturnType <typeof adminQuizRestore>,
-  statusCode: number
-} => {
-  const res = request(
-    'POST',
-    SERVER_URL + `/v2/admin/quiz/${quizId}/restore`,
-    {
-      headers: {
-        token: token
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/${quizId}/restore`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+  };
+
+  // Set token in body for v1 or in headers for v2
+  if (version === 'v1') {
+    options.json = { token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('POST', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminTrashEmpty v1
 /**
- * Makes http request to empty a trash
- *
- * @param { string } token
- * @param { array  } quizIds - array of quiz ID
- * @returns { Response }
+ * Makes an HTTP request to restore a quiz using v1 route
  */
-export const requestAdminTrashEmpty = (
-  token: string, quizIds: number[]
+export const requestAdminQuizRestore = (quizId: number, token: string) =>
+  requestAdminQuizRestoreGeneric(quizId, token, 'v1');
+
+/**
+ * Makes an HTTP request to restore a quiz using v2 route
+ */
+export const requestAdminQuizRestoreV2 = (quizId: number, token: string) =>
+  requestAdminQuizRestoreGeneric(quizId, token, 'v2');
+
+// adminTrashEmpty
+/**
+ * Makes an HTTP request to empty the trash for the specified version
+ *
+ * @param {string} token - Authentication token
+ * @param {number[]} quizIds - Array of quiz IDs to be deleted
+ * @param {string} version - API version ("v1" or "v2")
+ * @returns {Response} - The response body and status code
+ */
+const requestAdminTrashEmptyGeneric = (
+  token: string,
+  quizIds: number[],
+  version: string
 ): {
-  body: ReturnType <typeof adminTrashEmpty>,
+  body: ReturnType<typeof adminTrashEmpty>,
   statusCode: number
 } => {
-  const res = request(
-    'DELETE',
-    SERVER_URL + '/v1/admin/quiz/trash/empty',
-    {
-      qs: { token, quizIds: JSON.stringify(quizIds) },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/quiz/trash/empty`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+    qs: { quizIds: JSON.stringify(quizIds) },
+  };
+
+  // Set token in body for v1 or in headers for v2
+  if (version === 'v1') {
+    options.qs = { ...options.qs, token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('DELETE', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminTrashEmpty v2
 /**
- * Makes http request to empty a trash
- *
- * @param { string } token
- * @param { array  } quizIds - array of quiz ID
- * @returns { Response }
+ * Makes an HTTP request to empty the trash using v1 route
  */
-export const requestAdminTrashEmptyV2 = (
-  token: string, quizIds: number[]
-): {
-  body: ReturnType <typeof adminTrashEmpty>,
-  statusCode: number
-} => {
-  const res = request(
-    'DELETE',
-    SERVER_URL + '/v2/admin/quiz/trash/empty',
-    {
-      headers: { token },
-      qs: { quizIds: JSON.stringify(quizIds) },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+export const requestAdminTrashEmpty = (token: string, quizIds: number[]) =>
+  requestAdminTrashEmptyGeneric(token, quizIds, 'v1');
+
+/**
+ * Makes an HTTP request to empty the trash using v2 route
+ */
+export const requestAdminTrashEmptyV2 = (token: string, quizIds: number[]) =>
+  requestAdminTrashEmptyGeneric(token, quizIds, 'v2');
 
 // adminQuizTransfer
 /**
- * Makes http request to transfer a quiz to antoher user
+ * Makes an HTTP request to transfer a quiz to another user for the specified version
  *
- * @param { number } quizId
- * @param { string }token
- * @param { string } userEmail
- * @returns { Response }
+ * @param {number} quizId
+ * @param {string} token
+ * @param {string} userEmail - the email of the user to transfer the quiz to
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-const makeQuizTransferRequest = (
+const requestAdminQuizTransferGeneric = (
   quizId: number,
   token: string,
   userEmail: string,
-  version: string,
-  headers: Record<string, string> = {}
-): { body: ReturnType <typeof adminQuizTransfer>, statusCode: number } => {
-  const res = request(
-    'POST',
-    SERVER_URL + `/${version}/admin/quiz/${quizId}/transfer`,
-    {
-      headers,
-      json: {
-        token: token,
-        userEmail: userEmail,
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  version: string
+): {
+  body: ReturnType<typeof adminQuizTransfer>,
+  statusCode: number
+} => {
+  const url = `${SERVER_URL}/${version}/admin/quiz/${quizId}/transfer`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+  };
+
+  // Set token in body for v1 or in headers for v2
+  if (version === 'v1') {
+    options.json = {
+      token,
+      userEmail,
+    };
+  } else {
+    options.headers = { token };
+    options.json = { userEmail };
+  }
+
+  // Make the request using the appropriate method
+  const res = request('POST', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// v1 route
+/**
+ * Makes an HTTP request to transfer a quiz using the v1 route
+ */
 export const requestAdminQuizTransfer = (
-  quizId: number, token: string, userEmail: string
-) => makeQuizTransferRequest(quizId, token, userEmail, 'v1');
+  quizId: number,
+  token: string,
+  userEmail: string
+) => requestAdminQuizTransferGeneric(quizId, token, userEmail, 'v1');
 
-// v2 route
+/**
+ * Makes an HTTP request to transfer a quiz using the v2 route
+ */
 export const requestAdminQuizTransferV2 = (
-  quizId: number, token: string, userEmail: string
-) => makeQuizTransferRequest(quizId, token, userEmail, 'v2');
+  quizId: number,
+  token: string,
+  userEmail: string
+) => requestAdminQuizTransferGeneric(quizId, token, userEmail, 'v2');
 
 // adminQuizQuestionCreate
 /**

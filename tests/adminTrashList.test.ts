@@ -4,7 +4,7 @@ import {
   requestAdminQuizRemove,
   requestAdminTrashList,
   requestClear,
-  requestAdminTrashListv2
+  requestAdminTrashListV2
 } from '../src/requestHelperFunctions';
 import {
   quizCreateResponse,
@@ -99,26 +99,26 @@ describe('test for adminTrashList v2', () => {
   });
 
   test('empty token', () => {
-    trashList = requestAdminTrashListv2('12345');
+    trashList = requestAdminTrashListV2('12345');
     expect(trashList.statusCode).toStrictEqual(401);
     expect(trashList.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Get trash list with empty token', () => {
-    trashList = requestAdminTrashListv2(' ');
+    trashList = requestAdminTrashListV2(' ');
     expect(trashList.statusCode).toStrictEqual(401);
     expect(trashList.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Get trash list success', () => {
     requestAdminQuizRemove(quizID, user1token);
-    trashList = requestAdminTrashListv2(user1token);
+    trashList = requestAdminTrashListV2(user1token);
     expect(trashList.statusCode).toStrictEqual(200);
     expect(trashList.body).toHaveProperty('quizzes');
   });
 
   test('Get trash list with token from different user', () => {
-    trashList = requestAdminTrashListv2(user2token);
+    trashList = requestAdminTrashListV2(user2token);
     expect(trashList.statusCode).toStrictEqual(401);
     expect(trashList.body).toStrictEqual({ error: expect.any(String) });
   });
