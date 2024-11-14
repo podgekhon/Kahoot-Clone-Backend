@@ -1074,7 +1074,7 @@ export const adminQuizSessionUpdate = (
 
           updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
           setData(new2Data);
-        }, quiz.timeLimit * 1000);
+        }, quizSession.quizCopy.questions[quizSession.sessionQuestionPosition - 1].timeLimit * 1000);
       }
       setData(newData);
     }, 3000);
@@ -1109,7 +1109,7 @@ export const adminQuizSessionUpdate = (
 
       updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
       setData(new2Data);
-    }, quiz.timeLimit * 1000);
+    }, quizSession.quizCopy.questions[quizSession.sessionQuestionPosition - 1].timeLimit * 1000);
   }
 
   // if action is 'ANSWER_SHOW'

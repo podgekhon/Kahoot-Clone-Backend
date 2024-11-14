@@ -155,7 +155,6 @@ export const playerAnswerQuestion = (
     // Add a new submission if none exists
     question.answerSubmissions.push(playerAnswer);
   }
-  //  question.answerSubmissions.push(playerAnswer);
 
   const correctAnswerIds = question.answerOptions
     .filter(opt => opt.correct)
