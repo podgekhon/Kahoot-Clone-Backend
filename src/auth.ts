@@ -66,9 +66,8 @@ export const adminAuthRegister = (
     throw new Error('Last name invalid');
   }
 
-  const passwordValidation = isValidPassword(password);
+  isValidPassword(password);
   // Check if the returned object from isValidPassword helper function has an
-
 
   const hashedPassword = sha256(password).toString();
   const authUserId = randomId(100000);
@@ -241,7 +240,7 @@ export const adminUserPasswordUpdate = (
     throw new Error('NEW_PASSWORD_USED');
   }
 
-  const passwordValidation = isValidPassword(newPassword);
+  isValidPassword(newPassword);
 
   // Add the current password to oldPasswords array
   user.oldPasswords.push(user.currentPassword);
@@ -262,7 +261,6 @@ export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
   const data = getData();
 
   const validation = validateToken(token, data);
-
 
   const sessionIndex = data.sessions.findIndex(
     (session) => session.userId === validation.authUserId);

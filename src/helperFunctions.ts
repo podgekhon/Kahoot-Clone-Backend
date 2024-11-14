@@ -79,14 +79,14 @@ export function validateToken(
     parsedToken = JSON.parse(token);
   } catch (error) {
     // If parsing fails, return an error message
-    throw new Error ('INVALID_TOKEN');
+    throw new Error('INVALID_TOKEN');
   }
-  
+
   const session = data.sessions.find(s => s.sessionId === parsedToken.sessionId);
   if (session) {
     return { authUserId: session.userId };
   }
-  throw new Error ('INVALID_TOKEN');
+  throw new Error('INVALID_TOKEN');
 }
 
 /**
@@ -145,7 +145,7 @@ export const isValidPassword = (
 ): { valid?: boolean; error?: string } => {
   // Check if password length is at least 8 characters
   if (password.length < 8) {
-    throw new Error ('INVALID_PASSWORD');
+    throw new Error('INVALID_PASSWORD');
   }
 
   // Check if password contains at least one letter
@@ -153,7 +153,7 @@ export const isValidPassword = (
   // Check if password contains at least one number
   const containsNumber = /\d/.test(password);
   if (!containsLetter || !containsNumber) {
-    throw new Error ('INVALID_PASSWORD');
+    throw new Error('INVALID_PASSWORD');
   }
 
   return { valid: true };
@@ -198,7 +198,6 @@ export const isStringValid = (string: string): boolean => {
   return true;
 };
 
-
 /**
   * checks if name is already taken
   *
@@ -233,12 +232,11 @@ export const isValidQuiz = (
   // check invalid user id
   if (!validQuizId) {
     // invalid quiz id
-    throw new Error ('INVALID_QUIZ');
+    throw new Error('INVALID_QUIZ');
   } else if (validQuizId.ownerId !== authUserId) {
     // quiz id does not refer to it's owner
-    throw new Error ('INVALID_OWNER');
+    throw new Error('INVALID_OWNER');
   }
-  return ;
 };
 
 /**
@@ -257,29 +255,27 @@ export const isValidQuestion = (
   const { question, timeLimit, points, answerOptions } = questionBody;
 
   if (question.length < 5 || question.length > 50) {
-    throw new Error ('INVALID_QUESTION_LENGTH');
+    throw new Error('INVALID_QUESTION_LENGTH');
   }
 
   if (answerOptions.length < 2 || answerOptions.length > 6) {
-    throw new Error ('INVALID_ANSWER_COUNT');
+    throw new Error('INVALID_ANSWER_COUNT');
   }
 
   if (timeLimit <= 0) {
-    throw new Error ('INVALID_TIME_LIMIT');
+    throw new Error('INVALID_TIME_LIMIT');
   }
 
   // Validate if the total quiz time limit is not exceeded
   // We need to add timeLimit to the reduce method because the
   // new question hasn't been added to the questions array yet.
   if (quiz.questions.reduce((sum, q) => sum + q.timeLimit, 0) + timeLimit > 180) {
-    throw new Error ('EXCEEDED_TOTAL_TIME_LIMIT');
+    throw new Error('EXCEEDED_TOTAL_TIME_LIMIT');
   }
 
   if (points < 1 || points > 10) {
-    throw new Error ('INVALID_POINTS');
+    throw new Error('INVALID_POINTS');
   }
-
-  return;
 };
 
 /**
@@ -299,10 +295,10 @@ export const validateAnswers = (
 
   for (const answerOption of answerOptions) {
     if (answerOption.answer.length < 1 || answerOption.answer.length > 30) {
-      throw new Error ('INVALID_ANSWER_LENGTH');
+      throw new Error('INVALID_ANSWER_LENGTH');
     }
     if (answerSet.has(answerOption.answer)) {
-      throw new Error ('DUPLICATE_ANSWERS');
+      throw new Error('DUPLICATE_ANSWERS');
     }
     answerSet.add(answerOption.answer);
     if (answerOption.correct) {
@@ -311,10 +307,8 @@ export const validateAnswers = (
   }
 
   if (!hasCorrectAnswer) {
-    throw new Error ('NO_CORRECT_ANSWER');
+    throw new Error('NO_CORRECT_ANSWER');
   }
-
-  return;
 };
 
 /**

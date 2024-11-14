@@ -148,7 +148,7 @@ export const adminQuizCreate = (
 
   // checks for name length
   if (name.length < 3 || name.length > 30) {
-    throw new Error ('INVALID_NAME_LENGTH');
+    throw new Error('INVALID_NAME_LENGTH');
   }
 
   // checks if check contains invalid characters
@@ -331,7 +331,6 @@ export const adminQuizQuestionCreate = (
   const { answerOptions } = questionBody;
   validateAnswers(answerOptions);
 
-
   if (version === 'v2' && !validQuestionThumbnailUrl(questionBody.thumbnailUrl)) {
     throw new Error('INVALID_QUESTION_THUMBNAIL_URL');
   }
@@ -404,7 +403,6 @@ export const adminQuizQuestionUpdate = (
 
   const { answerOptions } = updatedQuestionBody;
   validateAnswers(answerOptions);
-
 
   // Update question details
   questionToUpdate.question = updatedQuestionBody.question;
@@ -510,8 +508,7 @@ export const adminQuizRemove = (
 
   const authUserId = tokenValidation.authUserId;
 
-  const error = isValidQuiz(authUserId, quizId, data);
-
+  isValidQuiz(authUserId, quizId, data);
 
   // remove the correct quiz
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
@@ -605,7 +602,7 @@ export const adminQuizNameUpdate = (
   }
   // checks for name length
   if (name.length < 3 || name.length > 30) {
-    throw new Error ('INVALID_NAME_LENGTH');
+    throw new Error('INVALID_NAME_LENGTH');
   }
   // check if user has duplicate quiz names
   if (isNameTaken(authUserId, name, data)) {
@@ -640,7 +637,7 @@ export const adminQuizDescriptionUpdate = (
   const authUserId = tokenValidation.authUserId;
 
   // error checkings for invalid userId, quizId
-  const error = isValidQuiz(authUserId, quizId, data);
+  isValidQuiz(authUserId, quizId, data);
 
   // new description should be less than 100 characters
   if (description.length > 100) {
@@ -1290,7 +1287,7 @@ export const adminGetFinalResults = (
       ).map(
         (submission) => {
           const player = quizSession.players.find(
-            (player) =>player.playerId === submission.playerId
+            (player) => player.playerId === submission.playerId
           );
           return player ? player.playerName || '' : '';
         }
