@@ -513,6 +513,12 @@ export const adminQuizRemove = (
   // remove the correct quiz
   const quizIndex = data.quizzes.findIndex(quiz => quiz.quizId === quizId);
   const removeQuiz = data.quizzes[quizIndex];
+  // check if any session of this quiz is not in END state
+  for (const sessions of removeQuiz.activeSessions) {
+    if (sessions.sessionState !== quizState.END) {
+      throw new Error ('SESSION_NOT_IN_END');
+    }
+  }
   removeQuiz.timeLastEdited = Math.floor(Date.now() / 1000);
   data.trash.push(removeQuiz);
   data.quizzes.splice(quizIndex, 1);
