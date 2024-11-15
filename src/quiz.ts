@@ -8,7 +8,7 @@ import {
   isValidQuestion,
   validateAnswers,
   validQuestionThumbnailUrl,
-  randomId
+  generateRandomId
 } from './helperFunctions';
 
 import {
@@ -167,7 +167,7 @@ export const adminQuizCreate = (
 
   // push new quiz object into db & return quizId
   const newQuiz: quiz = {
-    quizId: randomId(10000),
+    quizId: generateRandomId(),
     ownerId: authUserId,
     atQuestion: 1,
     // sessionState: quizState.END,
@@ -243,7 +243,7 @@ export const adminStartQuizSession = (
   };
 
   const newQuizSession: quizSession = {
-    sessionId: randomId(10000),
+    sessionId: generateRandomId(),
     sessionState: quizState.LOBBY,
     quizCopy,
     autoStartNum,
@@ -333,12 +333,12 @@ export const adminQuizQuestionCreate = (
   }
 
   const newQuestion: question = {
-    questionId: randomId(100000),
+    questionId: generateRandomId(),
     question: questionBody.question,
     timeLimit: questionBody.timeLimit,
     points: questionBody.points,
     answerOptions: questionBody.answerOptions.map((answer: answerOption) => ({
-      answerId: randomId(100000),
+      answerId: generateRandomId(),
       answer: answer.answer,
       colour: generateRandomColour(),
       correct: answer.correct
@@ -408,7 +408,7 @@ export const adminQuizQuestionUpdate = (
   questionToUpdate.answerOptions = updatedQuestionBody.answerOptions.map(
     (answer: answerOption) => (
       {
-        answerId: Math.floor(Math.random() * 1000000),
+        answerId: generateRandomId(),
         answer: answer.answer,
         colour: generateRandomColour(),
         correct: answer.correct

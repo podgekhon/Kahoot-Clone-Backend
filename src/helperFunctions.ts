@@ -312,15 +312,6 @@ export function isErrorMessages(result: errorMessages | emptyReturn): result is 
   return (result as errorMessages).error !== undefined;
 }
 
-/**
- * given a number, return a number between 0 and the number
- *
- * @param {number} max - max number
- * @returns {number} - random number between 0 and max
- */
-export function randomId(max: number): number {
-  return Math.floor(Math.random() * (max + 1));
-}
 
 /**
  * Generate a random name consisting of 5 unique letters followed by 3 unique digits.
