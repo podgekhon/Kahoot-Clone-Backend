@@ -171,7 +171,6 @@ export const adminQuizCreate = (
     quizId: randomId(10000),
     ownerId: authUserId,
     atQuestion: 1,
-    // sessionState: quizState.END,
     name: name,
     description: description,
     numQuestions: 0,

@@ -213,7 +213,7 @@ export const requestAdminUserDetails = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminUserDetails
+// adminUserDetails V2
 /**
  * Makes http request to get user details
  *

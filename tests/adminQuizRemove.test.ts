@@ -190,7 +190,6 @@ describe('test for adminQuizRemove', () => {
       requestAdminQuizQuestionCreateV2(quizID, user1token, questionBody);
 
       const session = requestAdminStartQuizSession(quizID, user1token, 10);
-      const sessionId = (session.body as quizStartSessionResponse).sessionId;
 
       const deleteResponse = requestAdminQuizRemoveV2(quizID, user1token);
       expect(deleteResponse.statusCode).toEqual(httpStatus.BAD_REQUEST);
