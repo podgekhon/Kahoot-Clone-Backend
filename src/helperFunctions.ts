@@ -312,7 +312,6 @@ export function isErrorMessages(result: errorMessages | emptyReturn): result is 
   return (result as errorMessages).error !== undefined;
 }
 
-
 /**
  * Generate a random name consisting of 5 unique letters followed by 3 unique digits.
  *

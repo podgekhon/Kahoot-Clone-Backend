@@ -1,6 +1,6 @@
-import { 
-  getData, 
-  setData 
+import {
+  getData,
+  setData
 } from './dataStore';
 
 import {
