@@ -5,7 +5,6 @@ import {
   requestAdminStartQuizSession,
   requestAdminViewQuizSessions,
   requestAdminQuizSessionUpdate,
-  requestadminQuizSessionState,
   requestClear,
   httpStatus,
 } from '../src/requestHelperFunctions';

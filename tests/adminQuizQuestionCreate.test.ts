@@ -87,30 +87,32 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
             question1.questionBody
           );
-      
+
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
           expect(resCreateQuestion.body).toHaveProperty('questionId');
-          const createdQuestionId = (resCreateQuestion.body as quizQuestionCreateResponse).questionId;
-      
+          const createdQuestionId = (
+            resCreateQuestion.body as quizQuestionCreateResponse
+          ).questionId;
+
           // Get quizInfo to verify that the question was added
           const resQuizInfo = requestQuizInfo(
             quiz.quizId,
             user.token
           );
           const quizInfo = resQuizInfo.body as quizInfo;
-      
+
           // Verify the quiz contains the newly added question
           expect(quizInfo).toHaveProperty('questions');
           const addedQuestion = quizInfo.questions.find(
             (q: question) => q.questionId === createdQuestionId
           );
-      
+
           // Check that the question matches the one created
           expect(addedQuestion).toMatchObject({
             questionId: createdQuestionId,
@@ -154,7 +156,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
@@ -185,7 +187,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
@@ -216,7 +218,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
@@ -225,7 +227,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
+
         test('returns error when user is not the quiz owner', () => {
           // Register a second user
           const resRegisterUser2 = requestAdminAuthRegister(
@@ -234,9 +236,9 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
             'User',
             'Two'
           );
-      
+
           const user2 = resRegisterUser2.body as tokenReturn;
-      
+
           const question1 = {
             token: user2.token,
             questionBody: {
@@ -256,18 +258,18 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           // User2 tries to create question for quiz created by original user
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
             question1.questionBody
           );
-      
+
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
+
         test('returns error when question has more than 6 answers', () => {
           const question1 = {
             token: user.token,
@@ -288,7 +290,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
@@ -297,7 +299,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
+
         test('returns error when question has fewer than 2 answers', () => {
           const question1 = {
             token: user.token,
@@ -312,7 +314,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
@@ -321,7 +323,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
+
         test('returns error when question timeLimit is not a positive number', () => {
           const question1 = {
             token: user.token,
@@ -337,17 +339,17 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
             question1.questionBody
           );
-      
+
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
+
         test('returns error when total question timeLimits in quiz exceed 3 minutes', () => {
           const question1 = {
             token: user.token,
@@ -363,7 +365,7 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
@@ -372,8 +374,8 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
-        test('returns error when answer length is shorter than 1 or longer than 30 characters', () => {
+
+        test('returns error when answer length is < 1 or > 30 characters', () => {
           const question1 = {
             token: user.token,
             questionBody: {
@@ -388,17 +390,17 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
             question1.questionBody
           );
-      
+
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
+
         test('returns error when there are no correct answers', () => {
           const question1 = {
             token: user.token,
@@ -414,17 +416,17 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
             question1.questionBody
           );
-      
+
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
+
         test('returns error when token is empty or invalid', () => {
           const question1 = {
             // Empty token, hence invalid
@@ -440,20 +442,20 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             quiz.quizId,
             question1.token,
             question1.questionBody
           );
-      
+
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.UNAUTHORIZED);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-      
+
         test('returns error when quiz does not exist', () => {
           const invalidQuizId = quiz.quizId + 1;
-      
+
           const question1 = {
             token: user.token,
             questionBody: {
@@ -467,17 +469,16 @@ describe('HTTP tests for adminMoveQuizQuestion (both v1 and v2 routes)', () => {
               ...(version === 'v2' && { thumbnailUrl: 'http://example.com/image1.jpg' }),
             },
           };
-      
+
           const resCreateQuestion = requestQuizQuestionCreate(
             invalidQuizId,
             question1.token,
             question1.questionBody
           );
-      
+
           expect(resCreateQuestion.statusCode).toStrictEqual(httpStatus.FORBIDDEN);
           expect(resCreateQuestion.body).toStrictEqual({ error: expect.any(String) });
         });
-
       });
     });
 });
