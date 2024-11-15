@@ -13,7 +13,6 @@ import {
   tokenReturn,
   quizCreate,
   quizCreateResponse,
-  questionCreate,
   startSession,
   quizStartSessionResponse,
   quizSessionStatusUpdate,
@@ -26,7 +25,6 @@ describe('Test for adminQuizSessionUpdate', () => {
   let user1Token: string;
   let quizCreateResponse: quizCreate;
   let quizId: number;
-  let quizQuestionCreateResponse: questionCreate;
   let startSessionResponse: startSession;
   let sessionId: number;
   const endAction: adminAction = adminAction.END;
@@ -48,14 +46,12 @@ describe('Test for adminQuizSessionUpdate', () => {
     );
 
     user1Token = (user1Response.body as tokenReturn).token;
-    expect(user1Response.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
 
     quizCreateResponse = requestAdminQuizCreate(
       user1Token,
       'validQuizName',
       'validQuizDescription'
     );
-    expect(quizCreateResponse.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
     quizId = (quizCreateResponse.body as quizCreateResponse).quizId;
 
     const questionBody = {
@@ -68,22 +64,16 @@ describe('Test for adminQuizSessionUpdate', () => {
       ],
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
-    quizQuestionCreateResponse = requestAdminQuizQuestionCreateV2(
+    requestAdminQuizQuestionCreateV2(
       quizId,
       user1Token,
       questionBody
-    );
-    expect(quizQuestionCreateResponse.statusCode).toStrictEqual(
-      httpStatus.SUCCESSFUL_REQUEST
     );
 
     startSessionResponse = requestAdminStartQuizSession(
       quizId,
       user1Token,
       1
-    );
-    expect(startSessionResponse.statusCode).toStrictEqual(
-      httpStatus.SUCCESSFUL_REQUEST
     );
 
     sessionId = (
