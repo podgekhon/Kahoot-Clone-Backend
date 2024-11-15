@@ -164,43 +164,45 @@ export const playerAnswerQuestion = (
     .filter(opt => opt.correct)
     .map(opt => opt.answerId);
 
-  const isCorrect = answerIds.length === correctAnswerIds.length &&
-                  answerIds.every(id => correctAnswerIds.includes(id));
+  const isCorrect = answerIds.length ===
+  correctAnswerIds.length &&
+  answerIds.every(id => correctAnswerIds.includes(id));
 
-  // ensure playerPerfAtQuestion is intialised
+  const playerState = quizSession.players.find(p => p.playerId === playerId);
+
+  const correctSubmissions = question.answerSubmissions.filter(sub =>
+    sub.answerIds.length === correctAnswerIds.length &&
+  sub.answerIds.every(id => correctAnswerIds.includes(id))
+  ).length;
+
+  const scalingFactor = 1 / correctSubmissions;
+  const score = Math.round(question.points * scalingFactor);
+
+  // handle correct answer
+  if (isCorrect) {
+    if (playerState) {
+      playerState.score = (playerState.score || 0) + score;
+    }
+  }
+
+  // Ensure playerPerfAtQuestion is initialized
   if (!question.playerPerfAtQuestion) {
     question.playerPerfAtQuestion = [];
   }
 
-  const playerState = quizSession.players.find(p => p.playerId === playerId);
+  // Check if player performance already exists
+  const existingPerformanceIndex = question.playerPerfAtQuestion.findIndex(
+    (performance) => performance.playerName === playerState.playerName
+  );
 
-  // handle correct answer
-  if (isCorrect) {
-    const correctSubmissions = question.answerSubmissions.filter(sub =>
-      sub.answerIds.length === correctAnswerIds.length &&
-    sub.answerIds.every(id => correctAnswerIds.includes(id))
-    ).length;
-
-    const scalingFactor = 1 / correctSubmissions;
-    const score = Math.round(question.points * scalingFactor);
-
-    if (playerState) {
-      playerState.score = (playerState.score || 0) + score;
-    }
-
-    // push player's score and name into playerPerfAtQuestion array
-    const playerPerformance: playerPerformance = {
-      playerName: playerState.playerName,
-      score: score
-    };
-    question.playerPerfAtQuestion.push(playerPerformance);
-
-    // handle incorrect answer
+  if (existingPerformanceIndex !== -1) {
+    // Update the existing performance
+    question.playerPerfAtQuestion[existingPerformanceIndex].score = isCorrect ? score : 0;
   } else {
-    // push empty score into array
+    // Add new performance data
     const playerPerformance: playerPerformance = {
       playerName: playerState.playerName,
-      score: 0
+      score: isCorrect ? score : 0
     };
     question.playerPerfAtQuestion.push(playerPerformance);
   }
