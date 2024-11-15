@@ -20,11 +20,6 @@ import {
 } from '../src/interface';
 import { adminAction } from '../src/quiz';
 import { httpStatus } from './adminAuthRegister.test';
-import { error } from 'console';
-
-beforeEach(() => {
-  requestClear();
-});
 
 describe('test for adminQuizRemove', () => {
   let user1;
@@ -32,6 +27,7 @@ describe('test for adminQuizRemove', () => {
   let quizID: number;
   let user1token: string;
   beforeEach(() => {
+    requestClear();
     user1 = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
     user1token = (user1.body as tokenReturn).token;
     quiz = requestAdminQuizCreate(user1token, 'Test Quiz', 'This is a test quiz');
@@ -173,7 +169,6 @@ describe('test for adminQuizRemove', () => {
           }
         ]
       });
-      
     });
     test('Session not in END state', () => {
       // create a session and change it to END state
@@ -189,12 +184,12 @@ describe('test for adminQuizRemove', () => {
       };
       requestAdminQuizQuestionCreateV2(quizID, user1token, questionBody);
 
-      const session = requestAdminStartQuizSession(quizID, user1token, 10);
+      requestAdminStartQuizSession(quizID, user1token, 10);
 
       const deleteResponse = requestAdminQuizRemoveV2(quizID, user1token);
       expect(deleteResponse.statusCode).toEqual(httpStatus.BAD_REQUEST);
       // has correct return type
-      expect(deleteResponse.body).toEqual({error: expect.any(String)});      
+      expect(deleteResponse.body).toEqual({ error: expect.any(String) });
     });
   });
 });

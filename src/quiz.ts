@@ -515,7 +515,7 @@ export const adminQuizRemove = (
   // check if any session of this quiz is not in END state
   for (const sessions of removeQuiz.activeSessions) {
     if (sessions.sessionState !== quizState.END) {
-      throw new Error ('SESSION_NOT_IN_END');
+      throw new Error('SESSION_NOT_IN_END');
     }
   }
   removeQuiz.timeLastEdited = Math.floor(Date.now() / 1000);

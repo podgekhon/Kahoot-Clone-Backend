@@ -7,7 +7,6 @@ import {
 } from '../src/requestHelperFunctions';
 import { tokenReturn } from '../src/interface';
 
-
 /// ////////-----adminUserDetails-----////////////
 describe('test for adminUserDetails', () => {
   let user1;
@@ -40,43 +39,42 @@ describe('test for adminUserDetails', () => {
           }
         });
       });
-      
+
       test('returns error when token is not valid', () => {
         const resDetails = userDetail('1');
         expect(resDetails.body).toStrictEqual({ error: expect.any(String) });
       });
-      
+
       test('numSuccessfulLogins increments after successful logins', () => {
         // Simulate multiple successful logins
         requestAdminAuthLogin('test@gmail.com', 'validPassword5');
         requestAdminAuthLogin('test@gmail.com', 'validPassword5');
         const resDetails = userDetail(user1token);
-        
+
         // Check if the number of successful logins is correct (1 registration + 2 logins)
         expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
       });
-      
+
       test('numFailedPasswordsSinceLastLogin increments on failed login attempts', () => {
         // Simulate failed login attempts
         requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
         requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
         const resDetails = userDetail(user1token);
-        
+
         // Check if the number of failed login attempts is correct (2 failed attempts)
         expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
       });
-      
+
       test('numFailedPasswordsSinceLastLogin resets after a successful login', () => {
         // Simulate failed login attempts
         requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
         requestAdminAuthLogin('test@gmail.com', 'wrongPassword');
         requestAdminAuthLogin('test@gmail.com', 'validPassword5');
         const resDetails = userDetail(user1token);
-        
+
         // Check if the failed attempts reset to 0 after a successful login
         expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
       });
     });
   });
 });
-
