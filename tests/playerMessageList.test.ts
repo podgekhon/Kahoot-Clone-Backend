@@ -49,39 +49,42 @@ describe('tests for player message list', () => {
     const player = requestjoinPlayer(quizSessionId, 'Xiaoyuan Ma');
     playerId = (player.body as playerId).playerId;
   });
+
   test('playerId does not exists', () => {
     const res = requestPlayerMessageList(-1);
     expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(res.body).toStrictEqual({ error: expect.any(String) });
   });
 
-  test('success case', () => {
-    // should be empty at very beginning
-    let res = requestPlayerMessageList(playerId);
-    expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(res.body).toStrictEqual({ messages: [] });
-    // send a msg to the session
-    const message = {
-      message: {
-        messageBody: 'Hello, im Eric'
-      }
-    };
-    requestPlayerMessage(playerId, message.message);
-    const currentTime = Math.floor(Date.now() / 1000);
-    res = requestPlayerMessageList(playerId);
-    expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(res.body).toStrictEqual({
-      messages: [
-        {
-          messageBody: 'Hello, im Eric',
-          playerId: playerId,
-          playerName: 'Xiaoyuan Ma',
-          timeSent: expect.any(Number)
+  describe('valid tests', () => {
+    test('success case', () => {
+      // should be empty at very beginning
+      let res = requestPlayerMessageList(playerId);
+      expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(res.body).toStrictEqual({ messages: [] });
+      // send a msg to the session
+      const message = {
+        message: {
+          messageBody: 'Hello, im Eric'
         }
-      ]
+      };
+      requestPlayerMessage(playerId, message.message);
+      const currentTime = Math.floor(Date.now() / 1000);
+      res = requestPlayerMessageList(playerId);
+      expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(res.body).toStrictEqual({
+        messages: [
+          {
+            messageBody: 'Hello, im Eric',
+            playerId: playerId,
+            playerName: 'Xiaoyuan Ma',
+            timeSent: expect.any(Number)
+          }
+        ]
+      });
+      const timeSent = res.body.messages[0].timeSent;
+      expect(timeSent).toBeGreaterThanOrEqual(currentTime - 1);
+      expect(timeSent).toBeLessThanOrEqual(currentTime + 1);
     });
-    const timeSent = res.body.messages[0].timeSent;
-    expect(timeSent).toBeGreaterThanOrEqual(currentTime - 1);
-    expect(timeSent).toBeLessThanOrEqual(currentTime + 1);
   });
 });

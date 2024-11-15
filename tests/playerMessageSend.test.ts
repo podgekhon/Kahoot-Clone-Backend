@@ -48,67 +48,70 @@ describe('tests for player message send', () => {
     const player = requestjoinPlayer(quizSessionId, 'Xiaoyuan ma');
     playerId = (player.body as playerId).playerId;
   });
-
-  test('player ID does not exists', () => {
-    const messageToSend = {
-      message: {
-        messageBody: 'No player Id'
-      }
-    };
-    const res = requestPlayerMessage(-1, messageToSend.message);
-    expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-    expect(res.body).toStrictEqual({ error: expect.any(String) });
-  });
-
-  describe('invalid message body', () => {
-    test('message too short', () => {
+  describe('valid tests', () => {
+    test('successfully send the message', () => {
       const messageToSend = {
         message: {
-          messageBody: ''
+          messageBody: 'hello guys'
         }
       };
       const res = requestPlayerMessage(playerId, messageToSend.message);
+      // correct return type
+      expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(res.body).toStrictEqual({});
+
+      // get the message list
+      const msgList = requestPlayerMessageList(playerId);
+      expect(msgList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+      expect(msgList.body).toStrictEqual({
+        messages: [
+          {
+            messageBody: 'hello guys',
+            playerId: playerId,
+            playerName: 'Xiaoyuan ma',
+            timeSent: expect.any(Number)
+          }
+        ]
+      });
+    });
+  });
+
+  describe('invalid tests', () => {
+    test('player ID does not exists', () => {
+      const messageToSend = {
+        message: {
+          messageBody: 'No player Id'
+        }
+      };
+      const res = requestPlayerMessage(-1, messageToSend.message);
       expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
       expect(res.body).toStrictEqual({ error: expect.any(String) });
     });
 
-    test('message too long', () => {
-      const messageToSend = {
-        message: {
-          messageBody:
-'asdfasdfjklasfdjklsafjkdlsa;jfdklsagdjksaljgkldsajkfl' +
-'fdsafjieowajgnklewjakljelfwjaiofejiwogjeiowjaoijfioejwao'
-        }
-      };
-      const res = requestPlayerMessage(playerId, messageToSend.message);
-      expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
-      expect(res.body).toStrictEqual({ error: expect.any(String) });
-    });
-  });
+    describe('invalid message body', () => {
+      test('message too short', () => {
+        const messageToSend = {
+          message: {
+            messageBody: ''
+          }
+        };
+        const res = requestPlayerMessage(playerId, messageToSend.message);
+        expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+        expect(res.body).toStrictEqual({ error: expect.any(String) });
+      });
 
-  test('successfully send the message', () => {
-    const messageToSend = {
-      message: {
-        messageBody: 'hello guys'
-      }
-    };
-    const res = requestPlayerMessage(playerId, messageToSend.message);
-    // correct return type
-    expect(res.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(res.body).toStrictEqual({});
-
-    // get the message list
-    const msgList = requestPlayerMessageList(playerId);
-    expect(msgList.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
-    expect(msgList.body).toStrictEqual({
-      messages: [
-        {
-          messageBody: 'hello guys',
-          playerId: playerId,
-          playerName: 'Xiaoyuan ma',
-          timeSent: expect.any(Number)
-        }
-      ]
+      test('message too long', () => {
+        const messageToSend = {
+          message: {
+            messageBody:
+  'asdfasdfjklasfdjklsafjkdlsa;jfdklsagdjksaljgkldsajkfl' +
+  'fdsafjieowajgnklewjakljelfwjaiofejiwogjeiowjaoijfioejwao'
+          }
+        };
+        const res = requestPlayerMessage(playerId, messageToSend.message);
+        expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+        expect(res.body).toStrictEqual({ error: expect.any(String) });
+      });
     });
   });
 });

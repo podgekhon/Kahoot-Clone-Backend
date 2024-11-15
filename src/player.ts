@@ -105,17 +105,14 @@ export const playerAnswerQuestion = (
   if (!quizSession) {
     throw new Error('PLAYERID_NOT_EXIST');
   }
-
   // Check if the session state is QUESTION_OPEN
   if (quizSession.sessionState !== quizState.QUESTION_OPEN) {
     throw new Error('SESSION_NOT_OPEN');
   }
-
   // If question position is not valid for the session this player is in
   if (questionPosition < 1 || (questionPosition > quizSession.quizCopy.numQuestions)) {
     throw new Error('INVALID_QUESTION_POSITION');
   }
-
   // If session is not currently on this question
   if (quizSession.sessionQuestionPosition !== questionPosition) {
     throw new Error('SESSION_NOT_ON_QUESTION');
@@ -442,13 +439,8 @@ export const playerQuestion = (playerId: number, questionPosition: number): ques
   const session = findQuizSessionByPlayerId(data, playerId);
   // Ensure that both quiz and session are found
   if (!session) {
-    throw new Error('SESSION_IN_END');
-  }
-  const player = session.players.find(p => p.playerId === playerId);
-  if (!player) {
     throw new Error('EXIST_PLAYERID');
   }
-  // Find the session the player is part of
 
   // Check if the session state is valid
   type QuizState = typeof quizState.LOBBY | typeof quizState.QUESTION_COUNTDOWN
@@ -463,14 +455,15 @@ export const playerQuestion = (playerId: number, questionPosition: number): ques
     throw new Error(errorMessages[session.sessionState as QuizState]);
   }
 
-  if (session.sessionQuestionPosition !== questionPosition) {
-    throw new Error('SESSION_NOT_ON_QUESTION');
-  }
-
   // Validate the question position by using the quiz's questions array length
   if (questionPosition < 1 || questionPosition > session.quizCopy.numQuestions) {
     throw new Error('INVALID_QUESTION_POSITION');
   }
+
+  if (session.sessionQuestionPosition !== questionPosition) {
+    throw new Error('SESSION_NOT_ON_QUESTION');
+  }
+
   // Get the question from the quiz's questions array
   const question = session.quizCopy.questions[questionPosition - 1];
 
