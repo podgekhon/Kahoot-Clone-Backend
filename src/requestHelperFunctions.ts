@@ -11,7 +11,6 @@ export enum httpStatus {
   FORBIDDEN = 403,
   SUCCESSFUL_REQUEST = 200,
 }
-
 import { clear } from './other';
 
 import {
@@ -42,7 +41,7 @@ import {
   adminQuizUpdateThumbnail,
   adminStartQuizSession,
   adminViewQuizSessions,
-  adminQuizSessionState
+  adminQuizSessionState,
 } from './quiz';
 
 import {
@@ -59,7 +58,7 @@ import {
 import {
   GetFinalResults,
   messageBody,
-  requestOptions
+  requestOptions,
 } from './interface';
 
 // clear

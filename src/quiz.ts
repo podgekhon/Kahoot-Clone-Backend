@@ -8,7 +8,11 @@ import {
   isValidQuestion,
   validateAnswers,
   validQuestionThumbnailUrl,
-  generateRandomId
+  generateRandomId,
+  actionNextQuestion,
+  actionSkipCountdown,
+  actionAnswerShow,
+  actionGoToFinalResults,
 } from './helperFunctions';
 
 import {
@@ -1024,134 +1028,22 @@ export const adminQuizSessionUpdate = (
 
   // if action is 'NEXT_QUESTION'
   if (action === adminAction.NEXT_QUESTION) {
-    // check if action can be applied to current state
-    if (
-      quizSession.sessionState !== quizState.LOBBY &&
-      quizSession.sessionState !== quizState.ANSWER_SHOW &&
-      quizSession.sessionState !== quizState.QUESTION_CLOSE
-    ) {
-      throw new Error('INVALID_ACTION');
-    }
-
-    // clear any existing timers
-    clearTimeout(timers[sessionId]);
-    delete timers[sessionId];
-
-    // update quiz session
-    quizSession.sessionState = quizState.QUESTION_COUNTDOWN;
-
-    // set a 3s duration before state of session automatically updates
-    timers[sessionId] = setTimeout(() => {
-      const newData = getData();
-      const newQuiz = newData.quizzes.find((quiz) => quiz.quizId === quizId);
-      const updatedQuizSession = newQuiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
-      );
-      updatedQuizSession.sessionState = quizState.QUESTION_OPEN;
-
-      // get question_open time
-      updatedQuizSession.questionOpenTime = Date.now();
-      if (updatedQuizSession.isInLobby === false) {
-        updatedQuizSession.sessionQuestionPosition++;
-      } else {
-        updatedQuizSession.isInLobby = false;
-      }
-
-      // Find and update all players in the session
-      quizSession.players.forEach((player: PlayerState) => {
-        if (player.sessionId === sessionId) {
-          player.atQuestion = (player.atQuestion ?? 0) + 1;
-        }
-      });
-
-      // after 3s, add 5s timer for question open
-      if (updatedQuizSession.sessionState === quizState.QUESTION_OPEN) {
-        timers[sessionId] = setTimeout(() => {
-          const new2Data = getData();
-          const new2Quiz = new2Data.quizzes.find((quiz) => quiz.quizId === quizId);
-          const updated2QuizSession = new2Quiz.activeSessions.find(
-            (session) => session.sessionId === sessionId
-          );
-
-          updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
-          setData(new2Data);
-        },
-        quizSession.quizCopy.questions[quizSession.sessionQuestionPosition - 1].timeLimit * 1000);
-      }
-      setData(newData);
-    }, 3000);
+    actionNextQuestion(quizSession, sessionId, quizId, timers);
   }
 
   // if action is 'SKIP_COUNTDOWN'
   if (action === adminAction.SKIP_COUNTDOWN) {
-    // check if action can be applied to current state
-    if (quizSession.sessionState !== quizState.QUESTION_COUNTDOWN) {
-      throw new Error('INVALID_ACTION');
-    }
-
-    // checks if clear 3s timer
-    clearTimeout(timers[sessionId]);
-    delete timers[sessionId];
-
-    // update quiz session
-    quizSession.sessionState = quizState.QUESTION_OPEN;
-    if (quizSession.isInLobby === false) {
-      quizSession.sessionQuestionPosition++;
-    } else {
-      quizSession.isInLobby = false;
-    }
-
-    // set the 5s timer
-    timers[sessionId] = setTimeout(() => {
-      const new2Data = getData();
-      const new2Quiz = new2Data.quizzes.find((quiz) => quiz.quizId === quizId);
-      const updated2QuizSession = new2Quiz.activeSessions.find(
-        (session) => session.sessionId === sessionId
-      );
-
-      updated2QuizSession.sessionState = quizState.QUESTION_CLOSE;
-      setData(new2Data);
-    }, quizSession.quizCopy.questions[quizSession.sessionQuestionPosition - 1].timeLimit * 1000);
+    actionSkipCountdown(quizSession, sessionId, quizId, timers);
   }
 
   // if action is 'ANSWER_SHOW'
   if (action === adminAction.GO_TO_ANSWER) {
-    // check if action can be applied to current state
-    if (
-      quizSession.sessionState !== quizState.QUESTION_OPEN &&
-      quizSession.sessionState !== quizState.QUESTION_CLOSE
-    ) {
-      throw new Error('INVALID_ACTION');
-    }
-
-    // update quiz session
-    quizSession.sessionState = quizState.ANSWER_SHOW;
-
-    // clear a scheduled timer if any exist
-    if (timers[sessionId]) {
-      clearTimeout(timers[sessionId]);
-      delete timers[sessionId];
-    }
+    actionAnswerShow(quizSession, sessionId, quizId, timers);
   }
 
   // if action is 'GO_TO_FINAL_RESULTS'
   if (action === adminAction.GO_TO_FINAL_RESULTS) {
-    // check if action can be applied to current state
-    if (
-      quizSession.sessionState !== quizState.QUESTION_CLOSE &&
-      quizSession.sessionState !== quizState.ANSWER_SHOW
-    ) {
-      throw new Error('INVALID_ACTION');
-    }
-
-    // update quiz session
-    quizSession.sessionState = quizState.FINAL_RESULTS;
-    // Find and update all players in the session
-    quizSession.players.forEach((player: PlayerState) => {
-      if (player.sessionId === sessionId) {
-        player.atQuestion = 0;
-      }
-    });
+    actionGoToFinalResults(quizSession, sessionId, quizId, timers);
   }
 
   setData(data);
