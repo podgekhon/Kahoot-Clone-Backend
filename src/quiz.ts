@@ -8,7 +8,6 @@ import {
   isValidQuestion,
   validateAnswers,
   validQuestionThumbnailUrl,
-  isSessionEnded,
   randomId
 } from './helperFunctions';
 
@@ -281,14 +280,12 @@ export const adminViewQuizSessions = (
     throw new Error('INVALID_QUIZ');
   }
 
-  // Separate active and inactive sessions
+  // Sort active and inactive session IDs in ascending order
   const activeSessions = quiz.activeSessions
-    .filter(session => !isSessionEnded(session))
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
-  const inactiveSessions = quiz.activeSessions
-    .filter(isSessionEnded)
+  const inactiveSessions = quiz.inactiveSessions
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
@@ -1005,7 +1002,7 @@ export const adminQuizSessionUpdate = (
     // get index of quizSession in activeSes array
     const quizSessionIndex = quiz.activeSessions.indexOf(quizSession);
     // remove it from activeSes array
-    quiz.activeSessions.splice(quizSessionIndex);
+    quiz.activeSessions.splice(quizSessionIndex, 1);
 
     // clear a scheduled timer if any exist
     if (timers[sessionId]) {
