@@ -13,15 +13,12 @@ import {
   quizCreateResponse
 } from '../src/interface';
 
-beforeEach(() => {
-  requestClear();
-});
-
 describe('HTTP tests for quiz thumbnail update', () => {
   let user: { token: string };
   let quiz: { quizId: number };
 
   beforeEach(() => {
+    requestClear();
     const resRegister = requestAdminAuthRegister(
       'test@gmail.com',
       'validPassword5',
@@ -101,7 +98,6 @@ describe('HTTP tests for quiz thumbnail update', () => {
   });
 
   test('returns error when thumbnail URL is invalid', () => {
-    // Thumbnail URL does not start with http or https
     const resUpdateThumbnail = requestAdminQuizUpdateThumbnail(
       quiz.quizId,
       user.token,
@@ -117,6 +113,17 @@ describe('HTTP tests for quiz thumbnail update', () => {
       quiz.quizId,
       user.token,
       'http://google.com/some/image/path.gif'
+    );
+    expect(resUpdateThumbnail.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
+    expect(resUpdateThumbnail.body).toStrictEqual({ error: expect.any(String) });
+  });
+
+  test('returns error when thumbnail URL does not have valid prefix', () => {
+    // Thumbnail URL does not start with http or http:// or https://
+    const resUpdateThumbnail = requestAdminQuizUpdateThumbnail(
+      quiz.quizId,
+      user.token,
+      'compsci://google.com/some/image/path.jpg'
     );
     expect(resUpdateThumbnail.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(resUpdateThumbnail.body).toStrictEqual({ error: expect.any(String) });

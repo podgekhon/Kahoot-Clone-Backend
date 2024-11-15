@@ -4,6 +4,7 @@ import {
   requestAdminQuizQuestionCreateV2,
   requestAdminStartQuizSession,
   requestAdminViewQuizSessions,
+  requestAdminQuizSessionUpdate,
   requestClear,
   httpStatus,
 } from '../src/requestHelperFunctions';
@@ -13,15 +14,14 @@ import {
   quizCreateResponse
 } from '../src/interface';
 
-beforeEach(() => {
-  requestClear();
-});
+import { adminAction } from '../src/quiz';
 
 describe('HTTP tests for viewing quiz sessions', () => {
   let user: { token: string };
   let quiz: { quizId: number };
 
   beforeEach(() => {
+    requestClear();
     const resRegister = requestAdminAuthRegister(
       'test@gmail.com',
       'validPassword5',
@@ -68,6 +68,26 @@ describe('HTTP tests for viewing quiz sessions', () => {
     expect(activeSessions).toEqual([...activeSessions].sort((a, b) => a - b));
 
     expect(resViewSessions.body.inactiveSessions).toStrictEqual([]);
+  });
+
+  test('successfully retrieves inactive sessions in ascending order', () => {
+    const session1 = requestAdminStartQuizSession(quiz.quizId, user.token, 1).body.sessionId;
+    const session2 = requestAdminStartQuizSession(quiz.quizId, user.token, 1).body.sessionId;
+    const session3 = requestAdminStartQuizSession(quiz.quizId, user.token, 1).body.sessionId;
+
+    // Move all sessions to the inactive state using the END action
+    const endAction: adminAction = adminAction.END;
+    requestAdminQuizSessionUpdate(quiz.quizId, session1, user.token, endAction);
+    requestAdminQuizSessionUpdate(quiz.quizId, session2, user.token, endAction);
+    requestAdminQuizSessionUpdate(quiz.quizId, session3, user.token, endAction);
+
+    const resViewSessions = requestAdminViewQuizSessions(quiz.quizId, user.token);
+    expect(resViewSessions.statusCode).toStrictEqual(httpStatus.SUCCESSFUL_REQUEST);
+
+    // Verify inactive sessions are in ascending order
+    const { inactiveSessions } = resViewSessions.body;
+    expect(inactiveSessions).toHaveLength(3);
+    expect(inactiveSessions).toEqual([session1, session2, session3].sort((a, b) => a - b));
   });
 
   test('returns error when token is invalid', () => {

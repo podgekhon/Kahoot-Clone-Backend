@@ -8,8 +8,7 @@ import {
   isValidQuestion,
   validateAnswers,
   validQuestionThumbnailUrl,
-  isSessionEnded,
-  randomId
+  generateRandomId
 } from './helperFunctions';
 
 import {
@@ -168,7 +167,7 @@ export const adminQuizCreate = (
 
   // push new quiz object into db & return quizId
   const newQuiz: quiz = {
-    quizId: randomId(10000),
+    quizId: generateRandomId(),
     ownerId: authUserId,
     atQuestion: 1,
     name: name,
@@ -243,7 +242,7 @@ export const adminStartQuizSession = (
   };
 
   const newQuizSession: quizSession = {
-    sessionId: randomId(10000),
+    sessionId: generateRandomId(),
     sessionState: quizState.LOBBY,
     quizCopy,
     autoStartNum,
@@ -280,14 +279,12 @@ export const adminViewQuizSessions = (
     throw new Error('INVALID_QUIZ');
   }
 
-  // Separate active and inactive sessions
+  // Sort active and inactive session IDs in ascending order
   const activeSessions = quiz.activeSessions
-    .filter(session => !isSessionEnded(session))
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
-  const inactiveSessions = quiz.activeSessions
-    .filter(isSessionEnded)
+  const inactiveSessions = quiz.inactiveSessions
     .map(session => session.sessionId)
     .sort((a, b) => a - b);
 
@@ -335,12 +332,12 @@ export const adminQuizQuestionCreate = (
   }
 
   const newQuestion: question = {
-    questionId: randomId(100000),
+    questionId: generateRandomId(),
     question: questionBody.question,
     timeLimit: questionBody.timeLimit,
     points: questionBody.points,
     answerOptions: questionBody.answerOptions.map((answer: answerOption) => ({
-      answerId: randomId(100000),
+      answerId: generateRandomId(),
       answer: answer.answer,
       colour: generateRandomColour(),
       correct: answer.correct
@@ -410,7 +407,7 @@ export const adminQuizQuestionUpdate = (
   questionToUpdate.answerOptions = updatedQuestionBody.answerOptions.map(
     (answer: answerOption) => (
       {
-        answerId: Math.floor(Math.random() * 1000000),
+        answerId: generateRandomId(),
         answer: answer.answer,
         colour: generateRandomColour(),
         correct: answer.correct

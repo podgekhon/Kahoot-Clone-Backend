@@ -1,8 +1,12 @@
-import { getData, setData } from './dataStore';
+import {
+  getData,
+  setData
+} from './dataStore';
+
 import {
   isStringValid,
   generateRandomName,
-  randomId,
+  generateRandomId,
   findQuizSessionByPlayerId
 } from './helperFunctions';
 
@@ -60,7 +64,7 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
     throw new Error('INVALID_PLAYERNAME');
   }
 
-  const playerId = randomId(100000);
+  const playerId = generateRandomId();
   const newPlayer = {
     playerId: playerId,
     playerName: playerName,

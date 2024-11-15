@@ -933,7 +933,7 @@ export const requestAdminQuizTransferV2 = (
  *
  * @param {number} quizId
  * @param {string} token
- * @param {object} questionBody - An object containing question details
+ * @param {object} questionBody - an object containing question details
  * @param {string} version - v1 or v2
  * @returns {Response}
  */

@@ -10,18 +10,6 @@ import {
   quizSession
 } from './interface';
 
-import { quizState } from './quiz';
-
-/**
- * Checks if a session is in the END state.
- *
- * @param {quizSession} session - The session to check.
- * @returns {boolean} - Returns true if the session is in the END state, false otherwise.
- */
-export const isSessionEnded = (session: quizSession): boolean => {
-  return session.sessionState === quizState.END;
-};
-
 /**
  * Checks if a given quesiton thumbnail url is valid
  * @param {string} url - the thumbnail url to validate
@@ -322,16 +310,6 @@ export const validateAnswers = (
  */
 export function isErrorMessages(result: errorMessages | emptyReturn): result is errorMessages {
   return (result as errorMessages).error !== undefined;
-}
-
-/**
- * given a number, return a number between 0 and the number
- *
- * @param {number} max - max number
- * @returns {number} - random number between 0 and max
- */
-export function randomId(max: number): number {
-  return Math.floor(Math.random() * (max + 1));
 }
 
 /**

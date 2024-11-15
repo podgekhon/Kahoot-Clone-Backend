@@ -13,15 +13,12 @@ import {
   quizCreateResponse
 } from '../src/interface';
 
-beforeEach(() => {
-  requestClear();
-});
-
 describe('HTTP tests for starting a new quiz session', () => {
   let user: { token: string };
   let quiz: { quizId: number };
 
   beforeEach(() => {
+    requestClear();
     const resRegister = requestAdminAuthRegister(
       'test@gmail.com',
       'validPassword5',

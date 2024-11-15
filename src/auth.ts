@@ -20,7 +20,7 @@ import {
   isEmailUsed,
   isNameValid,
   isValidPassword,
-  randomId
+  generateRandomId
 } from './helperFunctions';
 
 import validator from 'validator';
@@ -70,7 +70,7 @@ export const adminAuthRegister = (
   // Check if the returned object from isValidPassword helper function has an
 
   const hashedPassword = sha256(password).toString();
-  const authUserId = randomId(100000);
+  const authUserId = generateRandomId();
 
   data.users.push({
     userId: authUserId,
