@@ -9,9 +9,8 @@ import {
   PlayerState
 } from './interface';
 
-import { adminAction, quizState } from './quiz';
+import { quizState } from './quiz';
 
-import { httpStatus } from './requestHelperFunctions';
 import { getData, setData } from './dataStore';
 
 /**
