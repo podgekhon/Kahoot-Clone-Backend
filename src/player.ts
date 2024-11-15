@@ -167,6 +167,14 @@ export const playerAnswerQuestion = (
   const isCorrect = answerIds.length === correctAnswerIds.length &&
                   answerIds.every(id => correctAnswerIds.includes(id));
 
+  // ensure playerPerfAtQuestion is intialised
+  if (!question.playerPerfAtQuestion) {
+    question.playerPerfAtQuestion = [];
+  }
+
+  const playerState = quizSession.players.find(p => p.playerId === playerId);
+
+  // handle correct answer
   if (isCorrect) {
     const correctSubmissions = question.answerSubmissions.filter(sub =>
       sub.answerIds.length === correctAnswerIds.length &&
@@ -176,20 +184,23 @@ export const playerAnswerQuestion = (
     const scalingFactor = 1 / correctSubmissions;
     const score = Math.round(question.points * scalingFactor);
 
-    const playerState = quizSession.players.find(p => p.playerId === playerId);
     if (playerState) {
       playerState.score = (playerState.score || 0) + score;
-    }
-
-    // ensure playerPerfAtQuestion is intialised
-    if (!question.playerPerfAtQuestion) {
-      question.playerPerfAtQuestion = [];
     }
 
     // push player's score and name into playerPerfAtQuestion array
     const playerPerformance: playerPerformance = {
       playerName: playerState.playerName,
       score: score
+    };
+    question.playerPerfAtQuestion.push(playerPerformance);
+
+    // handle incorrect answer
+  } else {
+    // push empty score into array
+    const playerPerformance: playerPerformance = {
+      playerName: playerState.playerName,
+      score: 0
     };
     question.playerPerfAtQuestion.push(playerPerformance);
   }
