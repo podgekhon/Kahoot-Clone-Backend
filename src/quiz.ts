@@ -935,7 +935,7 @@ export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages
 /**
  * Updates quiz session status based on admin action
  *
- * @param {number} quizId - An array of existing quizIds owned by user
+ * @param {number} quizId - Unique Id of a quiz
  * @param {number} sessionId - Unique session id for quiz
  * @param {string} token - Unique session id for user
  * @param {adminAction} string - An admin action enum
@@ -1158,6 +1158,16 @@ export const adminQuizSessionUpdate = (
   return {};
 };
 
+/**
+ * Show quiz session state
+ *
+ * @param {number} quizId - an unique id of a quiz
+ * @param {number} sessionId - an unique id of a session
+ * @param {string} token - a unique session id for user
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {sessionState} - An object contain all information of session state
+ */
 export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
 sessionState => {
   const data = getData();
@@ -1228,6 +1238,16 @@ sessionState => {
   return response;
 };
 
+/**
+ * Show final result for players
+ *
+ * @param {number} quizId - an unique id of a quiz
+ * @param {number} sessionId - an unique id of a session
+ * @param {string} token - a unique session id for user
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {sessionState} - An object contain all results
+ */
 export const adminGetFinalResults = (
   quizId: number,
   sessionId: number,
@@ -1327,6 +1347,16 @@ export const adminGetFinalResults = (
   return { usersRankedByScore, questionResults };
 };
 
+/**
+ * Show final result for players
+ *
+ * @param {number} quizId - an unique id of a quiz
+ * @param {number} sessionId - an unique id of a session
+ * @param {string} token - a unique session id for user
+ *
+ * @returns {errorMessages} - An object containing an error message if registration fails
+ * @returns {sessionState} - An object contain the url
+ */
 export const adminGetFinalResultsCsv = (
   quizId: number,
   sessionId: number,

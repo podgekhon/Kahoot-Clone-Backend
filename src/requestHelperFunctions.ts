@@ -347,6 +347,7 @@ export const requestAdminQuizList = (token: string) =>
  */
 export const requestAdminQuizListV2 = (token: string) =>
   requestAdminQuizListGeneric(token, 'v2');
+
 // adminQuizCreate
 /**
  * Makes an HTTP request to create a quiz
@@ -1223,6 +1224,14 @@ export const requestAdminQuizSessionUpdate = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// PlayerMessage
+/**
+ * Makes http request to post player message
+ *
+ * @param { number } playerId
+ * @param { messageBody } message
+ * @returns { Response }
+ */
 export const requestPlayerMessage = (
   playerId: number,
   message: messageBody
@@ -1243,6 +1252,15 @@ export const requestPlayerMessage = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// adminQuizSessionState
+/**
+ * Makes http request to shouw quiz session state
+ *
+ * @param { number } quizId
+ * @param { number } sessionId
+ * @param { string } token
+ * @returns { Response }
+ */
 export const requestadminQuizSessionState = (
   quizId: number, sessionId: number, token: string
 ): {
@@ -1266,6 +1284,13 @@ export const requestadminQuizSessionState = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// playerState
+/**
+ * Makes http request to shouw player state
+ *
+ * @param { number } playerId
+ * @returns { Response }
+ */
 export const requestplayerState = (
   playerId: number
 ): {
@@ -1282,6 +1307,13 @@ export const requestplayerState = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// PlayerMessageList
+/**
+ * Makes http request to shouw player message list
+ *
+ * @param { number } playerId
+ * @returns { Response }
+ */
 export const requestPlayerMessageList = (
   playerId: number
 ) : {
@@ -1298,6 +1330,7 @@ export const requestPlayerMessageList = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// PlayerAnswerQuestion
 /**
  * Allow the current player to submit answer(s) to the currently active question.
  *
@@ -1325,6 +1358,7 @@ export const requestPlayerAnswerQuestion = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// adminGetFinalResults
 /**
  * Gets final results of all players for a completed quiz session.
  *
@@ -1347,6 +1381,7 @@ export const requestAdminGetFinalResults = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// PlayerResults
 /**
  * Get the final results for a whole session a player is playing in
  *
@@ -1369,6 +1404,14 @@ export const requestPlayerResults = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// PlayerQuestionResult
+/**
+ * Get the question results for a player
+ *
+ * @param { number } playerId
+ * @param { number } questionPosition
+ * @returns { Response }
+ */
 export const requestPlayerQuestionResult = (
   playerId: number, questionPosition: number
 ): {
@@ -1409,6 +1452,7 @@ export const requestPlayerQuestion = (
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
+// adminGetFinalResultsCsv
 /**
  * Gets final results of all players for a completed quiz session in CSV format.
  *
