@@ -56,8 +56,20 @@ describe('tests for playerAnswerQuestion', () => {
       ],
       thumbnailUrl: 'http://google.com/some/image/path.jpg'
     };
+    const questionBody2 = {
+      question: 'What is the capital of Australia?',
+      timeLimit: 1,
+      points: 5,
+      answerOptions: [
+        { answer: 'Canberra', correct: true },
+        { answer: 'Sydney', correct: false },
+      ],
+      thumbnailUrl: 'http://google.com/some/image/path.jpg'
+    };
+
     // create quiz question
     requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody);
+    requestAdminQuizQuestionCreateV2(quizId, usertoken, questionBody2);
 
     // start the session
     session = requestAdminStartQuizSession(quizId, usertoken, 10);
@@ -129,7 +141,7 @@ describe('tests for playerAnswerQuestion', () => {
     const quizSession = requestadminQuizSessionState(quizId, sessionId, usertoken);
     const quizSessionStatus = (quizSession.body as sessionState).state;
     expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
-    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 99);
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, -1);
     expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });
@@ -156,7 +168,7 @@ describe('tests for playerAnswerQuestion', () => {
     const quizSessionStatus = (quizSession.body as sessionState).state;
     expect(quizSessionStatus).toStrictEqual(quizState.QUESTION_OPEN);
 
-    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, 2);
+    const resAnswerQuestion = requestPlayerAnswerQuestion(answerId, playerId, -1);
     expect(resAnswerQuestion.body).toStrictEqual({ error: expect.any(String) });
     expect(resAnswerQuestion.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
   });

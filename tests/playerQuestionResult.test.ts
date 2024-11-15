@@ -120,7 +120,7 @@ describe('tests for player question result', () => {
     requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
 
     // get result
-    const res = requestPlayerQuestionResult(playerId, 1);
+    const res = requestPlayerQuestionResult(playerId, 2);
     expect(res.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
     expect(res.body).toStrictEqual({ error: expect.any(String) });
   });

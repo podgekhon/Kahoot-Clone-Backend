@@ -276,7 +276,7 @@ describe('tests for playerQuestion', () => {
     test('Invalid playerId', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
-      const invalidPlayerId = 9999;
+      const invalidPlayerId = -1;
       const positionResponse = requestPlayerQuestion(invalidPlayerId, 1);
 
       expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
@@ -286,7 +286,7 @@ describe('tests for playerQuestion', () => {
     test('Question position is not valid for the session this player is in', () => {
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
-      const positionResponse = requestPlayerQuestion(playerId, 9999);
+      const positionResponse = requestPlayerQuestion(playerId, -1);
 
       expect(positionResponse.statusCode).toStrictEqual(httpStatus.BAD_REQUEST);
       expect(positionResponse.body).toStrictEqual({ error: expect.any(String) });
