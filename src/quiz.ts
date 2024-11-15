@@ -1436,6 +1436,7 @@ export const adminGetFinalResultsCsv = (
   fs.writeFileSync(filePath, csvContent);
 
   // Return the file URL
-  const fileUrl = `/public/csv/${csvResult}`;
+  const baseUrl = 'http://127.0.0.1:49153';
+  const fileUrl = `${baseUrl}/public/csv/${csvResult}`;
   return { url: fileUrl };
 };
