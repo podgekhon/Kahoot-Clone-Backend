@@ -487,6 +487,7 @@ describe('HTTP tests ONLY for quiz question create v2 route', () => {
   let quiz: { quizId: number };
 
   beforeEach(() => {
+    requestClear();
     const resRegister = requestAdminAuthRegister(
       'test@gmail.com',
       'validPassword5',
