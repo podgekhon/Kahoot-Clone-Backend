@@ -7,13 +7,19 @@ import {
   requestAdminQuizList,
   requestAdminTrashList,
   requestAdminAuthLogout,
-  requestAdminAuthLogin
+  requestAdminAuthLogin,
+  requestAdminQuizSessionUpdate,
+  requestAdminQuizQuestionCreateV2,
+  requestAdminStartQuizSession,
+  requestjoinPlayer
 } from '../src/requestHelperFunctions';
-import { quizCreateResponse, tokenReturn } from '../src/interface';
-
-beforeEach(() => {
-  requestClear();
-});
+import {
+  quizCreateResponse,
+  tokenReturn,
+  quizStartSessionResponse
+} from '../src/interface';
+import { adminAction } from '../src/quiz';
+import { httpStatus } from './adminAuthRegister.test';
 
 describe('test for adminQuizRemove', () => {
   let user1;
@@ -21,6 +27,7 @@ describe('test for adminQuizRemove', () => {
   let quizID: number;
   let user1token: string;
   beforeEach(() => {
+    requestClear();
     user1 = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
     user1token = (user1.body as tokenReturn).token;
     quiz = requestAdminQuizCreate(user1token, 'Test Quiz', 'This is a test quiz');
@@ -101,6 +108,7 @@ describe('test for adminQuizRemove', () => {
     expect(deleteResponse.statusCode).toStrictEqual(401);
     expect(deleteResponse.body).toStrictEqual({ error: expect.any(String) });
   });
+
   describe('tests for v2 routes', () => {
     test('empty token', () => {
       const deleteResponse = requestAdminQuizRemoveV2(quizID, ' ');
@@ -123,6 +131,24 @@ describe('test for adminQuizRemove', () => {
     });
 
     test('Successfully delete quiz', () => {
+      // create a session and change it to END state
+      const questionBody = {
+        question: 'What is the capital of Australia?',
+        timeLimit: 4,
+        points: 5,
+        answerOptions: [
+          { answer: 'Canberra', correct: true },
+          { answer: 'Sydney', correct: false },
+        ],
+        thumbnailUrl: 'http://google.com/some/image/path.jpg'
+      };
+      requestAdminQuizQuestionCreateV2(quizID, user1token, questionBody);
+
+      const session = requestAdminStartQuizSession(quizID, user1token, 10);
+      const sessionId = (session.body as quizStartSessionResponse).sessionId;
+
+      requestjoinPlayer(sessionId, 'abcde123');
+      requestAdminQuizSessionUpdate(quizID, sessionId, user1token, adminAction.END);
       const deleteResponse = requestAdminQuizRemoveV2(quizID, user1token);
       expect(deleteResponse.statusCode).toEqual(200);
       // has correct return type
@@ -143,6 +169,27 @@ describe('test for adminQuizRemove', () => {
           }
         ]
       });
+    });
+    test('Session not in END state', () => {
+      // create a session and change it to END state
+      const questionBody = {
+        question: 'What is the capital of Australia?',
+        timeLimit: 4,
+        points: 5,
+        answerOptions: [
+          { answer: 'Canberra', correct: true },
+          { answer: 'Sydney', correct: false },
+        ],
+        thumbnailUrl: 'http://google.com/some/image/path.jpg'
+      };
+      requestAdminQuizQuestionCreateV2(quizID, user1token, questionBody);
+
+      requestAdminStartQuizSession(quizID, user1token, 10);
+
+      const deleteResponse = requestAdminQuizRemoveV2(quizID, user1token);
+      expect(deleteResponse.statusCode).toEqual(httpStatus.BAD_REQUEST);
+      // has correct return type
+      expect(deleteResponse.body).toEqual({ error: expect.any(String) });
     });
   });
 });
