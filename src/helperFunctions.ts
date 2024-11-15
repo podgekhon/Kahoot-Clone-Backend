@@ -150,24 +150,8 @@ export const isValidPassword = (
 /// ///////////////////////////////////////////////////////////////
 /// ////////////// helper functions for quiz.ts ///////////////////
 /// ///////////////////////////////////////////////////////////////
-/**
- * Checks if the provided user ID refers to a valid user.
- *
- * @param {integer} authUserId - the user ID to be validated.
- * @returns {boolean} - returns true if the user exists, false otherwise.
- *
- */
-export const isUserValid = (authUserId: number, data: dataStore): boolean => {
-  // loop thru users array and match authUserId
-  const user = data.users.find(users => users.userId === authUserId);
 
-  // check if user valid
-  if (user) {
-    return true;
-  }
 
-  return false;
-};
 
 /**
   * checks if string contains invalid characters
@@ -302,15 +286,6 @@ export const validateAnswers = (
   return {};
 };
 
-/**
- *  check whether the return of a request is error message
- *
- * @param {errorMessages| emptyReturn} result - result of http request
- * @returns {boolean}
- */
-export function isErrorMessages(result: errorMessages | emptyReturn): result is errorMessages {
-  return (result as errorMessages).error !== undefined;
-}
 
 /**
  * Generate a random name consisting of 5 unique letters followed by 3 unique digits.
