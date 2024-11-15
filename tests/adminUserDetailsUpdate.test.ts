@@ -11,8 +11,24 @@ beforeEach(() => {
   requestClear();
 });
 
+const routeVersions = [
+  {
+    version: 'v1',
+    userDetails: requestAdminUserDetails,
+    userUpdateFunction: requestAdminUserDetailsUpdate,
+  },
+  {
+    version: 'v2',
+    userDetails: requestAdminUserDetails,
+    userUpdateFunction: requestAdminUserDetailsUpdateV2,
+  }
+];
+
 /// ////////-----adminUserDetailsUpdate-----////////////
-describe('test for adminUserDetailsUpdate', () => {
+describe.each(routeVersions)('adminUserDetailsUpdate tests for $version route', (
+  {
+    userUpdateFunction,
+  }) => {
   let user1;
   let user1token: string;
   beforeEach(() => {
@@ -21,7 +37,7 @@ describe('test for adminUserDetailsUpdate', () => {
   });
 
   test('invalid token', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = userUpdateFunction(
       'abcd',
       'newadmin@unsw.edu.au',
       'Guanlin',
@@ -32,7 +48,7 @@ describe('test for adminUserDetailsUpdate', () => {
   });
 
   test('empty token', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = userUpdateFunction(
       ' ',
       'newadmin@unsw.edu.au',
       'Guanlin',
@@ -43,7 +59,7 @@ describe('test for adminUserDetailsUpdate', () => {
   });
 
   test('Update user details with invalid email', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = userUpdateFunction(
       user1token,
       'invalidemail',
       'Guanlin',
@@ -53,8 +69,21 @@ describe('test for adminUserDetailsUpdate', () => {
     expect(updateResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
+  test('Update user details with duplicate', () => {
+    requestAdminAuthRegister('test2@gmail.com', 'validPassword6', 'Eric', 'Yang');
+
+    const updateResponse = userUpdateFunction(
+      user1token,
+      'test2@gmail.com',
+      'Guanlin',
+      'Kong'
+    );
+    expect(updateResponse.statusCode).toStrictEqual(400);
+    expect(updateResponse.body).toStrictEqual({ error: expect.any(String) });
+  });
+
   test('Update user details with invalid first name', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = userUpdateFunction(
       user1token,
       'newadmin@unsw.edu.au',
       '1',
@@ -65,7 +94,7 @@ describe('test for adminUserDetailsUpdate', () => {
   });
 
   test('Update user details with invalid last name', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = userUpdateFunction(
       user1token,
       'newadmin@unsw.edu.au',
       'Guanlin',
@@ -76,13 +105,13 @@ describe('test for adminUserDetailsUpdate', () => {
   });
 
   test('Update user details with all empty fields', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(' ', ' ', ' ', ' ');
+    const updateResponse = userUpdateFunction(' ', ' ', ' ', ' ');
     expect(updateResponse.statusCode).toStrictEqual(401);
     expect(updateResponse.body).toStrictEqual({ error: expect.any(String) });
   });
 
   test('Update user details successfully', () => {
-    const updateResponse = requestAdminUserDetailsUpdate(
+    const updateResponse = userUpdateFunction(
       user1token,
       'newadmin@unsw.edu.au',
       'Guanlin',
@@ -98,49 +127,3 @@ describe('test for adminUserDetailsUpdate', () => {
   });
 });
 
-describe('test for adminUserDetailsUpdate V2', () => {
-  let user1;
-  let user1token: string;
-  beforeEach(() => {
-    user1 = requestAdminAuthRegister('test@gmail.com', 'validPassword5', 'Guanlin', 'Kong');
-    user1token = (user1.body as tokenReturn).token;
-  });
-
-  test('invalid token', () => {
-    const updateResponse = requestAdminUserDetailsUpdateV2(
-      'abcd',
-      'newadmin@unsw.edu.au',
-      'Guanlin',
-      'Kong'
-    );
-    expect(updateResponse.statusCode).toStrictEqual(401);
-    expect(updateResponse.body).toStrictEqual({ error: expect.any(String) });
-  });
-
-  test('empty token', () => {
-    const updateResponse = requestAdminUserDetailsUpdateV2(
-      ' ',
-      'newadmin@unsw.edu.au',
-      'Guanlin',
-      'Kong'
-    );
-    expect(updateResponse.statusCode).toStrictEqual(401);
-    expect(updateResponse.body).toStrictEqual({ error: expect.any(String) });
-  });
-
-  test('Update user details successfully', () => {
-    const updateResponse = requestAdminUserDetailsUpdateV2(
-      user1token,
-      'newadmin@unsw.edu.au',
-      'Guanlin',
-      'Kong'
-    );
-    expect(updateResponse.statusCode).toStrictEqual(200);
-    expect(updateResponse.body).toStrictEqual({});
-
-    // get user details, it should be updated
-    const resDetails = requestAdminUserDetails(user1token);
-    expect(resDetails.statusCode).toStrictEqual(200);
-    expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
-  });
-});
