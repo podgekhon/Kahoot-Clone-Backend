@@ -317,6 +317,13 @@ export function generateRandomName(): string {
   return randomLetters + randomNumbers;
 }
 
+/**
+ * Find the corresponding QuizSession by playerID.
+ *
+ * @param {object} data - the dataset containing user and quiz information.
+ * @param {integer} playerId - the playerId.
+ * @returns {string} - return the corresponding activeSession or return null if no session found
+ */
 export function findQuizSessionByPlayerId(data: dataStore, playerId: number): quizSession | null {
   // Search through all quizzes
   for (const quiz of data.quizzes) {
