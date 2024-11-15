@@ -120,10 +120,8 @@ describe.each(routeVersions)('adminUserDetailsUpdate tests for $version route', 
     expect(updateResponse.statusCode).toStrictEqual(200);
     expect(updateResponse.body).toStrictEqual({});
 
-    // get user details, it should be updated
     const resDetails = requestAdminUserDetails(user1token);
     expect(resDetails.statusCode).toStrictEqual(200);
     expect(resDetails.body).toStrictEqual({ user: expect.any(Object) });
   });
 });
-
