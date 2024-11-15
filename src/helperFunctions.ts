@@ -329,5 +329,14 @@ export function findQuizSessionByPlayerId(data: dataStore, playerId: number): qu
     if (activeSession) return activeSession;
   }
   // Return null if no session is found
+  for (const quiz of data.quizzes) {
+    // Find in inactiveSessions
+    const inactiveSession = quiz.inactiveSessions.find(session =>
+      session.players.some(player => player.playerId === playerId)
+    );
+    if (inactiveSession) {
+      throw new Error('SESSION_IN_END');
+    }
+  }
   return null;
 }
