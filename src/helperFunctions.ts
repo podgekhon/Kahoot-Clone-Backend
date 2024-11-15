@@ -1,7 +1,5 @@
 import {
   token,
-  errorMessages,
-  emptyReturn,
   question,
   quiz,
   answerOption,
@@ -151,8 +149,6 @@ export const isValidPassword = (
 /// ////////////// helper functions for quiz.ts ///////////////////
 /// ///////////////////////////////////////////////////////////////
 
-
-
 /**
   * checks if string contains invalid characters
   *
@@ -285,7 +281,6 @@ export const validateAnswers = (
   }
   return {};
 };
-
 
 /**
  * Generate a random name consisting of 5 unique letters followed by 3 unique digits.
