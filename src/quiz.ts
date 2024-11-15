@@ -1380,6 +1380,8 @@ export const adminGetFinalResultsCsv = (
     }
   });
 
+  console.log(finalResults);
+
   // Create CSV content
   const header = ['Player'];
   quizSession.quizCopy.questions.forEach((_, i) => {
