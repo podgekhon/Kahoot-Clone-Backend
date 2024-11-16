@@ -163,7 +163,7 @@ describe('tests for playerQuestion', () => {
       // go to question 2
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.GO_TO_ANSWER);
       requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.NEXT_QUESTION);
-      requestAdminQuizSessionUpdate(quizId, sessionId, usertoken, adminAction.SKIP_COUNTDOWN);
+      sleepSync(3100);
 
       // check if state is question_open
       const quizSession2 = requestadminQuizSessionState(quizId, sessionId, usertoken);
