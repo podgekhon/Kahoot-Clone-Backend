@@ -8,7 +8,6 @@ import {
 } from './dataStore';
 
 import {
-  errorMessages,
   tokenReturn,
   userDetails,
   emptyReturn
@@ -38,7 +37,6 @@ import sha256 from 'crypto-js/sha256';
  * @param {string} nameFirst - The user's first name
  * @param {string} nameLast - The user's last name
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {tokenReturn} - An object containing a token upon successful registration
  */
 
@@ -47,7 +45,7 @@ export const adminAuthRegister = (
   password: string,
   nameFirst: string,
   nameLast: string
-): errorMessages | tokenReturn => {
+): tokenReturn => {
   const data = getData();
 
   if (isEmailUsed(email, data)) {
