@@ -232,7 +232,6 @@ export const adminStartQuizSession = (
   const quizCopy: quizCopy = {
     quizId: quiz.quizId,
     ownerId: quiz.ownerId,
-    // sessionState: quiz.sessionState,
     name: quiz.name,
     description: quiz.description,
     numQuestions: quiz.numQuestions,
