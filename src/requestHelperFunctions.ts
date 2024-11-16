@@ -129,178 +129,163 @@ export const requestAdminAuthLogin = (
 
 // adminUserPasswordUpdate
 /**
- * Makes http request to update password
+ * Makes an HTTP request to update the password for the specified version
  *
- * @param { string } token
- * @param { string } oldPassword
- * @param { string } newPassword
- * @returns { Response }
+ * @param {string} token
+ * @param {string} oldPassword
+ * @param {string} newPassword
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminUserPasswordUpdate = (
-  token: string, oldPassword: string, newPassword: string
+const requestAdminUserPasswordUpdateGeneric = (
+  token: string,
+  oldPassword: string,
+  newPassword: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminUserPasswordUpdate>,
+  body: ReturnType<typeof adminUserPasswordUpdate>,
   statusCode: number
 } => {
-  const res = request(
-    'PUT',
-    SERVER_URL + '/v1/admin/user/password',
-    {
-      json: {
-        token: token,
-        oldPassword: oldPassword,
-        newPassword: newPassword
-      },
-      timeout: TIMEOUT_MS
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/user/password`;
+
+  const options: requestOptions = {
+    json: { oldPassword, newPassword },
+    timeout: TIMEOUT_MS,
+  };
+
+  if (version === 'v1') {
+    options.json = { token, oldPassword, newPassword };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('PUT', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
 /**
- * Makes http request to update password
- *
- * @param { string } token
- * @param { string } oldPassword
- * @param { string } newPassword
- * @returns { Response }
+ * Makes an HTTP request to update password using v1 route
+ */
+export const requestAdminUserPasswordUpdate = (
+  token: string,
+  oldPassword: string,
+  newPassword: string
+) => requestAdminUserPasswordUpdateGeneric(token, oldPassword, newPassword, 'v1');
+
+/**
+ * Makes an HTTP request to update password using v2 route
  */
 export const requestAdminUserPasswordUpdateV2 = (
-  token: string, oldPassword: string, newPassword: string
-): {
-  body: ReturnType <typeof adminUserPasswordUpdate>,
-  statusCode: number
-} => {
-  const res = request(
-    'PUT',
-    SERVER_URL + '/v2/admin/user/password',
-    {
-      headers: {
-        token: token
-      },
-      json: {
-        oldPassword: oldPassword,
-        newPassword: newPassword
-      },
-      timeout: TIMEOUT_MS
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+  token: string,
+  oldPassword: string,
+  newPassword: string
+) => requestAdminUserPasswordUpdateGeneric(token, oldPassword, newPassword, 'v2');
 
 // adminUserDetails
 /**
- * Makes http request to get user details
+ * Makes an HTTP request to get user details for the specified version
  *
- * @param { string } token
- * @returns
+ * @param {string} token
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminUserDetails = (
-  token: string
+const requestAdminUserDetailsGeneric = (
+  token: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminUserDetails>,
+  body: ReturnType<typeof adminUserDetails>,
   statusCode: number
 } => {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v1/admin/user/details',
-    {
-      qs: { token },
-      timeout: TIMEOUT_MS,
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/user/details`;
+
+  const options: requestOptions = {
+    timeout: TIMEOUT_MS,
+  };
+
+  // Add token as a query parameter for v1 or a header for v2
+  if (version === 'v1') {
+    options.qs = { token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('GET', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminUserDetails V2
 /**
- * Makes http request to get user details
- *
- * @param { string } token
- * @returns
+ * Makes an HTTP request to get user details using v1 route
  */
-export const requestAdminUserDetailsv2 = (
-  token: string
-): {
-  body: ReturnType <typeof adminUserDetails>,
-  statusCode: number
-} => {
-  const res = request(
-    'GET',
-    SERVER_URL + '/v2/admin/user/details',
-    {
-      headers: {
-        token: token
-      },
-      timeout: TIMEOUT_MS,
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+export const requestAdminUserDetails = (token: string) =>
+  requestAdminUserDetailsGeneric(token, 'v1');
+
+/**
+ * Makes an HTTP request to get user details using v2 route
+ */
+export const requestAdminUserDetailsv2 = (token: string) =>
+  requestAdminUserDetailsGeneric(token, 'v2');
 
 // adminUserDetailsUpdate
 /**
- * Makes http request to update user details
- * @param { string } token
- * @param { string } email
- * @param { string } nameFirst
- * @param { string } nameLast
- * @returns { Response }
+/**
+ * Makes an HTTP request to update user details for the specified version
+ *
+ * @param {string} token - authentication token
+ * @param {string} email - user email
+ * @param {string} nameFirst - First name
+ * @param {string} nameLast - Last name
+ * @param {string} version - "v1" or "v2"
+ * @returns {Response}
  */
-export const requestAdminUserDetailsUpdate = (
-  token: string, email: string, nameFirst: string, nameLast: string
+const requestAdminUserDetailsUpdateGeneric = (
+  token: string,
+  email: string,
+  nameFirst: string,
+  nameLast: string,
+  version: string
 ): {
-  body: ReturnType <typeof adminUserDetailsUpdate>,
+  body: ReturnType<typeof adminUserDetailsUpdate>,
   statusCode: number
 } => {
-  const res = request(
-    'PUT',
-    SERVER_URL + '/v1/admin/user/details',
-    {
-      json: {
-        token: token,
-        email: email,
-        nameFirst: nameFirst,
-        nameLast: nameLast
-      },
-      timeout: TIMEOUT_MS
-    }
-  );
+  const url = `${SERVER_URL}/${version}/admin/user/details`;
+
+  const options: requestOptions = {
+    json: { email, nameFirst, nameLast },
+    timeout: TIMEOUT_MS,
+  };
+
+  // Add token as a query parameter for v1 or a header for v2
+  if (version === 'v1') {
+    options.json = { ...options.json, token };
+  } else {
+    options.headers = { token };
+  }
+
+  const res = request('PUT', url, options);
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
 
-// adminUserDetailsUpdateV2
 /**
- * Makes http request to update user details
- * @param { string } token
- * @param { string } email
- * @param { string } nameFirst
- * @param { string } nameLast
- * @returns { Response }
+ * Makes an HTTP request to update user details using v1 route
+ */
+export const requestAdminUserDetailsUpdate = (
+  token: string,
+  email: string,
+  nameFirst: string,
+  nameLast: string
+) =>
+  requestAdminUserDetailsUpdateGeneric(token, email, nameFirst, nameLast, 'v1');
+
+/**
+ * Makes an HTTP request to update user details using v2 route
  */
 export const requestAdminUserDetailsUpdateV2 = (
-  token: string, email: string, nameFirst: string, nameLast: string
-): {
-  body: ReturnType <typeof adminUserDetailsUpdate>,
-  statusCode: number
-} => {
-  const res = request(
-    'PUT',
-    SERVER_URL + '/v2/admin/user/details',
-    {
-      headers: {
-        token: token
-      },
-      json: {
-        email: email,
-        nameFirst: nameFirst,
-        nameLast: nameLast
-      },
-      timeout: TIMEOUT_MS
-    }
-  );
-  return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
-};
+  token: string,
+  email: string,
+  nameFirst: string,
+  nameLast: string
+) =>
+  requestAdminUserDetailsUpdateGeneric(token, email, nameFirst, nameLast, 'v2');
 
 // adminQuizList
 // Generic function for listing quizzes
