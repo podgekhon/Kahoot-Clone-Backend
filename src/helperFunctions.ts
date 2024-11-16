@@ -7,7 +7,8 @@ import {
   dataStore,
   quizSession,
   PlayerState,
-  timers
+  timers,
+  emptyReturn
 } from './interface';
 
 import { quizState } from './quiz';
@@ -56,8 +57,8 @@ export function generateRandomId(): number {
   *
   * @param {string} token - the token to validate
   *
-  * @returns {{ authUserId: number } | { error: string }} - an object
-  * containing authUserId if valid, or an error message if invalid
+  * @returns {{ authUserId: number }} - an object
+  * containing authUserId if valid
   */
 export function validateToken(
   token: string,
@@ -87,7 +88,7 @@ export function validateToken(
   *
   * @param {number} userId - The unique identifier of the user
   *
-  * @returns {string} - A URL-encoded token containing the session ID
+  * @returns {string} - a token containing the sessionId
   */
 export function generateToken(userId: number, data: dataStore): string {
   const sessionId = generateRandomId();
@@ -128,8 +129,7 @@ export const isNameValid = (name: string): boolean => {
  * Validates a password based on length, letter, and number criteria.
  *
  * @param {string} password - The password to be validated.
- * @returns {object} An object with an error message if invalid, or
- * { valid: true } if the password is valid.
+ * @returns {object} - { valid: true } if the password is valid.
  *
  */
 export const isValidPassword = (
@@ -217,16 +217,15 @@ export const isValidQuiz = (
 /**
  * Validates the question details for a quiz.
  *
- * @param {object} questionBody - the body of the question
- * @param {object} quiz - the quiz object containing questions
- * @returns {object} - an object with an error message if invalid,
- * or null if the question details are valid.
+ * @param {question} questionBody - the body of the question
+ * @param {quiz} quiz - the quiz object containing questions
+ * @returns {emptyReturn}
  *
  */
 export const isValidQuestion = (
   questionBody: question,
   quiz: quiz
-) => {
+): emptyReturn => {
   const { question, timeLimit, points, answerOptions } = questionBody;
 
   if (question.length < 5 || question.length > 50) {
@@ -257,9 +256,8 @@ export const isValidQuestion = (
 /**
  * Validates the answer options for a quiz question.
  * @param {Array} answerOptions - the array of answer options to validate
+ * @returns {emptyReturn}
  *
- * @returns {errorMessages | null} - an object with an error message if
- * validation fails, or null if the answers are valid.
  */
 export const validateAnswers = (
   answerOptions: answerOption[]
