@@ -1,7 +1,4 @@
 /// ///----EXTERNAL FILES-----/////
-
-/// //////////// UNCOMMENT THIS LINE BELOW //////////////
-// import { TokenType } from 'yaml/dist/parse/cst.js';
 import {
   getData,
   setData

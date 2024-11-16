@@ -371,7 +371,6 @@ export const playerQuestionResult = (
   }
 
   const question = session.quizCopy.questions[questionPosition - 1];
-  // const question = quiz.questions[questionPosition - 1];
   if (session.sessionState !== quizState.ANSWER_SHOW) {
     throw new Error('SESSION_NOT_IN_ANSWER_SHOW');
   }
