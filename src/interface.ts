@@ -20,7 +20,6 @@ export interface dataStore {
   quizzes: quiz[],
   sessions: token[];
   trash: quiz[];
-  // players: PlayerState[];
 }
 
 export interface player {
@@ -326,4 +325,8 @@ export interface usersRankedByScore {
 export interface GetFinalResultsCsv {
   body: ReturnType<typeof adminGetFinalResultsCsv>;
   statusCode: number;
+}
+
+export interface timers {
+  [key: number]: ReturnType<typeof setTimeout>;
 }

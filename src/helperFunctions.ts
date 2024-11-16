@@ -7,6 +7,7 @@ import {
   dataStore,
   quizSession,
   PlayerState,
+  timers,
   emptyReturn
 } from './interface';
 
@@ -254,8 +255,6 @@ export const isValidQuestion = (
 
 /**
  * Validates the answer options for a quiz question.
- *
- *
  * @param {Array} answerOptions - the array of answer options to validate
  * @returns {emptyReturn}
  *
@@ -344,14 +343,20 @@ export function findQuizSessionByPlayerId(data: dataStore, playerId: number): qu
   return null;
 }
 
+/**
+ * changes the state of session when admin action is NEXT_QUESTION.
+ *
+ * @param {quizSession} quizSession - the dataset containing user and quiz information.
+ * @param {number} sessionId - the playerId.
+ * @param {number} quizId - the playerId.
+ * @param {timers} timers - an array of setTimeout functions
+ */
 // admin action to go next question
 export const actionNextQuestion = (
   quizSession: quizSession,
   sessionId: number,
   quizId: number,
-  timers: {
-  [key: number]: ReturnType<typeof setTimeout>;
-  }
+  timers: timers
 ) => {
   // check if action can be applied to current state
   if (
@@ -411,14 +416,19 @@ export const actionNextQuestion = (
   }, 3000);
 };
 
-// admin action to skip countdown
+/**
+ * changes the state of session when admin action is SKIP_COUNTDOWN
+ *
+ * @param {quizSession} quizSession - the dataset containing user and quiz information.
+ * @param {number} sessionId - the playerId.
+ * @param {number} quizId - the playerId.
+ * @param {timers} timers - an array of setTimeout functions
+ */
 export const actionSkipCountdown = (
   quizSession: quizSession,
   sessionId: number,
   quizId: number,
-  timers: {
-    [key: number]: ReturnType<typeof setTimeout>;
-  }
+  timers: timers
 ) => {
   // check if action can be applied to current state
   if (quizSession.sessionState !== quizState.QUESTION_COUNTDOWN) {
@@ -450,14 +460,17 @@ export const actionSkipCountdown = (
   }, quizSession.quizCopy.questions[quizSession.sessionQuestionPosition - 1].timeLimit * 1000);
 };
 
-// admin actions to answer show
+/**
+ * changes the state of session when admin action is ANSWER_SHOW
+ *
+ * @param {quizSession} quizSession - the dataset containing user and quiz information.
+ * @param {number} sessionId - the playerId.
+ * @param {timers} timers - an array of setTimeout functions
+ */
 export const actionAnswerShow = (
   quizSession: quizSession,
   sessionId: number,
-  quizId: number,
-  timers: {
-    [key: number]: ReturnType<typeof setTimeout>;
-  }
+  timers: timers
 ) => {
   // check if action can be applied to current state
   if (
@@ -477,14 +490,16 @@ export const actionAnswerShow = (
   }
 };
 
-// admin action to go to final results
+/**
+ * changes the state of session when admin action is GO_TO_FINAL_RESULTS
+ *
+ * @param {quizSession} quizSession - the dataset containing user and quiz information.
+ * @param {number} sessionId - the playerId.
+ * @param {timers} timers - an array of setTimeout functions
+ */
 export const actionGoToFinalResults = (
   quizSession: quizSession,
-  sessionId: number,
-  quizId: number,
-  timers: {
-    [key: number]: ReturnType<typeof setTimeout>;
-  }
+  sessionId: number
 ) => {
   // check if action can be applied to current state
   if (

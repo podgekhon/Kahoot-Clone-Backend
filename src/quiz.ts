@@ -1025,12 +1025,12 @@ export const adminQuizSessionUpdate = (
 
   // if action is 'ANSWER_SHOW'
   if (action === adminAction.GO_TO_ANSWER) {
-    actionAnswerShow(quizSession, sessionId, quizId, timers);
+    actionAnswerShow(quizSession, sessionId, timers);
   }
 
   // if action is 'GO_TO_FINAL_RESULTS'
   if (action === adminAction.GO_TO_FINAL_RESULTS) {
-    actionGoToFinalResults(quizSession, sessionId, quizId, timers);
+    actionGoToFinalResults(quizSession, sessionId);
   }
 
   setData(data);
