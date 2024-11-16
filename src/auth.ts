@@ -96,10 +96,9 @@ export const adminAuthRegister = (
  * @param {string} email - The user's email address
  * @param {string} password - The user's password
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {tokenReturn} - An object containing a token upon successful registration
  */
-export const adminAuthLogin = (email: string, password: string): errorMessages | tokenReturn => {
+export const adminAuthLogin = (email: string, password: string): tokenReturn => {
   const data = getData();
   // Find the user by email
   const user = data.users.find((user) => user.email === email);
@@ -127,10 +126,9 @@ export const adminAuthLogin = (email: string, password: string): errorMessages |
  *
  * @param {string} token - The authentication token of the user
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {userDetails} - An empty containting the user's details upon successful registration
  */
-export const adminUserDetails = (token: string): errorMessages | userDetails => {
+export const adminUserDetails = (token: string): userDetails => {
   const data = getData();
   // get userId
   const tokenValidation = validateToken(token, data);
@@ -158,7 +156,6 @@ export const adminUserDetails = (token: string): errorMessages | userDetails => 
  * @param {string} nameFirst - The new first name to be set
  * @param {string} nameLast - The new last name to be set
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
 export const adminUserDetailsUpdate = (
@@ -166,7 +163,7 @@ export const adminUserDetailsUpdate = (
   email: string,
   nameFirst: string,
   nameLast: string
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
@@ -211,14 +208,13 @@ export const adminUserDetailsUpdate = (
  * @param {string} oldPassword - The user's current password
  * @param {string} newPassword - The new password to be set
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
 export const adminUserPasswordUpdate = (
   token: string,
   oldPassword: string,
   newPassword: string
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
@@ -254,10 +250,9 @@ export const adminUserPasswordUpdate = (
  *
  * @param {string} token - The authentication token of the user
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
-export const adminAuthLogout = (token: string): errorMessages | emptyReturn => {
+export const adminAuthLogout = (token: string): emptyReturn => {
   const data = getData();
 
   const validation = validateToken(token, data);

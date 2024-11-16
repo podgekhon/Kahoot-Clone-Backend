@@ -107,9 +107,8 @@ export const adminQuizUpdateThumbnail = (
   * @param {string} token - a unique session id for user
   *
   * @return {quizList}  - returns list of quizzes if no errors
-  * @return {errorMessages} - returns error messages if error
 */
-export const adminQuizList = (token: string): errorMessages| quizList => {
+export const adminQuizList = (token: string): quizList => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -142,7 +141,7 @@ export const adminQuizCreate = (
   token: string,
   name: string,
   description: string
-): quizCreateResponse | errorMessages => {
+): quizCreateResponse => {
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
@@ -303,14 +302,13 @@ export const adminViewQuizSessions = (
   * @param {question} questionBody - informatoion of a question
   *
   * @returns {quizQuestionCreateResponse} - returns id of created question
-  * @returns {errorMessages} - returns error message if error
 */
 export const adminQuizQuestionCreate = (
   quizId: number,
   questionBody: question,
   token: string,
   version: string
-): quizQuestionCreateResponse | errorMessages => {
+): quizQuestionCreateResponse => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -440,7 +438,6 @@ export const adminQuizQuestionUpdate = (
   * @param {string} token - a unique session id for user
   * @param {number} newPosition - index of a question in the quiz
   *
-  * @returns {errorMessages} - An object containing an error message if registration fails
   * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminMoveQuizQuestion = (
@@ -448,7 +445,7 @@ export const adminMoveQuizQuestion = (
   questionId: number,
   token: string,
   newPosition: number
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
 
   // Validate token
@@ -495,13 +492,12 @@ export const adminMoveQuizQuestion = (
   * @param {string} token - a unique session id for user
   * @param {integer} quizId - a unique id of quiz
   *
-  * @returns {errorMessages} - An object containing an error message if registration fails
   * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizRemove = (
   token: string,
   quizId: number
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
@@ -580,14 +576,13 @@ export const adminQuizInfo = (token: string, quizId: number, version: string): q
   * @param {number} quizId - id of quiz
   * @param {string} name - quiz name
   *
-  * @returns {errorMessages} - An object containing an error message if registration fails
   * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizNameUpdate = (
   token: string,
   quizId: number,
   name: string
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
@@ -628,14 +623,13 @@ export const adminQuizNameUpdate = (
   * @param {integer} quizId - a unque id of quiz
   * @param {string} description - deccription of a quiz belonging to a user
   *
-  * @returns {errorMessages} - An object containing an error message if registration fails
   * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizDescriptionUpdate = (
   token: string,
   quizId: number,
   description: string
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
   // get userId from token
   const tokenValidation = validateToken(token, data);
@@ -665,9 +659,8 @@ export const adminQuizDescriptionUpdate = (
  * @param {string} token - a unique session id for user
  *
  * @returns {quizList}  - list of quizzes in trash
- * @returns {errorMessages} - returns error message if error
  */
-export const adminTrashList = (token: string): errorMessages | quizList => {
+export const adminTrashList = (token: string): quizList => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -690,11 +683,10 @@ export const adminTrashList = (token: string): errorMessages | quizList => {
  * @param {number} quizId - an unique id of a quiz
  * @param {string} token - a unique session id for user
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
 
-export const adminQuizRestore = (quizId: number, token: string): errorMessages | emptyReturn => {
+export const adminQuizRestore = (quizId: number, token: string): emptyReturn => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -741,14 +733,13 @@ export const adminQuizRestore = (quizId: number, token: string): errorMessages |
   * @param {number} questionId - an unique id of a question in quiz
   * @param {string} token - a unique session id for user
   *
-  * @returns {errorMessages} - An object containing an error message if registration fails
   * @returns {emptyReturn} - An empty upon successful registration
 */
 export const adminQuizQuestionRemove = (
   quizId: number,
   questionId: number,
   token: string
-): emptyReturn | errorMessages => {
+): emptyReturn => {
   const data = getData();
   // Token is empty or invalid (does not refer to valid logged in user session)
   const tokenValidation = validateToken(token, data);
@@ -794,13 +785,12 @@ export const adminQuizQuestionRemove = (
   *
   * @returns {quizQuestionDuplicateResponse} - returns an object containing
   * the duplicated quizid if no error
-  * @returns {errorMessages} - returns error message if error
 */
 export const adminQuizQuestionDuplicate = (
   quizId: number,
   questionId: number,
   token: string
-): quizQuestionDuplicateResponse | errorMessages => {
+): quizQuestionDuplicateResponse => {
   const data = getData();
 
   const tokenValidation = validateToken(token, data);
@@ -844,7 +834,6 @@ export const adminQuizQuestionDuplicate = (
  * @param {string} token - a unique session id for user
  * @param {string} userEmail - email of user
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
 export const adminQuizTransfer = (
@@ -897,10 +886,9 @@ export const adminQuizTransfer = (
  * @param {number[]} quizIds - an array of existing quizIds owned by user
  * @param {string} token - a unique session id for user
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - An empty upon successful registration
  */
-export const adminTrashEmpty = (token: string, quizIds: number[]): errorMessages | emptyReturn => {
+export const adminTrashEmpty = (token: string, quizIds: number[]): emptyReturn => {
   // Validate inputs
   const data = getData();
   const tokenValidation = validateToken(token, data);
@@ -1057,7 +1045,6 @@ export const adminQuizSessionUpdate = (
  * @param {number} sessionId - an unique id of a session
  * @param {string} token - a unique session id for user
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {sessionState} - An object contain all information of session state
  */
 export const adminQuizSessionState = (quizId: number, sessionId: number, token: string):
@@ -1137,7 +1124,6 @@ sessionState => {
  * @param {number} sessionId - an unique id of a session
  * @param {string} token - a unique session id for user
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {sessionState} - An object contain all results
  */
 export const adminGetFinalResults = (
@@ -1246,7 +1232,6 @@ export const adminGetFinalResults = (
  * @param {number} sessionId - an unique id of a session
  * @param {string} token - a unique session id for user
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {sessionState} - An object contain the url
  */
 export const adminGetFinalResultsCsv = (

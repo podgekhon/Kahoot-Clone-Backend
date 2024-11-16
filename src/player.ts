@@ -15,7 +15,6 @@ import {
   playerId,
   quizSession,
   answerSubmission,
-  errorMessages,
   emptyReturn,
   PlayerState,
   messageList,
@@ -26,7 +25,7 @@ import {
 } from './interface';
 
 import { quizState } from './quiz';
-/**
+
 /**
  *
 Allow a guest player to join a session
@@ -34,26 +33,25 @@ Allow a guest player to join a session
  * @param {number} sessionId - sessionId of the session
  * @param {string} playerName - the name of player
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {playerId} - A Number which is the playerId of player
  */
 export const joinPlayer = (sessionId: number, playerName: string): playerId => {
   const data = getData();
 
-  let FindSession: quizSession;
+  let findSession: quizSession;
   for (const quiz of data.quizzes) {
-    FindSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
-    if (FindSession) break;
+    findSession = quiz.activeSessions.find((session) => session.sessionId === sessionId);
+    if (findSession) break;
   }
 
-  if (!FindSession) {
+  if (!findSession) {
     throw new Error('INVALID_SESSIONID');
   }
-  if (FindSession.sessionState !== quizState.LOBBY) {
+  if (findSession.sessionState !== quizState.LOBBY) {
     throw new Error('SESSION_NOT_IN_LOBBY');
   }
 
-  const existingPlayer = FindSession.players.find((player) => player.playerName === playerName);
+  const existingPlayer = findSession.players.find((player) => player.playerName === playerName);
   if (existingPlayer) {
     throw new Error('EXIST_PLAYERNAME');
   }
@@ -72,11 +70,11 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
     atQuestion: 0,
     score: 0,
   };
-  FindSession.players.push(newPlayer);
+  findSession.players.push(newPlayer);
 
-  const num = FindSession.players.length;
-  if (num === FindSession.autoStartNum) {
-    FindSession.sessionState = quizState.QUESTION_COUNTDOWN;
+  const num = findSession.players.length;
+  if (num === findSession.autoStartNum) {
+    findSession.sessionState = quizState.QUESTION_COUNTDOWN;
   }
 
   setData(data);
@@ -91,14 +89,13 @@ export const joinPlayer = (sessionId: number, playerName: string): playerId => {
  * @param {number} playerId - an unique identifier for a player
  * @param {number} questionPosition - an unique identifier for a player
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {emptyReturn} - A Number which is the playerId of player
  */
 export const playerAnswerQuestion = (
   answerIds: number[],
   playerId: number,
   questionPosition: number
-): errorMessages | emptyReturn => {
+): emptyReturn => {
   const data = getData();
   // find player
   const quizSession = findQuizSessionByPlayerId(data, playerId);
@@ -287,11 +284,10 @@ Get the final results for a whole session a player is playing in
  *
  * @param {number} playerId - an unique identifier for a player
  *
- * @returns {errorMessages} - An object containing an error message if registration fails
  * @returns {playerResultsResponse} - An object containing the final results for a whole
  *
  */
-export const playerResults = (playerId: number): playerResultsResponse | errorMessages => {
+export const playerResults = (playerId: number): playerResultsResponse => {
   // Check if the player ID exists in the session data
   const data = getData();
 
