@@ -131,9 +131,9 @@ export const requestAdminAuthLogin = (
 /**
  * Makes an HTTP request to update the password for the specified version
  *
- * @param {string} token 
- * @param {string} oldPassword 
- * @param {string} newPassword 
+ * @param {string} token
+ * @param {string} oldPassword
+ * @param {string} newPassword
  * @param {string} version - "v1" or "v2"
  * @returns {Response}
  */
@@ -185,7 +185,7 @@ export const requestAdminUserPasswordUpdateV2 = (
 /**
  * Makes an HTTP request to get user details for the specified version
  *
- * @param {string} token 
+ * @param {string} token
  * @param {string} version - "v1" or "v2"
  * @returns {Response}
  */

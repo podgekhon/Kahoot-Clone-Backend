@@ -17,7 +17,6 @@ import {
 
 import {
   emptyReturn,
-  errorMessages,
   quizList,
   quizCreateResponse,
   quizQuestionCreateResponse,

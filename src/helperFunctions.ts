@@ -218,13 +218,13 @@ export const isValidQuiz = (
  *
  * @param {question} questionBody - the body of the question
  * @param {quiz} quiz - the quiz object containing questions
- * @returns {emptyReturn} 
+ * @returns {emptyReturn}
  *
  */
 export const isValidQuestion = (
   questionBody: question,
   quiz: quiz
-) => {
+): emptyReturn => {
   const { question, timeLimit, points, answerOptions } = questionBody;
 
   if (question.length < 5 || question.length > 50) {
@@ -257,7 +257,7 @@ export const isValidQuestion = (
  *
  *
  * @param {Array} answerOptions - the array of answer options to validate
- * @returns {emptyReturn} 
+ * @returns {emptyReturn}
  *
  */
 export const validateAnswers = (
