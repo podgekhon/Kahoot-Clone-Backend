@@ -1,5 +1,9 @@
-import request from 'sync-request-curl';
+// import request from 'sync-request-curl';
 import { port, url } from '../src/config.json';
+
+import { mocked } from 'jest-mock';
+import request, { Response } from 'sync-request-curl';
+jest.mock('sync-request-curl'); // Mock the library
 import {
   userAuthRegister,
   authLoginResponse,
@@ -72,5 +76,71 @@ describe('adminAuthLogin', () => {
         numFailedPasswordsSinceLastLogin: 0
       }
     });
+  });
+});
+
+
+describe('requestAdminAuthLogin helper function', () => {
+  const mockRequest = mocked(request);
+
+  beforeEach(() => {
+    mockRequest.mockClear();
+  });
+
+  test('should return the parsed body and statusCode for a successful login', () => {
+    // Mock the `request` response for a successful login
+    mockRequest.mockReturnValueOnce({
+      headers: {},
+      getBody: () => Buffer.from(JSON.stringify({ token: 'fake-token' })),
+      body: Buffer.from(JSON.stringify({ token: 'fake-token' })), // Optional
+      statusCode: 200,
+      url: 'mock-url',
+    } as unknown as Response);
+
+    const result = requestAdminAuthLogin('user@gmail.com', 'validPassword1');
+
+    expect(mockRequest).toHaveBeenCalledWith('POST', expect.stringContaining('/v1/admin/auth/login'), {
+      json: { email: 'user@gmail.com', password: 'validPassword1' },
+      timeout: expect.any(Number),
+    });
+
+    expect(result).toEqual({
+      body: { token: 'fake-token' },
+      statusCode: 200,
+    });
+  });
+
+  test('should handle an error response correctly', () => {
+    // Mock the `request` response for an error
+    mockRequest.mockReturnValueOnce({
+      headers: {},
+      getBody: () => Buffer.from(JSON.stringify({ error: 'EMAIL_NOT_EXISTS' })),
+      body: Buffer.from(JSON.stringify({ error: 'EMAIL_NOT_EXISTS' })), // Optional
+      statusCode: 400,
+      url: 'mock-url',
+    } as unknown as Response);
+
+    const result = requestAdminAuthLogin('invalidEmail@gmail.com', 'validPassword1');
+
+    expect(mockRequest).toHaveBeenCalledWith('POST', expect.stringContaining('/v1/admin/auth/login'), {
+      json: { email: 'invalidEmail@gmail.com', password: 'validPassword1' },
+      timeout: expect.any(Number),
+    });
+
+    expect(result).toEqual({
+      body: { error: 'EMAIL_NOT_EXISTS' },
+      statusCode: 400,
+    });
+  });
+
+  test('should throw if `request` throws an error', () => {
+    // Simulate a network failure
+    mockRequest.mockImplementationOnce(() => {
+      throw new Error('Network Error');
+    });
+
+    expect(() => {
+      requestAdminAuthLogin('user@gmail.com', 'validPassword1');
+    }).toThrow('Network Error');
   });
 });
