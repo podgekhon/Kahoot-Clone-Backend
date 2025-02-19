@@ -58,7 +58,7 @@ import {
 import {
   GetFinalResults,
   messageBody,
-  requestOptions,
+  requestOptions
 } from './interface';
 
 // clear
@@ -67,10 +67,7 @@ import {
  *
  * @returns {} - empty object
  */
-export const requestClear = (): {
-  body: ReturnType <typeof clear>
-  statusCode: number
-} => {
+export function requestClear() {
   const res = request('DELETE', SERVER_URL + '/v1/clear', { timeout: TIMEOUT_MS });
   return { body: JSON.parse(res.body.toString()), statusCode: res.statusCode };
 };
@@ -85,12 +82,9 @@ export const requestClear = (): {
  * @param { string } nameLast
  * @returns { Response }
  */
-export const requestAdminAuthRegister = (
+export function requestAdminAuthRegister(
   email: string, password: string, nameFirst: string, nameLast: string
-): {
-  body: ReturnType <typeof adminAuthRegister>,
-  statusCode: number
-} => {
+) {
   const res = request('POST', SERVER_URL + '/v1/admin/auth/register', {
     json: {
       email: email,
@@ -111,12 +105,9 @@ export const requestAdminAuthRegister = (
  * @param { string } password
  * @returns { Response }
  */
-export const requestAdminAuthLogin = (
+export function requestAdminAuthLogin (
   email: string, password: string
-): {
-  body: ReturnType<typeof adminAuthLogin>
-  statusCode: number
-} => {
+) {
   const res = request('POST', SERVER_URL + '/v1/admin/auth/login', {
     json: {
       email: email,
@@ -137,15 +128,12 @@ export const requestAdminAuthLogin = (
  * @param {string} version - "v1" or "v2"
  * @returns {Response}
  */
-const requestAdminUserPasswordUpdateGeneric = (
+function requestAdminUserPasswordUpdateGeneric (
   token: string,
   oldPassword: string,
   newPassword: string,
   version: string
-): {
-  body: ReturnType<typeof adminUserPasswordUpdate>,
-  statusCode: number
-} => {
+) {
   const url = `${SERVER_URL}/${version}/admin/user/password`;
 
   const options: requestOptions = {
@@ -166,20 +154,20 @@ const requestAdminUserPasswordUpdateGeneric = (
 /**
  * Makes an HTTP request to update password using v1 route
  */
-export const requestAdminUserPasswordUpdate = (
+export function requestAdminUserPasswordUpdate (
   token: string,
   oldPassword: string,
   newPassword: string
-) => requestAdminUserPasswordUpdateGeneric(token, oldPassword, newPassword, 'v1');
+) { requestAdminUserPasswordUpdateGeneric(token, oldPassword, newPassword, 'v1'); }
 
 /**
  * Makes an HTTP request to update password using v2 route
  */
-export const requestAdminUserPasswordUpdateV2 = (
+export function requestAdminUserPasswordUpdateV2 (
   token: string,
   oldPassword: string,
   newPassword: string
-) => requestAdminUserPasswordUpdateGeneric(token, oldPassword, newPassword, 'v2');
+) {requestAdminUserPasswordUpdateGeneric(token, oldPassword, newPassword, 'v2'); }
 
 // adminUserDetails
 /**
@@ -216,14 +204,14 @@ const requestAdminUserDetailsGeneric = (
 /**
  * Makes an HTTP request to get user details using v1 route
  */
-export const requestAdminUserDetails = (token: string) =>
-  requestAdminUserDetailsGeneric(token, 'v1');
+export function requestAdminUserDetails (token: string) 
+  {requestAdminUserDetailsGeneric(token, 'v1');}
 
 /**
  * Makes an HTTP request to get user details using v2 route
  */
-export const requestAdminUserDetailsv2 = (token: string) =>
-  requestAdminUserDetailsGeneric(token, 'v2');
+export function requestAdminUserDetailsv2 (token: string)
+  {requestAdminUserDetailsGeneric(token, 'v2');}
 
 // adminUserDetailsUpdate
 /**

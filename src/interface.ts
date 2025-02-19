@@ -47,6 +47,10 @@ export interface answerOption {
   correct?: boolean;
 }
 
+export interface requestHelperReturn {
+  body: string;
+  statusCode: number;
+}
 export interface answerSubmission {
   answerIds: number[],
   playerId: number,
